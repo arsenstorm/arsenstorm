@@ -1,33 +1,35 @@
-import type { Year } from "./worker";
+import type { Year } from "#/lib/types";
+import { DARK_COLORS, LIGHT_COLORS } from "#/lib/variables";
 
 const BP_MEDIUM = 550;
 const BP_LARGE = 700;
-const BODY_COPY = "I’m Arsen, a builder, philosopher, and tinkerer.";
-
-import { LIGHT_COLORS, DARK_COLORS } from "../lib/variables";
+const BODY_COPY = "I'm Arsen, a builder, philosopher, and tinkerer.";
 
 interface Props {
-	width?: number;
 	height: number;
 	theme: "light" | "dark";
-}
-
-interface Attributes {
-	height: string;
-	"data-theme": "light" | "dark";
-	[key: string]: string;
+	width?: number;
 }
 
 const attr = (obj: Record<string, string>) =>
 	Object.entries(obj).reduce(
 		(acc, [key, value]) => `${acc} ${key}="${value}"`,
-		"",
+		""
 	);
 
-const svg = (styles: string, html: string, attributes: Attributes) => {
-	if (!attributes.width) attributes.width = "100%";
-	return /*html*/ `
-	<svg xmlns="http://www.w3.org/2000/svg" fill="none" ${attr(attributes)}>
+interface SvgAttributes {
+	"data-theme": "light" | "dark";
+	height: string;
+	[key: string]: string;
+}
+
+const svg = (styles: string, html: string, attributes: SvgAttributes) => {
+	const attrs = { ...attributes };
+	if (!attrs.width) {
+		attrs.width = "100%";
+	}
+	return `
+	<svg xmlns="http://www.w3.org/2000/svg" fill="none" ${attr(attrs)}>
 		<foreignObject width="100%" height="100%">
 			<div xmlns="http://www.w3.org/1999/xhtml">
 				<style>${styles}</style>
@@ -37,7 +39,7 @@ const svg = (styles: string, html: string, attributes: Attributes) => {
 	</svg>`;
 };
 
-export const shared = /* css */ `
+export const shared = `
 	:root {
 		--color-text-light: ${LIGHT_COLORS.text};
 		--color-dot-bg-0-light: ${LIGHT_COLORS.bg0};
@@ -55,12 +57,10 @@ export const shared = /* css */ `
 		--color-dot-bg-4-dark: ${DARK_COLORS.bg4};
 		--color-dot-border-dark: ${DARK_COLORS.border};
 
-		/* Initial animation offset... */
 		--default-delay: 1s;
 		--default-duration: 1.55s;
 		--default-stagger: 0.1s;
 
-		/* Animation orchestration */
 		--animate-in-menu-delay: calc(var(--default-delay) + var(--default-stagger) * 0);
 		--animate-in-links-delay: calc(var(--default-delay) + var(--default-stagger) * 1);
 		--animate-in-contributions-delay: calc(var(--default-delay) + var(--default-stagger) * 5);
@@ -106,12 +106,10 @@ export const shared = /* css */ `
 		container-type: inline-size;
 		position: relative;
 		overflow: clip;
-
 		font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
 		color: var(--color-text);
 	}
 
-	/* Hide everything in Firefox by default – show fallback instead */
 	@-moz-document url-prefix() {
 		.wrapper {
 			display: none;
@@ -139,17 +137,12 @@ export const shared = /* css */ `
 	}
 
 	p {
-		constrain: content;
 		margin: 0;
 	}
 
 	@keyframes fade-in {
-		0% {
-			opacity: 0;
-		}
-		100% {
-			opacity: 1;
-		}
+		0% { opacity: 0; }
+		100% { opacity: 1; }
 	}
 
 	.shine {
@@ -163,7 +156,6 @@ export const shared = /* css */ `
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
-		text-fill-color: transparent;
 
 		animation-name: shine;
 		animation-duration: 14s;
@@ -171,35 +163,29 @@ export const shared = /* css */ `
 	}
 
 	@keyframes shine {
-		0% {
-			background-position: 200%;
-		}
-		10% {
-			background-position: 0%;
-		}
-		to {
-			background-position: 0%;
-		}
+		0% { background-position: 200%; }
+		10% { background-position: 0%; }
+		to { background-position: 0%; }
 	}
 `;
 
-export type Main = {
-	years: Year[];
-	sizes: number[][];
-	length: number;
-	location: { city: string; country: string };
+export interface Main {
 	dots: {
 		rows: number;
 		size: number;
 		gap: number;
 	};
+	length: number;
+	location: { city: string; country: string };
+	sizes: number[][];
 	year: {
 		gap: number;
 	};
-};
+	years: Year[];
+}
 
 export const main = (props: Props & Main) => {
-	const styles = /*css*/ `
+	const styles = `
 		${shared}
 
 		:root {
@@ -269,12 +255,8 @@ export const main = (props: Props & Main) => {
 			animation-delay: 2s, var(--animate-in-graph-delay);
 		}
 		@keyframes scroll {
-			0% {
-				transform: translateX(60px);
-			}
-			100% {
-				transform: translateX(calc(-100% + 100cqw));
-			}
+			0% { transform: translateX(60px); }
+			100% { transform: translateX(calc(-100% + 100cqw)); }
 		}
 
 		.year {
@@ -292,7 +274,6 @@ export const main = (props: Props & Main) => {
 			align-items: end;
 		}
 		.year__days {
-			contain: content;
 			display: grid;
 			grid-auto-flow: column;
 			grid-template-rows: repeat(var(--rows), calc(var(--size-dot) * 1px));
@@ -321,20 +302,10 @@ export const main = (props: Props & Main) => {
 		.dot--4 { background-color: var(--color-dot-bg-4); }
 	`;
 
-	const format = (date: Date) =>
-		date.toLocaleDateString("en-US", {
-			year: "numeric",
-			month: "short",
-			day: "numeric",
-		});
+	const dots = (year: Year) =>
+		year.days.map((level) => `<div class="dot dot--${level}"></div>`).join("");
 
-	const date = (i: number) =>
-		i === 0 ? format(new Date()) : new Date(props.years[i].from).getFullYear();
-
-	const days = (days: Year["days"]) =>
-		days.map((level) => `<div class="dot dot--${level}"></div>`).join("");
-
-	const html = /* html */ `
+	const html = `
 		<main class="wrapper grid">
 			<article class="intro">
 				<p>${BODY_COPY.split("")
@@ -345,13 +316,11 @@ export const main = (props: Props & Main) => {
 				<div class="years" style="--w: ${props.length}; --h: ${props.sizes[0][1]};">
 					${props.years
 						.map(
-							(year, i) => /* html */ `
+							(year, i) => `
 						<div class="year year--${i}" style="--w: ${props.sizes[i][0]}; --h: ${props.sizes[i][1]};">
-							<div class="year__days">${days(year.days)}</div>
-							<!-- If you want to show the year/month label, uncomment this -->
-							<!--<div class="year__label label"><span>${date(i)}</span></div>-->
+							<div class="year__days">${dots(year)}</div>
 						</div>
-					`,
+					`
 						)
 						.join("")}
 				</div>
@@ -361,12 +330,12 @@ export const main = (props: Props & Main) => {
 
 	return svg(styles, html, {
 		height: `${props.height}`,
-		"data-theme": `${props.theme}`,
+		"data-theme": props.theme,
 	});
 };
 
 export const top = (props: Props & { contributions: number }) => {
-	const styles = /* css */ `
+	const styles = `
 		${shared}
 
 		:root {
@@ -385,7 +354,7 @@ export const top = (props: Props & { contributions: number }) => {
 		}
 		.contributions {
 			--delay: var(--animate-in-contributions-delay);
-			contain: strict; /* hide, show later */
+			contain: strict;
 			grid-area: 1 / 3 / span 1 / span 2;
 		}
 		.readme {
@@ -400,7 +369,7 @@ export const top = (props: Props & { contributions: number }) => {
 				grid-area: 1 / 1 / span 1 / span 2;
 			}
 			.contributions {
-				contain: content; /* show agian */
+				contain: content;
 				grid-area: 1 / 3 / span 1 / span 2;
 			}
 			.readme {
@@ -421,7 +390,7 @@ export const top = (props: Props & { contributions: number }) => {
 		}
 	`;
 
-	const html = /*html*/ `
+	const html = `
 		<div class="wrapper grid label">
 			<div class="menu fade-in">Menu</div>
 			<div class="contributions fade-in">
@@ -433,17 +402,20 @@ export const top = (props: Props & { contributions: number }) => {
 
 	return svg(styles, html, {
 		height: `${props.height}`,
-		"data-theme": `${props.theme}`,
+		"data-theme": props.theme,
 	});
 };
 
 export const link = (props: Props & { index: number }) => (label: string) => {
-	const styles = /*css*/ `
+	const arrowDelay = (Math.random() * 5).toFixed(2);
+	const labelDelay = (Math.random() * 10).toFixed(2);
+
+	const styles = `
 		${shared}
 
 		:root {
 			--size-height: ${props.height};
-			--size-width: ${props.width};
+			--size-width: ${props.width ?? 100};
 			--i: ${props.index};
 		}
 
@@ -451,7 +423,6 @@ export const link = (props: Props & { index: number }) => (label: string) => {
 			--delay: calc(var(--animate-in-links-delay) + var(--i) * 1.2s);
 		}
 		@-moz-document url-prefix() {
-			/* Overwrite default, allow this to show in FF */
 			.wrapper {
 				display: block;
 			}
@@ -464,7 +435,7 @@ export const link = (props: Props & { index: number }) => (label: string) => {
 			gap: 3px;
 		}
 		.link__label {
-			animation-delay: ${Math.random() * 10}s;
+			animation-delay: ${labelDelay}s;
 		}
 		.link__arrow {
 			font-size: 0.75em;
@@ -474,21 +445,16 @@ export const link = (props: Props & { index: number }) => (label: string) => {
 			animation-duration: 5s;
 			animation-timing-function: ease-in-out;
 			animation-iteration-count: infinite;
-			animation-delay: ${Math.random() * 5}s;
+			animation-delay: ${arrowDelay}s;
 		}
 
 		@keyframes rotate {
-			0% {
-				transform: rotate(0deg);
-			}
-			10%,
-			100% {
-				transform: rotate(360deg);
-			}
+			0% { transform: rotate(0deg); }
+			10%, 100% { transform: rotate(360deg); }
 		}
 	`;
 
-	const html = /*html*/ `
+	const html = `
 		<main class="wrapper">
 			<a class="link fade-in">
 				<div class="link__label shine">${label}</div>
@@ -498,14 +464,14 @@ export const link = (props: Props & { index: number }) => (label: string) => {
 	`;
 
 	return svg(styles, html, {
-		width: `${props.width}`,
+		width: `${props.width ?? 100}`,
 		height: `${props.height}`,
-		"data-theme": `${props.theme}`,
+		"data-theme": props.theme,
 	});
 };
 
 export const fallback = (props: Props & { width: number }) => {
-	const styles = /* css */ `
+	const styles = `
 		${shared}
 
 		:root {
@@ -517,7 +483,6 @@ export const fallback = (props: Props & { width: number }) => {
 			display: none;
 		}
 		@-moz-document url-prefix() {
-			/* Hide everywhere but Firefox */
 			.wrapper {
 				display: flex;
 				align-items: end;
@@ -543,7 +508,7 @@ export const fallback = (props: Props & { width: number }) => {
 		}
 	`;
 
-	const html = /* html */ `
+	const html = `
 		<main class="wrapper">
 			<div class="intro">
 				<p>${BODY_COPY.split("")
@@ -559,7 +524,7 @@ export const fallback = (props: Props & { width: number }) => {
 	return svg(styles, html, {
 		width: `${props.width}`,
 		height: `${props.height}`,
-		"data-theme": `${props.theme}`,
-		viewbox: `0 0 ${props.width} ${props.height}`,
+		"data-theme": props.theme,
+		viewBox: `0 0 ${props.width} ${props.height}`,
 	});
 };

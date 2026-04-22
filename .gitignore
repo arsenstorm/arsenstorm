@@ -1,3 +1,13 @@
-node_modules/
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
 .env
-.wrangler/
+.nitro
+.tanstack
+.wrangler
+.output
+.vinxi
+__unconfig*
+todos.json

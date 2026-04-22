@@ -1,6 +1,14 @@
+This project incorporates code originally written by Terkel Gjervig
+(https://github.com/terkelg), used under the MIT License.
+
+The SVG rendering and GitHub contribution graph logic in src/lib/render.ts and
+src/lib/variables.ts is derived from that original work.
+
+---
+
 MIT License
 
-Copyright (c) 2026 Arsen Shkrumelyak
+Copyright (c) Terkel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

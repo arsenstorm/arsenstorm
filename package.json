@@ -1,20 +1,61 @@
 {
-	"name": "cool-github-readme",
-	"version": "1.0.0",
-	"private": true,
-	"type": "module",
-	"scripts": {
-		"start": "wrangler dev",
-		"deploy": "bun stats && wrangler deploy",
-		"stats": "tsm scripts/stats.ts",
-		"types": "tsc --noEmit"
-	},
-	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20231121.0",
-		"@types/node": "^20.10.0",
-		"prettier": "^3.1.0",
-		"tsm": "^2.3.0",
-		"typescript": "^5.3.2",
-		"wrangler": "^3.17.1"
-	}
+  "dependencies": {
+    "@cloudflare/vite-plugin": "^1.26.0",
+    "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/react-devtools": "latest",
+    "@tanstack/react-router": "latest",
+    "@tanstack/react-router-devtools": "latest",
+    "@tanstack/react-router-ssr-query": "latest",
+    "@tanstack/react-start": "latest",
+    "@tanstack/router-plugin": "^1.132.0",
+    "@web-kits/audio": "^0.1.0",
+    "lucide-react": "^0.545.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwindcss": "^4.1.18",
+    "web-haptics": "^0.0.6"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.12",
+    "@tailwindcss/typography": "^0.5.16",
+    "@tanstack/devtools-vite": "latest",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.0",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
+    "husky": "^9.1.7",
+    "jsdom": "^28.1.0",
+    "typescript": "^5.7.2",
+    "ultracite": "7.6.0",
+    "vite": "^8.0.0",
+    "vitest": "^3.0.5",
+    "wrangler": "^4.70.0"
+  },
+  "name": "arsenstorm",
+  "scripts": {
+    "dev": "vite dev --port 3000",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "format": "biome format",
+    "lint": "biome lint",
+    "check": "ultracite check",
+    "deploy": "bun run build && wrangler deploy",
+    "cf:types": "wrangler types workers.d.ts --env-interface CloudflareBindings",
+    "fix": "ultracite fix",
+    "prepare": "husky"
+  },
+  "type": "module",
+  "private": true,
+  "imports": {
+    "#/*": "./src/*"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "lightningcss"
+    ]
+  }
 }
