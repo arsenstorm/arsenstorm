@@ -50,7 +50,7 @@ const PROJECTS: Project[] = [
 		href: "https://github.com/arsenstorm/MRTDReader",
 	},
 	{
-		year: "2026",
+		year: "2025",
 		title: "World Class Education",
 		description: "Expert tutoring for top students.",
 		href: "https://worldclass.education",
