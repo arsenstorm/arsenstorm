@@ -26,12 +26,6 @@ const PROJECTS: Project[] = [
 	},
 	{
 		year: "2026",
-		title: "World Class Education",
-		description: "Expert tutoring for top students.",
-		href: "https://worldclass.education",
-	},
-	{
-		year: "2026",
 		title: "Films",
 		description: "A personal film archive.",
 		href: "https://films.arsenstorm.com",
@@ -44,9 +38,9 @@ const PROJECTS: Project[] = [
 	},
 	{
 		year: "2026",
-		title: "ios-id-scanner",
-		description: "iOS app for scanning identity documents over NFC.",
-		href: "https://github.com/arsenstorm/ios-id-scanner",
+		title: "iOS ID Reader",
+		description: "iOS app for reading identity documents over NFC.",
+		href: "https://apps.apple.com/us/app/id-reader/id6757679372",
 	},
 	{
 		year: "2026",
@@ -54,6 +48,12 @@ const PROJECTS: Project[] = [
 		description:
 			"A Swift library for reading NFC-enabled passports and ID cards.",
 		href: "https://github.com/arsenstorm/MRTDReader",
+	},
+	{
+		year: "2026",
+		title: "World Class Education",
+		description: "Expert tutoring for top students.",
+		href: "https://worldclass.education",
 	},
 	{
 		year: "2025",
