@@ -1,13 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Moon, Sun, Volume2, VolumeX } from "lucide-react";
-import type { ComponentPropsWithoutRef } from "react";
-import { useWebHaptics } from "web-haptics/react";
-import {
-	setAudioEnabled,
-	useAudioEnabled,
-	useInterfaceSounds,
-} from "#/lib/interface-sounds";
-import { setTheme, useTheme } from "#/lib/theme";
+import { Controls } from "#/components/controls";
+import { HapticAnchor } from "#/components/haptic-link";
 
 export const Route = createFileRoute("/")({ component: Home });
 
@@ -90,7 +83,7 @@ const PROJECTS: Project[] = [
 		year: "2024",
 		title: "Extra GitHub Tools",
 		description: "GitHub tools that aren't part of the default interface.",
-		href: "https://github.com/arsenstorm/Extra-GitHub-Tools",
+		href: "https://extra-github-tools.vercel.app/",
 	},
 ];
 
@@ -110,167 +103,88 @@ function groupByYear(projects: Project[]): [string, Project[]][] {
 	return [...map.entries()].sort((a, b) => b[0].localeCompare(a[0]));
 }
 
-function HapticLink({
-	href,
-	onPointerEnter,
-	onPointerDown,
-	...props
-}: ComponentPropsWithoutRef<"a">) {
-	const { trigger } = useWebHaptics();
-	const { playHover, playClick } = useInterfaceSounds();
-	const external = href?.startsWith("http");
-	return (
-		<a
-			{...props}
-			href={href}
-			onPointerDown={(e) => {
-				trigger("success");
-				playClick();
-				onPointerDown?.(e);
-			}}
-			onPointerEnter={(e) => {
-				trigger(8);
-				playHover();
-				onPointerEnter?.(e);
-			}}
-			rel={external ? "noopener noreferrer" : undefined}
-			target={external ? "_blank" : undefined}
-		/>
-	);
-}
-
-const ICON_BUTTON =
-	"relative text-zinc-400 transition-colors after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-x-1/2 after:-translate-y-1/2 hover:text-zinc-950 dark:text-zinc-500 dark:hover:text-zinc-50";
-
-function AudioToggle() {
-	const enabled = useAudioEnabled();
-	const { playHover } = useInterfaceSounds();
-	const Icon = enabled ? Volume2 : VolumeX;
-
-	return (
-		<button
-			aria-label={
-				enabled ? "Disable interface sounds" : "Enable interface sounds"
-			}
-			aria-pressed={enabled}
-			className={ICON_BUTTON}
-			onClick={() => setAudioEnabled(!enabled)}
-			onPointerEnter={() => playHover()}
-			type="button"
-		>
-			<Icon className="size-4" />
-		</button>
-	);
-}
-
-function ThemeSwitch() {
-	const theme = useTheme();
-	const { playHover, playClick } = useInterfaceSounds();
-	const Icon = theme === "dark" ? Sun : Moon;
-
-	return (
-		<button
-			aria-label="Toggle theme"
-			className={ICON_BUTTON}
-			onClick={() => {
-				playClick();
-				setTheme(theme === "dark" ? "light" : "dark");
-			}}
-			onPointerEnter={() => playHover()}
-			type="button"
-		>
-			<Icon className="size-4" />
-		</button>
-	);
-}
-
 function Home() {
 	const grouped = groupByYear(PROJECTS);
 
 	return (
-		<div className="isolate min-h-dvh bg-white font-sans text-zinc-950 antialiased dark:bg-zinc-950 dark:text-zinc-50">
-			<main className="mx-auto max-w-xl px-6 py-24">
-				<header className="mb-12 flex items-start justify-between gap-4">
-					<div>
-						<h1 className="font-medium text-base text-zinc-950 dark:text-zinc-50">
-							Arsen Shkrumelyak
-						</h1>
-						<p className="mt-1 max-w-[56ch] text-pretty text-base text-zinc-500 dark:text-zinc-400">
-							Builder, philosopher, and tinkerer. I make things for the web that
-							are worth making.
-						</p>
-					</div>
-					<div className="flex items-center gap-4">
-						<AudioToggle />
-						<ThemeSwitch />
-					</div>
-				</header>
+		<main className="mx-auto max-w-xl px-6 py-24">
+			<header className="mb-12 flex items-start justify-between gap-4">
+				<div>
+					<h1 className="font-medium text-base text-zinc-950 dark:text-zinc-50">
+						Arsen Shkrumelyak
+					</h1>
+					<p className="mt-1 max-w-[56ch] text-pretty text-base text-zinc-500 dark:text-zinc-400">
+						Builder, philosopher, and tinkerer. I make things for the web that
+						are worth making.
+					</p>
+				</div>
+				<Controls />
+			</header>
 
-				<section className="mb-12">
-					<h2 className="mb-4 font-medium text-sm text-zinc-950 dark:text-zinc-50">
-						Projects
-					</h2>
-					<div className="flex flex-col gap-6">
-						{grouped.map(([year, items]) => (
-							<div className="relative" key={year}>
-								<h3 className="mb-2 text-sm text-zinc-400 tabular-nums md:absolute md:top-0 md:right-full md:mr-4 md:mb-0 dark:text-zinc-500">
-									{year}
-								</h3>
-								<ul className="flex flex-col gap-3">
-									{items.map((item) => {
-										const title = (
-											<span className="text-sm text-zinc-950 decoration-zinc-300 underline-offset-4 group-hover:underline dark:text-zinc-50 dark:decoration-zinc-700">
-												{item.title}
-											</span>
-										);
-										const description = (
-											<span className="text-sm text-zinc-500 dark:text-zinc-400">
-												{item.description}
-											</span>
-										);
-										return (
-											<li key={item.title}>
-												{item.href ? (
-													<HapticLink
-														className="group flex flex-col gap-0.5"
-														href={item.href}
-													>
-														{title}
-														{description}
-													</HapticLink>
-												) : (
-													<div className="flex flex-col gap-0.5">
-														{title}
-														{description}
-													</div>
-												)}
-											</li>
-										);
-									})}
-								</ul>
-							</div>
-						))}
-					</div>
-				</section>
+			<section className="mb-12">
+				<h2 className="mb-4 font-medium text-sm text-zinc-950 dark:text-zinc-50">
+					Projects
+				</h2>
+				<div className="flex flex-col gap-6">
+					{grouped.map(([year, items]) => (
+						<div className="relative" key={year}>
+							<h3 className="mb-2 text-sm text-zinc-400 tabular-nums md:absolute md:top-0 md:right-full md:mr-4 md:mb-0 dark:text-zinc-500">
+								{year}
+							</h3>
+							<ul className="flex flex-col gap-3">
+								{items.map((item) => {
+									const title = (
+										<span className="text-sm text-zinc-950 decoration-zinc-300 underline-offset-4 group-hover:underline dark:text-zinc-50 dark:decoration-zinc-700">
+											{item.title}
+										</span>
+									);
+									const description = (
+										<span className="text-sm text-zinc-500 dark:text-zinc-400">
+											{item.description}
+										</span>
+									);
+									return (
+										<li key={item.title}>
+											{item.href ? (
+												<HapticAnchor
+													className="group flex flex-col gap-0.5"
+													href={item.href}
+												>
+													{title}
+													{description}
+												</HapticAnchor>
+											) : (
+												<div className="flex flex-col gap-0.5">
+													{title}
+													{description}
+												</div>
+											)}
+										</li>
+									);
+								})}
+							</ul>
+						</div>
+					))}
+				</div>
+			</section>
 
-				<section>
-					<h2 className="mb-4 font-medium text-sm text-zinc-950 dark:text-zinc-50">
-						Elsewhere
-					</h2>
-					<ul className="flex flex-col gap-2">
-						{ELSEWHERE.map((item) => (
-							<li className="text-sm" key={item.label}>
-								<HapticLink
-									className="text-zinc-500 underline decoration-zinc-200 underline-offset-4 transition-colors hover:text-zinc-950 hover:decoration-zinc-950 dark:text-zinc-400 dark:decoration-zinc-800 dark:hover:text-zinc-50 dark:hover:decoration-zinc-50"
-									href={item.href}
-								>
-									{item.label}
-								</HapticLink>
-							</li>
-						))}
-					</ul>
-				</section>
-			</main>
-		</div>
+			<section>
+				<h2 className="mb-4 font-medium text-sm text-zinc-950 dark:text-zinc-50">
+					Elsewhere
+				</h2>
+				<ul className="flex flex-col gap-2">
+					{ELSEWHERE.map((item) => (
+						<li className="text-sm" key={item.label}>
+							<HapticAnchor
+								className="text-zinc-500 underline decoration-zinc-200 underline-offset-4 transition-colors hover:text-zinc-950 hover:decoration-zinc-950 dark:text-zinc-400 dark:decoration-zinc-800 dark:hover:text-zinc-50 dark:hover:decoration-zinc-50"
+								href={item.href}
+							>
+								{item.label}
+							</HapticAnchor>
+						</li>
+					))}
+				</ul>
+			</section>
+		</main>
 	);
 }
