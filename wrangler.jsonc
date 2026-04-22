@@ -19,7 +19,7 @@
       "custom_domain": false
     },
     {
-      "pattern": "https://arsenstorm.com",
+      "pattern": "arsenstorm.com",
       "zone_name": "arsenstorm.com",
       "custom_domain": true
     }
