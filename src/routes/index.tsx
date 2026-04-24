@@ -83,7 +83,7 @@ const PROJECTS: Project[] = [
 		year: "2024",
 		title: "Extra GitHub Tools",
 		description: "GitHub tools that aren't part of the default interface.",
-		href: "https://extra-github-tools.vercel.app/",
+		href: "https://eght.arsenstorm.com",
 	},
 ];
 
