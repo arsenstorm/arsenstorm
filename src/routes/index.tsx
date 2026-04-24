@@ -68,7 +68,7 @@ const PROJECTS: Project[] = [
 		href: "https://trackmypodcast.com",
 	},
 	{
-		year: "2025",
+		year: "2024",
 		title: "Sotsial",
 		description: "Cross-posting to social media, built for developers.",
 		href: "https://sotsial.com",
@@ -76,13 +76,13 @@ const PROJECTS: Project[] = [
 	{
 		year: "2024",
 		title: "Amazonomics",
-		description: "Tools for Amazon sellers.",
+		description: "Analytics and data for optimising Amazon listings and sales.",
 		href: "https://amazonomics.com",
 	},
 	{
 		year: "2024",
 		title: "Extra GitHub Tools",
-		description: "GitHub tools that aren't part of the default interface.",
+		description: "Useful tools that should be in GitHub, but aren't.",
 		href: "https://eght.arsenstorm.com",
 	},
 ];
