@@ -3,10 +3,7 @@ import { fallback, link, main, top } from "#/lib/render";
 import type { Contribution, GitHubResponse, Stats, Year } from "#/lib/types";
 import { USERNAME } from "#/lib/variables";
 
-export interface Env {
-	GITHUB_TOKEN: string;
-	STATS: KVNamespace;
-}
+export type Env = CloudflareBindings;
 
 const MAX_YEARS = 3;
 const START_DATE = new Date("2012-09-07T04:00:00.000Z");
@@ -204,6 +201,11 @@ export default {
 		if (url.pathname === "/readme") {
 			console.log("fetching readme");
 			return await handleSvg(request, env);
+		}
+
+		const assetResponse = await env.ASSETS.fetch(request);
+		if (assetResponse.status !== 404) {
+			return assetResponse;
 		}
 
 		return await handler.fetch(request);

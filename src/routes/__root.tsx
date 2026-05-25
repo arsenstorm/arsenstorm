@@ -28,7 +28,11 @@ const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem("theme");v
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="en" suppressHydrationWarning>
+		<html
+			className="scrollbar-gutter-stable"
+			lang="en"
+			suppressHydrationWarning
+		>
 			<head>
 				<HeadContent />
 				<script
@@ -66,7 +70,7 @@ function PageHeader({
 	description: string;
 }) {
 	return (
-		<header className="mb-12 flex items-start justify-between gap-4">
+		<header className="flex items-start justify-between gap-4">
 			<div>
 				<h1 className="font-medium text-base text-zinc-950 dark:text-zinc-50">
 					{title}
@@ -82,7 +86,7 @@ function PageHeader({
 
 function NotFound() {
 	return (
-		<main className="mx-auto max-w-xl px-6 py-24">
+		<main className="mx-auto max-w-xl space-y-12 px-6 py-24">
 			<PageHeader
 				description="This page doesn't exist — or it never did."
 				title="404"
@@ -98,7 +102,7 @@ function NotFound() {
 
 function ErrorPage({ error, reset }: ErrorComponentProps) {
 	return (
-		<main className="mx-auto max-w-xl px-6 py-24">
+		<main className="mx-auto max-w-xl space-y-12 px-6 py-24">
 			<PageHeader
 				description={
 					error instanceof Error && error.message

@@ -1,10 +1,11 @@
-import { Moon, Sun, Volume2, VolumeX } from "lucide-react";
+import { HomeIcon, Moon, Sun, Volume2, VolumeX } from "lucide-react";
 import {
 	setAudioEnabled,
 	useAudioEnabled,
 	useInterfaceSounds,
 } from "#/lib/interface-sounds";
 import { setTheme, useTheme } from "#/lib/theme";
+import { HapticLink } from "./haptic-link";
 
 const ICON_BUTTON =
 	"relative text-zinc-400 transition-colors after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-x-1/2 after:-translate-y-1/2 hover:text-zinc-950 dark:text-zinc-500 dark:hover:text-zinc-50";
@@ -51,9 +52,14 @@ export function ThemeSwitch() {
 	);
 }
 
-export function Controls() {
+export function Controls({ noHomeLink = false }: { noHomeLink?: boolean }) {
 	return (
 		<div className="flex items-center gap-4">
+			{noHomeLink ? null : (
+				<HapticLink className={ICON_BUTTON} to="/">
+					<HomeIcon className="size-4" />
+				</HapticLink>
+			)}
 			<AudioToggle />
 			<ThemeSwitch />
 		</div>

@@ -1,91 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Controls } from "#/components/controls";
-import { HapticAnchor } from "#/components/haptic-link";
+import { HapticAnchor, HapticLink } from "#/components/haptic-link";
+import { ItemGroup } from "#/components/item-group.tsx";
+import { PROJECTS } from "#/lib/projects.ts";
+import { hasTechnicalWriteups, TECHNICAL_WRITEUPS } from "#/writeups";
 
 export const Route = createFileRoute("/")({ component: Home });
-
-interface Project {
-	description: string;
-	href?: string;
-	title: string;
-	year: string;
-}
-
-const PROJECTS: Project[] = [
-	{
-		year: "2026",
-		title: "arsenstorm",
-		description: "This site. A small corner of the internet.",
-		href: "https://github.com/arsenstorm/arsenstorm",
-	},
-	{
-		year: "2026",
-		title: "Kayle ID",
-		description: "Privacy-first identity verification.",
-		href: "https://kayle.id",
-	},
-	{
-		year: "2026",
-		title: "Films",
-		description: "A personal film archive.",
-		href: "https://films.arsenstorm.com",
-	},
-	{
-		year: "2026",
-		title: "AI Gateway",
-		description: "Compare AI model outputs side by side.",
-		href: "https://ai.arsenstorm.com",
-	},
-	{
-		year: "2026",
-		title: "iOS ID Reader",
-		description: "iOS app for reading identity documents over NFC.",
-		href: "https://apps.apple.com/us/app/id-reader/id6757679372",
-	},
-	{
-		year: "2026",
-		title: "MRTDReader",
-		description:
-			"A Swift library for reading NFC-enabled passports and ID cards.",
-		href: "https://github.com/arsenstorm/MRTDReader",
-	},
-	{
-		year: "2025",
-		title: "World Class Education",
-		description: "Expert tutoring for top students.",
-		href: "https://worldclass.education",
-	},
-	{
-		year: "2025",
-		title: "Anyverse",
-		description: "Helping students get into university for free.",
-		href: "https://anyverse.app",
-	},
-	{
-		year: "2025",
-		title: "Track My Podcast",
-		description: "Search and track across your favorite podcasts.",
-		href: "https://trackmypodcast.com",
-	},
-	{
-		year: "2024",
-		title: "Sotsial",
-		description: "Cross-posting to social media, built for developers.",
-		href: "https://sotsial.com",
-	},
-	{
-		year: "2024",
-		title: "Amazonomics",
-		description: "Analytics and data for optimising Amazon listings and sales.",
-		href: "https://amazonomics.com",
-	},
-	{
-		year: "2024",
-		title: "Extra GitHub Tools",
-		description: "Useful tools that should be in GitHub, but aren't.",
-		href: "https://eght.arsenstorm.com",
-	},
-];
 
 const ELSEWHERE = [
 	{ label: "GitHub", href: "https://github.com/arsenstorm" },
@@ -93,90 +13,69 @@ const ELSEWHERE = [
 	{ label: "Email", href: "mailto:arsen@shkrumelyak.com" },
 ];
 
-function groupByYear(projects: Project[]): [string, Project[]][] {
-	const map = new Map<string, Project[]>();
-	for (const p of projects) {
-		const bucket = map.get(p.year) ?? [];
-		bucket.push(p);
-		map.set(p.year, bucket);
-	}
-	return [...map.entries()].sort((a, b) => b[0].localeCompare(a[0]));
-}
-
 function Home() {
-	const grouped = groupByYear(PROJECTS);
+	const showTechnicalWriteups = hasTechnicalWriteups();
 
 	return (
-		<main className="mx-auto max-w-xl px-6 py-24">
-			<header className="mb-12 flex items-start justify-between gap-4">
+		<main className="mx-auto max-w-xl space-y-12 px-6 py-24">
+			<header className="flex items-start justify-between gap-4">
 				<div>
-					<h1 className="font-medium text-base text-zinc-950 dark:text-zinc-50">
+					<h1 className="font-medium text-base text-neutral-950 dark:text-neutral-50">
 						Arsen Shkrumelyak
 					</h1>
-					<p className="mt-1 max-w-[56ch] text-pretty text-base text-zinc-500 dark:text-zinc-400">
-						Builder, philosopher, and tinkerer. I make things for the web that
-						are worth making.
+					<p className="mt-1 max-w-[56ch] text-pretty text-base text-neutral-500 dark:text-neutral-400">
+						I build things worth building.
 					</p>
 				</div>
-				<Controls />
+				<Controls noHomeLink />
 			</header>
 
-			<section className="mb-12">
-				<h2 className="mb-4 font-medium text-sm text-zinc-950 dark:text-zinc-50">
-					Projects
-				</h2>
-				<div className="flex flex-col gap-6">
-					{grouped.map(([year, items]) => (
-						<div className="relative" key={year}>
-							<h3 className="mb-2 text-sm text-zinc-400 tabular-nums md:absolute md:top-0 md:right-full md:mr-4 md:mb-0 dark:text-zinc-500">
-								{year}
-							</h3>
-							<ul className="flex flex-col gap-3">
-								{items.map((item) => {
-									const title = (
-										<span className="text-sm text-zinc-950 decoration-zinc-300 underline-offset-4 group-hover:underline dark:text-zinc-50 dark:decoration-zinc-700">
-											{item.title}
-										</span>
-									);
-									const description = (
-										<span className="text-sm text-zinc-500 dark:text-zinc-400">
-											{item.description}
-										</span>
-									);
-									return (
-										<li key={item.title}>
-											{item.href ? (
-												<HapticAnchor
-													className="group flex flex-col gap-0.5"
-													href={item.href}
-												>
-													{title}
-													{description}
-												</HapticAnchor>
-											) : (
-												<div className="flex flex-col gap-0.5">
-													{title}
-													{description}
-												</div>
-											)}
-										</li>
-									);
-								})}
-							</ul>
-						</div>
-					))}
+			<section>
+				<div className="mb-4 flex flex-row items-center justify-between">
+					<h2 className="font-medium text-neutral-950 text-sm dark:text-neutral-50">
+						Work
+					</h2>
+					<HapticLink
+						className="text-neutral-500 text-sm underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50"
+						to="/work"
+					>
+						View all
+					</HapticLink>
 				</div>
+				<ItemGroup id="projects-list" items={PROJECTS} showAll={false} />
 			</section>
 
+			{showTechnicalWriteups && (
+				<section>
+					<div className="mb-4 flex flex-row items-center justify-between">
+						<h2 className="font-medium text-neutral-950 text-sm dark:text-neutral-50">
+							Technical Writeups
+						</h2>
+						<HapticLink
+							className="text-neutral-500 text-sm underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50"
+							to="/technical-writeups"
+						>
+							View all
+						</HapticLink>
+					</div>
+					<ItemGroup
+						groupBy="month"
+						id="writeups-list"
+						items={TECHNICAL_WRITEUPS}
+						showAll={false}
+					/>
+				</section>
+			)}
+
 			<section>
-				<h2 className="mb-4 font-medium text-sm text-zinc-950 dark:text-zinc-50">
+				<h2 className="mb-4 font-medium text-neutral-950 text-sm dark:text-neutral-50">
 					Elsewhere
 				</h2>
 				<ul className="flex flex-col gap-2">
 					{ELSEWHERE.map((item) => (
 						<li className="text-sm" key={item.label}>
 							<HapticAnchor
-								className="text-zinc-500 underline decoration-zinc-200 underline-offset-4 transition-colors hover:text-zinc-950 hover:decoration-zinc-950 dark:text-zinc-400 dark:decoration-zinc-800 dark:hover:text-zinc-50 dark:hover:decoration-zinc-50"
+								className="text-neutral-500 underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50"
 								href={item.href}
 							>
 								{item.label}

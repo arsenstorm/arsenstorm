@@ -17,6 +17,35 @@ body,
 	min-height: 100%;
 }
 
+html {
+	scrollbar-color: rgb(161 161 170) transparent;
+	scrollbar-width: thin;
+}
+
+html.dark {
+	scrollbar-color: rgb(113 113 122) transparent;
+}
+
+html::-webkit-scrollbar {
+	height: 8px;
+	width: 8px;
+}
+
+html::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+	background-clip: content-box;
+	background-color: rgb(161 161 170 / 70%);
+	border: 2px solid transparent;
+	border-radius: 999px;
+}
+
+html.dark::-webkit-scrollbar-thumb {
+	background-color: rgb(113 113 122 / 70%);
+}
+
 body {
 	margin: 0;
 }
