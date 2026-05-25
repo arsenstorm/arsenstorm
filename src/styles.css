@@ -18,12 +18,21 @@ body,
 }
 
 html {
+	background: rgb(255 255 255);
+	color-scheme: light;
 	scrollbar-color: rgb(161 161 170) transparent;
 	scrollbar-width: thin;
 }
 
 html.dark {
+	background: rgb(9 9 11);
+	color-scheme: dark;
 	scrollbar-color: rgb(113 113 122) transparent;
+}
+
+body {
+	background: inherit;
+	margin: 0;
 }
 
 html::-webkit-scrollbar {
@@ -44,8 +53,4 @@ html::-webkit-scrollbar-thumb {
 
 html.dark::-webkit-scrollbar-thumb {
 	background-color: rgb(113 113 122 / 70%);
-}
-
-body {
-	margin: 0;
 }
