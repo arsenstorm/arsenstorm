@@ -43,8 +43,8 @@ function getRequiredEnvironmentVariable(name: string): string {
 
 function getMapSnapshotCredentials(): MapSnapshotCredentials {
 	return {
-		keyId: getRequiredEnvironmentVariable("MAPKIT_SNAPSHOT_KEY_ID"),
-		privateKey: getRequiredEnvironmentVariable("MAPKIT_SNAPSHOT_PRIVATE_KEY"),
+		keyId: getRequiredEnvironmentVariable("APPLE_KEY_ID"),
+		privateKey: getRequiredEnvironmentVariable("APPLE_PRIVATE_KEY"),
 		teamId: getRequiredEnvironmentVariable("APPLE_TEAM_ID"),
 	};
 }
