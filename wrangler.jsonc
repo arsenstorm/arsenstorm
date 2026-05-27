@@ -15,9 +15,7 @@
   "preview_urls": false,
   "workers_dev": false,
   "secrets": {
-    "required": [
-      "GITHUB_TOKEN"
-    ]
+    "required": ["GITHUB_TOKEN"]
   },
   "routes": [
     {

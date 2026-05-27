@@ -24,7 +24,7 @@ export const Route = createRootRoute({
 	errorComponent: ErrorPage,
 });
 
-const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem("theme");var d=t==="dark"||(t!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches);if(d)document.documentElement.classList.add("dark")}catch(e){}})();`;
+const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem("theme");var d=t==="dark"||(t!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches);var h=d?"dark":"light";document.documentElement.dataset.theme=h;document.documentElement.style.setProperty("--map-surface",d?"#0f0f0f":"#f5f5f5");if(d){document.documentElement.classList.add("dark");document.documentElement.style.background="rgb(9 9 11)";document.documentElement.style.colorScheme="dark"}}catch(e){}})();`;
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (
@@ -34,11 +34,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			suppressHydrationWarning
 		>
 			<head>
-				<HeadContent />
 				<script
 					// biome-ignore lint/security/noDangerouslySetInnerHtml: inline script needed to set theme class before first paint
 					dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
 				/>
+				<HeadContent />
 			</head>
 			<body>
 				<div className="isolate min-h-dvh bg-white font-sans text-zinc-950 antialiased dark:bg-zinc-950 dark:text-zinc-50">

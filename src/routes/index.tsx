@@ -1,4 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { BentoAppBlock, BentoGrid, EmptyBentoBlock } from "#/components/bento";
+import { BentoMap } from "#/components/bento/map";
+import { BentoWeather } from "#/components/bento/weather";
 import { Controls } from "#/components/controls";
 import { HapticAnchor, HapticLink } from "#/components/haptic-link";
 import { ItemGroup } from "#/components/item-group.tsx";
@@ -66,6 +69,28 @@ function Home() {
 					/>
 				</section>
 			)}
+
+			<section>
+				<div className="mb-4 flex flex-row items-center justify-between">
+					<h2 className="font-medium text-neutral-950 text-sm dark:text-neutral-50">
+						Experiments
+					</h2>
+				</div>
+				<BentoGrid className="relative -mx-4">
+					<BentoMap />
+					<EmptyBentoBlock size="small" />
+					<EmptyBentoBlock size="small" />
+					<BentoAppBlock
+						app={{
+							name: "ID Reader",
+							href: "https://apps.apple.com/us/app/id-reader/id6757679372",
+
+							image: "/apps/id-reader-icon.png",
+						}}
+					/>
+					<BentoWeather />
+				</BentoGrid>
+			</section>
 
 			<section>
 				<h2 className="mb-4 font-medium text-neutral-950 text-sm dark:text-neutral-50">

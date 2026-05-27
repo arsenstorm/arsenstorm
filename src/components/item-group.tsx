@@ -97,7 +97,7 @@ export function ItemGroup({
 								content = (
 									<HapticLink
 										className="group flex flex-col gap-0.5"
-										params={item.params}
+										params={item.params ?? { slug: "placeholder" }}
 										to={item.to}
 									>
 										{title}

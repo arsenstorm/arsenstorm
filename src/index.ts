@@ -199,7 +199,6 @@ export default {
 		const url = new URL(request.url);
 
 		if (url.pathname === "/readme") {
-			console.log("fetching readme");
 			return await handleSvg(request, env);
 		}
 

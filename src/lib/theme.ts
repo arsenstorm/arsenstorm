@@ -7,10 +7,32 @@ const STORAGE_KEY = "theme";
 let current: Theme = "light";
 const listeners = new Set<() => void>();
 
+function getStoredTheme(): Theme | null {
+	if (typeof window === "undefined") {
+		return null;
+	}
+
+	const stored = window.localStorage.getItem(STORAGE_KEY);
+	return stored === "dark" || stored === "light" ? stored : null;
+}
+
+function getSystemTheme(): Theme {
+	if (
+		typeof window !== "undefined" &&
+		window.matchMedia("(prefers-color-scheme: dark)").matches
+	) {
+		return "dark";
+	}
+
+	return "light";
+}
+
+function getInitialTheme(): Theme {
+	return getStoredTheme() ?? getSystemTheme();
+}
+
 if (typeof window !== "undefined") {
-	current = document.documentElement.classList.contains("dark")
-		? "dark"
-		: "light";
+	current = getInitialTheme();
 }
 
 function applyTheme(theme: Theme) {
@@ -18,10 +40,19 @@ function applyTheme(theme: Theme) {
 		return;
 	}
 	const root = document.documentElement;
+	root.dataset.theme = theme;
+	root.style.setProperty(
+		"--map-surface",
+		theme === "dark" ? "#0f0f0f" : "#f5f5f5"
+	);
 	if (theme === "dark") {
 		root.classList.add("dark");
+		root.style.background = "rgb(9 9 11)";
+		root.style.colorScheme = "dark";
 	} else {
 		root.classList.remove("dark");
+		root.style.background = "";
+		root.style.colorScheme = "";
 	}
 }
 

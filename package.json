@@ -10,11 +10,13 @@
     "@tanstack/router-plugin": "^1.132.0",
     "@web-kits/audio": "^0.1.0",
     "clsx": "^2.1.1",
+    "img-fx": "^0.3.1",
     "lucide-react": "^0.545.0",
     "motion": "^12.40.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwindcss": "^4.3.0",
+    "three": "^0.184.0",
     "web-haptics": "^0.0.6"
   },
   "devDependencies": {
@@ -40,7 +42,8 @@
   "name": "arsenstorm",
   "scripts": {
     "dev": "vite dev --port 3000",
-    "build": "vite build",
+    "build": "bun run generate:map-snapshots && vite build",
+    "generate:map-snapshots": "bun scripts/generate-map-snapshots.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "format": "biome format",
