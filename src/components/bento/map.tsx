@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import {
 	ImageGeneration,
 	type ImageGenerationCycleEvent,
@@ -103,7 +104,10 @@ export function BentoMap() {
 		<BentoBlock size="large" style={MAP_SURFACE_STYLE}>
 			<figure
 				aria-label="Apple Maps snapshot showing a location pin in London"
-				className={`absolute inset-0 overflow-hidden rounded-3xl ${MAP_SURFACE_CLASS}`}
+				className={clsx(
+					"absolute inset-0 overflow-hidden rounded-3xl",
+					MAP_SURFACE_CLASS
+				)}
 				style={MAP_SURFACE_STYLE}
 			>
 				<ImageGeneration
@@ -120,7 +124,7 @@ export function BentoMap() {
 					theme="auto"
 				>
 					<div
-						className={`size-full rounded-3xl ${MAP_SURFACE_CLASS}`}
+						className={clsx("size-full rounded-3xl", MAP_SURFACE_CLASS)}
 						style={MAP_SURFACE_STYLE}
 					/>
 				</ImageGeneration>

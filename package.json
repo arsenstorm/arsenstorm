@@ -41,9 +41,10 @@
   },
   "name": "arsenstorm",
   "scripts": {
-    "dev": "vite dev --port 3000",
+    "dev": "bun run generate:weather-snapshot && vite dev --port 3000",
     "build": "bun run generate:map-snapshots && vite build",
     "generate:map-snapshots": "bun scripts/generate-map-snapshots.ts",
+    "generate:weather-snapshot": "bun scripts/generate-weather-snapshot.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "format": "biome format",

@@ -10,12 +10,18 @@
     "directory": "./dist/client",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page",
-    "run_worker_first": ["/readme"]
+    "run_worker_first": ["/readme", "/api/weather"]
   },
   "preview_urls": false,
   "workers_dev": false,
   "secrets": {
-    "required": ["GITHUB_TOKEN"]
+    "required": [
+      "GITHUB_TOKEN",
+      "APPLE_KEY_ID",
+      "APPLE_TEAM_ID",
+      "APPLE_SERVICE_ID",
+      "APPLE_PRIVATE_KEY"
+    ]
   },
   "routes": [
     {
@@ -30,8 +36,8 @@
     }
   ],
   "triggers": {
-    // Runs every 6 hours to refresh GitHub contribution stats
-    "crons": ["0 */6 * * *"]
+    // Runs hourly to refresh weather and every 6 hours to refresh GitHub contribution stats
+    "crons": ["0 * * * *", "0 */6 * * *"]
   },
   "kv_namespaces": [
     {
