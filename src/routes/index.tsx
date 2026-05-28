@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BentoAppBlock, BentoGrid, EmptyBentoBlock } from "#/components/bento";
+import { BentoGithub } from "#/components/bento/github.tsx";
 import { BentoMap } from "#/components/bento/map";
 import { BentoWeather } from "#/components/bento/weather";
 import { Controls } from "#/components/controls";
@@ -89,6 +90,7 @@ function Home() {
 						}}
 					/>
 					<BentoWeather />
+					<BentoGithub />
 				</BentoGrid>
 			</section>
 

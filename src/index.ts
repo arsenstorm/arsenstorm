@@ -1,6 +1,13 @@
 import handler from "@tanstack/react-start/server-entry";
 import { fallback, link, main, top } from "#/lib/render";
-import type { Contribution, GitHubResponse, Stats, Year } from "#/lib/types";
+import type {
+	Contribution,
+	ContributionIntensity,
+	GitHubActivitySnapshot,
+	GitHubResponse,
+	Stats,
+	Year,
+} from "#/lib/types";
 import { USERNAME } from "#/lib/variables";
 import { formatWeatherCondition, type WeatherSnapshot } from "#/lib/weather";
 
@@ -15,6 +22,8 @@ const WEATHERKIT_ENDPOINT =
 const WEATHERKIT_LEGAL_ATTRIBUTION_URL =
 	"https://weatherkit.apple.com/legal-attribution.html";
 const WEATHER_CACHE_KEY = "weather:london";
+const GITHUB_STATS_CACHE_KEY = "stats";
+const GITHUB_ACTIVITY_CACHE_KEY = "github:activity";
 
 const SVG_HEADERS = {
 	"content-type": "image/svg+xml",
@@ -44,7 +53,13 @@ interface AppleCredentials {
 	teamId: string;
 }
 
-function levelToInt(level: Contribution["contributionLevel"]): number {
+type GitHubResponsePayload = Partial<GitHubResponse> & {
+	errors?: { message?: string }[];
+};
+
+function levelToInt(
+	level: Contribution["contributionLevel"]
+): ContributionIntensity {
 	switch (level) {
 		case "NONE":
 			return 0;
@@ -59,6 +74,26 @@ function levelToInt(level: Contribution["contributionLevel"]): number {
 		default:
 			return 0;
 	}
+}
+
+function getUtcWeekday(date: string): number {
+	const [year, month, day] = date.split("-").map(Number);
+	if (!(year && month && day)) {
+		throw new Error(`Invalid GitHub contribution date: ${date}`);
+	}
+
+	return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+}
+
+function getGitHubActivityRange(now = new Date()): {
+	from: Date;
+	to: Date;
+} {
+	const to = new Date(now);
+	const from = new Date(to);
+	from.setUTCFullYear(from.getUTCFullYear() - 1);
+
+	return { from, to };
 }
 
 async function fetchContributions(
@@ -103,8 +138,39 @@ async function fetchContributions(
 		body: JSON.stringify(body),
 	});
 
-	const json = (await response.json()) as GitHubResponse;
-	const calendar = json.data.user.contributionsCollection.contributionCalendar;
+	const responseBody = await response.text();
+	let json: GitHubResponsePayload;
+	try {
+		json = JSON.parse(responseBody) as GitHubResponsePayload;
+	} catch {
+		throw new Error(
+			`GitHub returned invalid JSON: ${responseBody.slice(0, 200)}`
+		);
+	}
+
+	if (!response.ok) {
+		const message =
+			json.errors
+				?.map((error) => error.message)
+				.filter(Boolean)
+				.join("; ") || responseBody.slice(0, 200);
+		throw new Error(`GitHub returned ${response.status}: ${message}`);
+	}
+
+	if (json.errors?.length) {
+		const message = json.errors
+			.map((error) => error.message)
+			.filter(Boolean)
+			.join("; ");
+		throw new Error(`GitHub GraphQL error: ${message}`);
+	}
+
+	const calendar =
+		json.data?.user?.contributionsCollection?.contributionCalendar;
+	if (!calendar) {
+		throw new Error("GitHub response did not include a contribution calendar.");
+	}
+
 	return { weeks: calendar.weeks, contributions: calendar.totalContributions };
 }
 
@@ -138,6 +204,38 @@ async function getAllContributions(
 	}
 
 	return [years.reverse(), totalContributions];
+}
+
+async function fetchGitHubActivity(
+	token: string
+): Promise<GitHubActivitySnapshot> {
+	const { from, to } = getGitHubActivityRange();
+	const data = await fetchContributions(token, from, to);
+	const weeks = data.weeks.map((week) => {
+		const firstDay = week.contributionDays[0]?.date;
+		if (!firstDay) {
+			throw new Error("GitHub response included an empty contribution week.");
+		}
+
+		return {
+			firstDay,
+			days: week.contributionDays.map((day) => ({
+				count: day.contributionCount,
+				date: day.date,
+				level: levelToInt(day.contributionLevel),
+				weekday: getUtcWeekday(day.date),
+			})),
+		};
+	});
+
+	return {
+		fetchedAt: new Date().toISOString(),
+		from: from.toISOString(),
+		to: to.toISOString(),
+		totalContributions: data.contributions,
+		username: USERNAME,
+		weeks,
+	};
 }
 
 function asRecord(value: unknown, name: string): JsonRecord {
@@ -403,9 +501,13 @@ async function refreshGitHubStats(env: Env): Promise<void> {
 		env.GITHUB_TOKEN,
 		START_DATE
 	);
-
 	const stats: Stats = { years, contributions };
-	await env.STATS.put("stats", JSON.stringify(stats));
+	const activity = await fetchGitHubActivity(env.GITHUB_TOKEN);
+
+	await Promise.all([
+		env.STATS.put(GITHUB_STATS_CACHE_KEY, JSON.stringify(stats)),
+		env.STATS.put(GITHUB_ACTIVITY_CACHE_KEY, JSON.stringify(activity)),
+	]);
 }
 
 async function getLocalWeatherSnapshot(
@@ -461,6 +563,38 @@ async function handleWeather(request: Request, env: Env): Promise<Response> {
 	}
 }
 
+function githubErrorResponse(error: unknown, request: Request): Response {
+	const message =
+		isLocalRequest(request) && error instanceof Error
+			? error.message
+			: "Unable to fetch GitHub activity.";
+
+	return new Response(JSON.stringify({ error: message }), {
+		headers: UNAVAILABLE_JSON_HEADERS,
+		status: 503,
+	});
+}
+
+async function handleGitHubActivity(
+	request: Request,
+	env: Env
+): Promise<Response> {
+	const raw = await env.STATS.get(GITHUB_ACTIVITY_CACHE_KEY);
+	if (raw) {
+		return new Response(raw, { headers: JSON_HEADERS });
+	}
+
+	try {
+		const activity = await fetchGitHubActivity(env.GITHUB_TOKEN);
+		const body = JSON.stringify(activity);
+		await env.STATS.put(GITHUB_ACTIVITY_CACHE_KEY, body);
+
+		return new Response(body, { headers: JSON_HEADERS });
+	} catch (error) {
+		return githubErrorResponse(error, request);
+	}
+}
+
 function noData(theme: "light" | "dark"): Response {
 	const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="420" height="60" fill="none">
 		<rect width="420" height="60" rx="6" fill="${theme === "dark" ? "#161b22" : "#ebedf0"}"/>
@@ -479,7 +613,7 @@ async function handleSvg(request: Request, env: Env): Promise<Response> {
 
 	let data: Stats | null = null;
 	try {
-		const raw = await env.STATS.get("stats");
+		const raw = await env.STATS.get(GITHUB_STATS_CACHE_KEY);
 		data = raw ? (JSON.parse(raw) as Stats) : null;
 	} catch {
 		return noData(theme);
@@ -554,6 +688,10 @@ export default {
 
 		if (url.pathname === "/api/weather") {
 			return await handleWeather(request, env);
+		}
+
+		if (url.pathname === "/api/github") {
+			return await handleGitHubActivity(request, env);
 		}
 
 		const assetResponse = await env.ASSETS.fetch(request);

@@ -10,7 +10,7 @@
     "directory": "./dist/client",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page",
-    "run_worker_first": ["/readme", "/api/weather"]
+    "run_worker_first": ["/readme", "/api/weather", "/api/github"]
   },
   "preview_urls": false,
   "workers_dev": false,

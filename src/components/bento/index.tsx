@@ -27,6 +27,28 @@ export function BentoBlock({
 	);
 }
 
+export function CustomBentoBlock({
+	className,
+	style,
+	children,
+}: {
+	children: React.ReactNode;
+	className?: string;
+	style?: React.CSSProperties;
+}) {
+	return (
+		<div
+			className={clsx(
+				"relative isolate flex flex-col rounded-3xl bg-neutral-100 p-4 dark:bg-neutral-900",
+				className
+			)}
+			style={style}
+		>
+			{children}
+		</div>
+	);
+}
+
 export function EmptyBentoBlock({
 	size,
 }: {
@@ -35,7 +57,7 @@ export function EmptyBentoBlock({
 	return (
 		<div
 			className={clsx(
-				"relative isolate flex aspect-square flex-col rounded-3xl",
+				"relative isolate flex aspect-square flex-col rounded-3xl bg-transparent dark:bg-transparent",
 				size === "small" && "col-span-1 row-span-1", // 0.5x0.5
 				size === "medium" && "col-span-2 row-span-2", // 1x1
 				size === "large" && "col-span-4 row-span-4" // 2x2
@@ -102,6 +124,8 @@ export function BentoGrid({
 	className?: string;
 }) {
 	return (
-		<div className={clsx("grid grid-cols-6 gap-4", className)}>{children}</div>
+		<div className={clsx("@container grid grid-cols-6 gap-4", className)}>
+			{children}
+		</div>
 	);
 }

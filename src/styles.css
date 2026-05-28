@@ -87,9 +87,36 @@ html.dark::-webkit-scrollbar-thumb {
 	opacity: 0;
 }
 
+.github-activity-track {
+	--github-activity-end: min(0px, calc(100cqw - 100%));
+	--github-seam-gap: 2rem;
+	--github-seam-gap-offset: 1rem;
+	--github-activity-shift: calc(-50% - var(--github-seam-gap-offset));
+	animation: github-activity-pan 36s linear 1s infinite both;
+	gap: var(--github-seam-gap);
+	width: max-content;
+	will-change: transform;
+}
+
+@keyframes github-activity-pan {
+	from {
+		transform: translateX(0);
+	}
+
+	to {
+		transform: translateX(var(--github-activity-shift));
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.map-generation,
 	.map-generation-fallback {
 		transition: none;
+	}
+
+	.github-activity-track {
+		animation: none;
+		transform: translateX(var(--github-activity-end));
+		will-change: auto;
 	}
 }
