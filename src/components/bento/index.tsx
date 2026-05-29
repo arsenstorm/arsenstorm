@@ -51,8 +51,10 @@ export function CustomBentoBlock({
 
 export function EmptyBentoBlock({
 	size,
+	className,
 }: {
 	size: "small" | "medium" | "large";
+	className?: string;
 }) {
 	return (
 		<div
@@ -60,7 +62,8 @@ export function EmptyBentoBlock({
 				"relative isolate flex aspect-square flex-col rounded-3xl bg-transparent dark:bg-transparent",
 				size === "small" && "col-span-1 row-span-1", // 0.5x0.5
 				size === "medium" && "col-span-2 row-span-2", // 1x1
-				size === "large" && "col-span-4 row-span-4" // 2x2
+				size === "large" && "col-span-4 row-span-4", // 2x2
+				className
 			)}
 		/>
 	);
@@ -85,16 +88,21 @@ export function BentoBlockSkeleton({
 
 export function BentoAppBlock({
 	app,
+	className,
 }: {
 	app: {
 		name: string;
 		href: string;
 		image: string;
 	};
+	className?: string;
 }) {
 	return (
 		<BentoBlock
-			className="overflow-clip border border-neutral-200 dark:border-neutral-800"
+			className={clsx(
+				"overflow-clip border border-neutral-200 dark:border-neutral-800",
+				className
+			)}
 			size="small"
 		>
 			<a
@@ -124,7 +132,12 @@ export function BentoGrid({
 	className?: string;
 }) {
 	return (
-		<div className={clsx("@container grid grid-cols-6 gap-4", className)}>
+		<div
+			className={clsx(
+				"@container grid grid-cols-4 gap-4 md:grid-cols-6",
+				className
+			)}
+		>
 			{children}
 		</div>
 	);

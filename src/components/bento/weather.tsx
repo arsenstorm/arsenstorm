@@ -1,11 +1,12 @@
 import clsx from "clsx";
 import { AnimatePresence } from "motion/react";
-import { useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 import { roundTemperature, type WeatherSnapshot } from "#/lib/weather";
 import { BentoBlock, BentoBlockSkeleton } from ".";
 
 const WEATHER_ENDPOINT = "/api/weather";
 const MINUTE_MS = 60_000;
+const DAY_MS = 24 * 60 * MINUTE_MS;
 const FIRST_LIGHT_WINDOW_MS = 90 * MINUTE_MS;
 const GOLDEN_HOUR_WINDOW_MS = 75 * MINUTE_MS;
 const LAST_LIGHT_WINDOW_MS = 90 * MINUTE_MS;
@@ -20,7 +21,7 @@ type WeatherState =
 
 interface WeatherVisual {
 	background?: string;
-	borderClassName: string;
+	darkBackground?: string;
 	primaryClassName: string;
 	secondaryClassName: string;
 	surfaceClassName: string;
@@ -32,18 +33,20 @@ interface SkyKeyframe {
 	top: string;
 }
 
+type WeatherStyle = CSSProperties & {
+	"--weather-background"?: string;
+	"--weather-background-dark"?: string;
+};
+
 const BRIGHT_TEXT_CLASSES = {
-	borderClassName: "border-sky-100 dark:border-sky-900/50",
-	primaryClassName: "text-slate-950",
-	secondaryClassName: "text-slate-700",
+	primaryClassName: "text-slate-950 dark:text-white",
+	secondaryClassName: "text-slate-700 dark:text-white/75",
 } as const;
 const DARK_TEXT_CLASSES = {
-	borderClassName: "border-indigo-950/60",
 	primaryClassName: "text-white",
 	secondaryClassName: "text-white/80",
 } as const;
 const FALLBACK_VISUAL: WeatherVisual = {
-	borderClassName: "border-neutral-200 dark:border-neutral-800",
 	primaryClassName: "text-neutral-950 dark:text-neutral-50",
 	secondaryClassName: "text-neutral-500 dark:text-neutral-400",
 	surfaceClassName: "bg-neutral-50 dark:bg-neutral-900",
@@ -89,6 +92,18 @@ function getProgress(start: number, end: number, value: number): number {
 	return clamp((value - start) / (end - start), 0, 1);
 }
 
+function alignSunTimesToCurrentDay(
+	sunrise: number,
+	sunset: number,
+	now: number
+): { sunrise: number; sunset: number } {
+	const daylightMidpoint = sunrise + (sunset - sunrise) / 2;
+	const dayOffset = Math.round((now - daylightMidpoint) / DAY_MS);
+	const offset = dayOffset * DAY_MS;
+
+	return { sunrise: sunrise + offset, sunset: sunset + offset };
+}
+
 function getInterpolatedGradient(
 	keyframes: SkyKeyframe[],
 	now: number
@@ -131,48 +146,95 @@ function getWeatherVisual(weather: WeatherSnapshot | null, now: number) {
 		return FALLBACK_VISUAL;
 	}
 
-	const preDawnStart = sunrise - FIRST_LIGHT_WINDOW_MS;
-	const sunriseGlowEnd = sunrise + GOLDEN_HOUR_WINDOW_MS;
-	const sunsetGlowStart = sunset - GOLDEN_HOUR_WINDOW_MS;
-	const twilightEnd = sunset + LAST_LIGHT_WINDOW_MS;
+	const alignedSun = alignSunTimesToCurrentDay(sunrise, sunset, now);
+	const preDawnStart = alignedSun.sunrise - FIRST_LIGHT_WINDOW_MS;
+	const sunriseGlowEnd = alignedSun.sunrise + GOLDEN_HOUR_WINDOW_MS;
+	const sunsetGlowStart = alignedSun.sunset - GOLDEN_HOUR_WINDOW_MS;
+	const twilightEnd = alignedSun.sunset + LAST_LIGHT_WINDOW_MS;
 	const skyKeyframes = [
 		{ at: preDawnStart, top: "#070b18", bottom: "#18244a" },
-		{ at: sunrise - 30 * MINUTE_MS, top: "#080d1f", bottom: "#35306b" },
-		{ at: sunrise, top: "#344182", bottom: "#f59e8b" },
 		{
-			at: sunrise + SUNRISE_ORANGE_WINDOW_MS,
+			at: alignedSun.sunrise - 30 * MINUTE_MS,
+			top: "#080d1f",
+			bottom: "#35306b",
+		},
+		{ at: alignedSun.sunrise, top: "#344182", bottom: "#f59e8b" },
+		{
+			at: alignedSun.sunrise + SUNRISE_ORANGE_WINDOW_MS,
 			top: "#9ddcf9",
 			bottom: "#ffd08a",
 		},
 		{ at: sunriseGlowEnd, top: "#dff5ff", bottom: "#f8fbff" },
 		{ at: sunsetGlowStart, top: "#dff5ff", bottom: "#f8fbff" },
 		{
-			at: sunset - SUNSET_ORANGE_WINDOW_MS,
+			at: alignedSun.sunset - SUNSET_ORANGE_WINDOW_MS,
 			top: "#8fcdf6",
 			bottom: "#ffd08a",
 		},
-		{ at: sunset, top: "#f59e52", bottom: "#9f3a6d" },
-		{ at: sunset + 45 * MINUTE_MS, top: "#24184f", bottom: "#9b496c" },
+		{ at: alignedSun.sunset, top: "#f59e52", bottom: "#9f3a6d" },
+		{
+			at: alignedSun.sunset + 45 * MINUTE_MS,
+			top: "#24184f",
+			bottom: "#9b496c",
+		},
 		{ at: twilightEnd, top: "#070b18", bottom: "#18244a" },
 	] satisfies SkyKeyframe[];
+	const darkSkyKeyframes = [
+		{ at: preDawnStart, top: "#050712", bottom: "#111827" },
+		{
+			at: alignedSun.sunrise - 30 * MINUTE_MS,
+			top: "#070a18",
+			bottom: "#211f45",
+		},
+		{ at: alignedSun.sunrise, top: "#172554", bottom: "#5b2b4f" },
+		{
+			at: alignedSun.sunrise + SUNRISE_ORANGE_WINDOW_MS,
+			top: "#123047",
+			bottom: "#5a3c25",
+		},
+		{ at: sunriseGlowEnd, top: "#122236", bottom: "#203342" },
+		{ at: sunsetGlowStart, top: "#122236", bottom: "#203342" },
+		{
+			at: alignedSun.sunset - SUNSET_ORANGE_WINDOW_MS,
+			top: "#143149",
+			bottom: "#63442a",
+		},
+		{ at: alignedSun.sunset, top: "#5f3527", bottom: "#4b2443" },
+		{
+			at: alignedSun.sunset + 45 * MINUTE_MS,
+			top: "#181338",
+			bottom: "#4b2540",
+		},
+		{ at: twilightEnd, top: "#050712", bottom: "#111827" },
+	] satisfies SkyKeyframe[];
 	const isBright =
-		now >= sunrise + SUNRISE_ORANGE_WINDOW_MS &&
-		now < sunset - SUNSET_BRIGHT_TEXT_OFFSET_MS;
+		now >= alignedSun.sunrise + SUNRISE_ORANGE_WINDOW_MS &&
+		now < alignedSun.sunset - SUNSET_BRIGHT_TEXT_OFFSET_MS;
 
 	return {
 		background: getInterpolatedGradient(skyKeyframes, now),
+		darkBackground: getInterpolatedGradient(darkSkyKeyframes, now),
 		surfaceClassName: "",
 		...(isBright ? BRIGHT_TEXT_CLASSES : DARK_TEXT_CLASSES),
 	};
 }
 
-export function BentoWeather() {
+export function BentoWeather({ className }: { className?: string }) {
 	const [state, setState] = useState<WeatherState>({
 		status: "loading",
 		weather: null,
 	});
 	const [now, setNow] = useState(() => Date.now());
 	const visual = getWeatherVisual(state.weather, now);
+	const weatherStyle: WeatherStyle | undefined =
+		visual.background || visual.darkBackground
+			? {
+					"--weather-background":
+						visual.background ?? visual.darkBackground ?? "",
+					"--weather-background-dark":
+						visual.darkBackground ?? visual.background ?? "",
+				}
+			: undefined;
 
 	useEffect(() => {
 		const controller = new AbortController();
@@ -220,14 +282,12 @@ export function BentoWeather() {
 			{state.status === "ready" ? (
 				<BentoBlock
 					className={clsx(
-						"overflow-hidden border",
-						visual.borderClassName,
+						"weather-card overflow-hidden",
+						className,
 						visual.surfaceClassName
 					)}
 					size="medium"
-					style={
-						visual.background ? { background: visual.background } : undefined
-					}
+					style={weatherStyle}
 				>
 					<div className="flex h-full flex-col justify-between">
 						<p

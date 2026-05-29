@@ -4,14 +4,13 @@ import type {
 	ContributionIntensity,
 	GitHubActivityDay,
 	GitHubActivitySnapshot,
-	GitHubActivityWeek,
 } from "#/lib/types";
 import { CustomBentoBlock } from ".";
 
 const GITHUB_ACTIVITY_ENDPOINT = "/api/github";
-const DAYS_IN_WEEK = [0, 1, 2, 3, 4, 5, 6] as const;
+const ACTIVITY_ROW_COUNT = 6;
 const ACTIVITY_TRACK_COPIES = ["primary", "duplicate"] as const;
-const SKELETON_WEEK_COUNT = 53;
+const SKELETON_COLUMN_COUNT = 74;
 const DATE_FORMATTER = new Intl.DateTimeFormat("en", {
 	day: "numeric",
 	month: "short",
@@ -33,6 +32,11 @@ type GitHubActivityState =
 	| { activity: GitHubActivitySnapshot; status: "ready" }
 	| { activity: null; status: "unavailable" };
 
+interface GitHubActivityColumn {
+	days: (GitHubActivityDay | null)[];
+	key: string;
+}
+
 function formatContributionCount(count: number): string {
 	return NUMBER_FORMATTER.format(count);
 }
@@ -41,13 +45,28 @@ function formatContributionDate(date: string): string {
 	return DATE_FORMATTER.format(new Date(`${date}T00:00:00.000Z`));
 }
 
-function getWeekDays(week: GitHubActivityWeek): (GitHubActivityDay | null)[] {
-	const daysByWeekday = new Map<number, GitHubActivityDay>();
-	for (const day of week.days) {
-		daysByWeekday.set(day.weekday, day);
+function getActivityColumns(
+	activity: GitHubActivitySnapshot
+): GitHubActivityColumn[] {
+	const days = activity.weeks
+		.flatMap((week) => week.days)
+		.sort((first, second) => first.date.localeCompare(second.date));
+	const columns: GitHubActivityColumn[] = [];
+
+	for (let index = 0; index < days.length; index += ACTIVITY_ROW_COUNT) {
+		const columnDays = days.slice(index, index + ACTIVITY_ROW_COUNT);
+		const padding = Array.from(
+			{ length: ACTIVITY_ROW_COUNT - columnDays.length },
+			() => null
+		);
+
+		columns.push({
+			days: [...columnDays, ...padding],
+			key: columnDays[0]?.date ?? `empty-${index}`,
+		});
 	}
 
-	return DAYS_IN_WEEK.map((weekday) => daysByWeekday.get(weekday) ?? null);
+	return columns;
 }
 
 function ContributionDot({ day }: { day: GitHubActivityDay | null }) {
@@ -72,22 +91,22 @@ function ContributionDot({ day }: { day: GitHubActivityDay | null }) {
 	);
 }
 
-function ContributionWeek({
+function ContributionColumn({
+	column,
 	isDuplicate = false,
-	week,
 }: {
+	column: GitHubActivityColumn;
 	isDuplicate?: boolean;
-	week: GitHubActivityWeek;
 }) {
 	return (
 		<div
 			aria-hidden={isDuplicate || undefined}
-			className="grid grid-rows-7 gap-1"
+			className="grid grid-rows-5 gap-1"
 		>
-			{getWeekDays(week).map((day, index) => (
+			{column.days.map((day, index) => (
 				<ContributionDot
 					day={day}
-					key={day?.date ?? `${week.firstDay}-${index}`}
+					key={day?.date ?? `${column.key}-${index}`}
 				/>
 			))}
 		</div>
@@ -99,10 +118,12 @@ function GitHubActivityGraph({
 }: {
 	activity: GitHubActivitySnapshot;
 }) {
+	const columns = getActivityColumns(activity);
+
 	return (
 		<div
 			aria-label={`${formatContributionCount(activity.totalContributions)} contributions in the last year`}
-			className="[--github-dot-size:calc((100cqh-1.5rem)/7)]"
+			className="[--github-dot-size:calc((100cqh-4rem)/5.5)]"
 			role="img"
 		>
 			<div className="overflow-hidden">
@@ -113,11 +134,11 @@ function GitHubActivityGraph({
 							className="grid shrink-0 auto-cols-(--github-dot-size) grid-flow-col gap-1"
 							key={copy}
 						>
-							{activity.weeks.map((week) => (
-								<ContributionWeek
+							{columns.map((column) => (
+								<ContributionColumn
+									column={column}
 									isDuplicate={copy === "duplicate"}
-									key={`${copy}-${week.firstDay}`}
-									week={week}
+									key={`${copy}-${column.key}`}
 								/>
 							))}
 						</div>
@@ -129,24 +150,25 @@ function GitHubActivityGraph({
 }
 
 function GitHubActivitySkeleton() {
-	const weeks = Array.from(
-		{ length: SKELETON_WEEK_COUNT },
+	const columns = Array.from(
+		{ length: SKELETON_COLUMN_COUNT },
 		(_, index) => index
 	);
+	const rows = Array.from({ length: ACTIVITY_ROW_COUNT }, (_, index) => index);
 
 	return (
 		<div
 			aria-hidden="true"
-			className="animate-pulse [--github-dot-size:calc((100cqh-1.5rem)/7)]"
+			className="animate-pulse [--github-dot-size:calc((100cqh-4rem)/5.5)]"
 		>
 			<div className="overflow-hidden">
 				<div className="grid shrink-0 auto-cols-(--github-dot-size) grid-flow-col gap-1">
-					{weeks.map((week) => (
-						<div className="grid grid-rows-7 gap-1" key={week}>
-							{DAYS_IN_WEEK.map((day) => (
+					{columns.map((column) => (
+						<div className="grid grid-rows-5 gap-1" key={column}>
+							{rows.map((row) => (
 								<span
 									className="h-(--github-dot-size) w-(--github-dot-size) rounded-[2px] bg-neutral-200 dark:bg-neutral-800"
-									key={`${week}-${day}`}
+									key={`${column}-${row}`}
 								/>
 							))}
 						</div>
@@ -157,7 +179,7 @@ function GitHubActivitySkeleton() {
 	);
 }
 
-export function BentoGithub() {
+export function BentoGithub({ className }: { className?: string }) {
 	const [state, setState] = useState<GitHubActivityState>({
 		activity: null,
 		status: "loading",
@@ -201,7 +223,26 @@ export function BentoGithub() {
 	}
 
 	return (
-		<CustomBentoBlock className="@container-size col-span-6 row-span-2 h-[calc((100cqw-5rem)/3+1rem)] justify-center overflow-hidden">
+		<CustomBentoBlock
+			className={clsx(
+				"@container-size col-span-full row-span-2 h-[calc((100cqw-5rem)/3+1rem)] justify-between overflow-hidden",
+				className
+			)}
+		>
+			<div className="flex-1 flex-col items-center justify-center overflow-hidden">
+				<p className="-mt-2 flex h-full items-center gap-1 text-neutral-500 text-sm dark:text-neutral-400">
+					<span>GitHub Activity</span>
+					<span className="text-neutral-500 dark:text-neutral-400">—</span>
+					<a
+						className="text-neutral-950 underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 dark:text-neutral-50 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50"
+						href="https://github.com/arsenstorm"
+						rel="noopener noreferrer"
+						target="_blank"
+					>
+						arsenstorm
+					</a>
+				</p>
+			</div>
 			{activityContent}
 		</CustomBentoBlock>
 	);

@@ -15,8 +15,10 @@ export type Env = CloudflareBindings;
 
 const MAX_YEARS = 3;
 const START_DATE = new Date("2012-09-07T04:00:00.000Z");
+const MINUTE_MS = 60_000;
 const WEATHER_REFRESH_CRON = "0 * * * *";
 const GITHUB_STATS_REFRESH_CRON = "0 */6 * * *";
+const WEATHER_CACHE_MAX_AGE_MS = 90 * MINUTE_MS;
 const WEATHERKIT_ENDPOINT =
 	"https://weatherkit.apple.com/api/v1/weather/en-GB/51.5074/-0.1278";
 const WEATHERKIT_LEGAL_ATTRIBUTION_URL =
@@ -496,6 +498,19 @@ async function refreshWeather(env: Env): Promise<void> {
 	await env.STATS.put(WEATHER_CACHE_KEY, JSON.stringify(weather));
 }
 
+function isFreshWeatherSnapshot(raw: string, now = Date.now()): boolean {
+	try {
+		const weather = JSON.parse(raw) as Partial<WeatherSnapshot>;
+		const fetchedAt = new Date(weather.fetchedAt ?? "").getTime();
+
+		return (
+			Number.isFinite(fetchedAt) && now - fetchedAt < WEATHER_CACHE_MAX_AGE_MS
+		);
+	} catch {
+		return false;
+	}
+}
+
 async function refreshGitHubStats(env: Env): Promise<void> {
 	const [years, contributions] = await getAllContributions(
 		env.GITHUB_TOKEN,
@@ -541,7 +556,7 @@ function weatherErrorResponse(error: unknown, request: Request): Response {
 
 async function handleWeather(request: Request, env: Env): Promise<Response> {
 	const raw = await env.STATS.get(WEATHER_CACHE_KEY);
-	if (raw) {
+	if (raw && isFreshWeatherSnapshot(raw)) {
 		return new Response(raw, { headers: JSON_HEADERS });
 	}
 
@@ -552,6 +567,10 @@ async function handleWeather(request: Request, env: Env): Promise<Response> {
 
 		return new Response(body, { headers: JSON_HEADERS });
 	} catch (error) {
+		if (raw) {
+			return new Response(raw, { headers: JSON_HEADERS });
+		}
+
 		if (isLocalRequest(request)) {
 			const localWeather = await getLocalWeatherSnapshot(request);
 			if (localWeather) {

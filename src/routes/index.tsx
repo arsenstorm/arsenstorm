@@ -78,19 +78,19 @@ function Home() {
 					</h2>
 				</div>
 				<BentoGrid className="relative -mx-4">
-					<BentoMap />
-					<EmptyBentoBlock size="small" />
-					<EmptyBentoBlock size="small" />
+					<BentoMap className="order-1" />
+					<EmptyBentoBlock className="order-2 hidden md:block" size="small" />
+					<EmptyBentoBlock className="order-2 hidden md:block" size="small" />
 					<BentoAppBlock
 						app={{
 							name: "ID Reader",
 							href: "https://apps.apple.com/us/app/id-reader/id6757679372",
-
 							image: "/apps/id-reader-icon.png",
 						}}
+						className="order-last md:order-2"
 					/>
-					<BentoWeather />
-					<BentoGithub />
+					<BentoWeather className="order-2" />
+					<BentoGithub className="order-3" />
 				</BentoGrid>
 			</section>
 

@@ -92,10 +92,18 @@ html.dark::-webkit-scrollbar-thumb {
 	--github-seam-gap: 2rem;
 	--github-seam-gap-offset: 1rem;
 	--github-activity-shift: calc(-50% - var(--github-seam-gap-offset));
-	animation: github-activity-pan 36s linear 1s infinite both;
+	animation: github-activity-pan 96s linear 1s infinite both;
 	gap: var(--github-seam-gap);
 	width: max-content;
 	will-change: transform;
+}
+
+.weather-card {
+	background: var(--weather-background);
+}
+
+html.dark .weather-card {
+	background: var(--weather-background-dark, var(--weather-background));
 }
 
 @keyframes github-activity-pan {

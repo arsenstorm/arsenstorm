@@ -36,7 +36,7 @@ function getDocumentTheme(): keyof typeof MAP_SNAPSHOT_SRC | null {
 	return theme === "dark" || theme === "light" ? theme : null;
 }
 
-export function BentoMap() {
+export function BentoMap({ className }: { className?: string }) {
 	const theme = useTheme();
 	const snapshotSrc = MAP_SNAPSHOT_SRC[theme];
 	const images = useMemo(() => [snapshotSrc], [snapshotSrc]);
@@ -101,7 +101,14 @@ export function BentoMap() {
 	}, [snapshotSrc, clearMarkerTimer, theme]);
 
 	return (
-		<BentoBlock size="large" style={MAP_SURFACE_STYLE}>
+		<BentoBlock
+			className={clsx(
+				"col-span-2! row-span-2! md:col-span-4! md:row-span-4!",
+				className
+			)}
+			size="large"
+			style={MAP_SURFACE_STYLE}
+		>
 			<figure
 				aria-label="Apple Maps snapshot showing a location pin in London"
 				className={clsx(
@@ -139,7 +146,7 @@ export function BentoMap() {
 							transition={markerTransition}
 						>
 							<div className="absolute top-[53%] left-[60%] size-5 -translate-x-1/2 -translate-y-1/2 animate-ping rounded-full bg-blue-500" />
-							<div className="absolute top-[53%] left-[60%] size-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-neutral-50 bg-blue-500" />
+							<div className="absolute top-[53%] left-[60%] size-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white bg-blue-500" />
 						</motion.div>
 					) : null}
 				</AnimatePresence>
