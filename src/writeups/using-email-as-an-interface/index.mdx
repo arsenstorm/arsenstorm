@@ -1,0 +1,686 @@
+export const metadata = {
+  title: "Using Email as an Interface",
+  description: "What if you built a SaaS product without a website?",
+  publishedAt: "2026-05-31",
+  tags: ["Cloudflare", "Emails"],
+};
+
+Almost every SaaS product starts with a website. But what if it didn't need one?
+
+I’ve built a service, `img-to-pdf`, where users send an email with the images they want merged into a single PDF, without an account page, upload screen, or web app. **The email address is the interface.**
+
+## Inspiration
+
+I originally had this idea when I built a small app for my mother to combine images into a single PDF, yet she would still email me the images to combine.
+
+And that got me curious: what if the email could reply with exactly what she wanted?
+
+## How it works
+
+There are many ways you can achieve this, but the simplest way is to use [Cloudflare’s Email Routing](https://www.cloudflare.com/products/email-routing/) to forward incoming email to a Worker.
+
+From there, it functions roughly like this:
+
+1. Receiving the email.
+2. Identifying the sender and mapping them to a user.
+3. Checking whether they're allowed to perform the merge.
+4. Parsing the attachments and extracting supported images.
+5. Converting the images into a single PDF.
+6. Then, reply to the original email with the generated PDF attached.
+
+In the following sections, I'll go over the most important and interesting parts of the code for this product, including MIME parsing, limitations, abuse prevention, and more.
+
+## Handling incoming emails
+
+When using Cloudflare Workers, you'll first define an `email` handler:
+
+```ts
+export default {
+  async email(message: ForwardableEmailMessage) {
+    console.log(message);
+  },
+};
+```
+
+Then, in the Cloudflare dashboard, you'll need to configure Email Routing to forward incoming emails to your Worker. You can find that [here](https://dash.cloudflare.com/email/routing/workers).
+
+When developing locally, you'll need to run the worker and send emails via `curl` or a similar tool.
+
+Here's an example that sends a small `.png` file using `curl`:
+
+```sh
+curl --request POST 'http://localhost:8787/cdn-cgi/handler/email' \
+  --url-query 'from=sender@example.com' \
+  --url-query 'to=recipient@example.com' \
+  --header 'Content-Type: message/rfc822' \
+  --data-binary @- <<'EOF'
+Received: from smtp.example.com (127.0.0.1)
+  by example.com (unknown) id 2azbftGS0Cwv
+  for <recipient@example.com>; Fri, 29 May 2026 18:00:00 +0000
+From: "John Doe" <sender@example.com>
+Reply-To: sender@example.com
+To: recipient@example.com
+Subject: Test with image attachment
+Date: Fri, 29 May 2026 18:00:00 +0000
+Message-ID: <1234567890@example.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="boundary42"
+
+--boundary42
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Please convert the attached image into a PDF.
+
+--boundary42
+Content-Type: image/png; name="example.png"
+Content-Disposition: attachment; filename="example.png"
+Content-Transfer-Encoding: base64
+
+iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=
+--boundary42--
+EOF
+```
+
+## Sender identification
+
+In a product with an email interface, the sender's email address is the account identifier (or one of).
+
+This product, `img-to-pdf`, has one purpose:
+
+**Receive images, confirm that the sender is allowed to perform the merge, and combine all images into a PDF before replying.**
+
+This makes using a sender's address a reasonable account key — provided that higher-risk parts such as payments and spoofing are handled effectively.
+
+<Warning>
+  Emails can be spoofed. If you're thinking about running an email interface,
+  you should consider the guidance in **[Preventing abuse](#preventing-abuse)**.
+</Warning>
+
+When handling incoming emails, you'll need to parse the MIME body to extract information about the email, such as the headers, body, and attachments.
+
+I used [`postal-mime`](https://github.com/postalsys/postal-mime), which is designed for serverless environments like Cloudflare Workers.
+
+However, in `img-to-pdf`, the system first extracts and validates the `From` header, before parsing the full MIME body — this is done as part of the broader [Preventing abuse](#preventing-abuse) process.
+
+And, when using Cloudflare Email Routing, there are a few different email addresses you'll see on an incoming message:
+
+1. The envelope sender, exposed by Cloudflare as `message.from`.
+2. The `From` header, which is the sender address shown in most email clients.
+3. The `Reply-To` header, which tells clients where replies should be sent.
+
+`img-to-pdf` uses the address in the `From` header after normalising it to look up or create a corresponding user.
+
+After that, the system needs to check whether the sender is allowed to perform an **image-to-PDF merge**, which goes one of two ways:
+
+1. The sender isn't allowed to perform the merge, to which we'll reply with a message saying so, which'll include a payment link; or,
+2. The sender is allowed to perform the merge, to which we'll continue to the next step.
+
+<Note>
+  For `img-to-pdf`, I opted to simply use a limited free tier alongside an unlimited premium tier — whether a sender can perform the merge is simply a matter of whether they've exceeded the limits of the tier they're on.
+
+  More details are in the [Billing over email](#billing-over-email) section.
+</Note>
+
+## Processing images into a PDF
+
+The core of the product is a simple process that works like this:
+
+1. Decoding the email attachments.
+2. Validating that the attachments are actually supported images.
+3. Normalising the images into a safe format for the PDF generator.
+4. Generate one PDF page per **successfully processed image**.
+5. Sending the PDF back to the sender.
+
+In the previous step, we already parsed the MIME body; now we’ll need to decode and validate the attachments.
+
+<Caution>
+  An attachment can claim to be a JPEG, use a `.jpg` filename, and still contain something else entirely. Every attachment **must** be treated as untrusted.
+</Caution>
+
+### Decoding attachments
+
+After parsing the MIME body, each attachment needs to be extracted into byte arrays for inspection before we can process them.
+
+Essentially, we need to check:
+
+- Whether the attachment has content
+- How large the attachment is
+- Whether the attachment is _likely_ a supported image format
+- Whether the total size of the supported image attachments is within the service’s configured limits.
+
+We can't use the filename or the declared `Content-Type` to determine the file type, as they're not reliable and should only be used as hints for user-facing errors. For example, this is a bad way of validating an attachment:
+
+```ts
+if (attachment.mimeType === "image/jpeg") {
+  // process image as JPEG
+}
+```
+
+Instead, a better approach is to inspect the actual content of the file:
+
+```ts
+const content = toUint8Array(attachment.content);
+
+const inspected = inspectImageBytes(content);
+
+if (!inspected) {
+  continue;
+}
+
+// Here, mimeType, width, and height come from the file bytes
+imageAttachments.push({
+  content,
+  filename: attachment.filename ?? null,
+  height: inspected.height,
+  mimeType: inspected.mimeType,
+  width: inspected.width,
+});
+```
+
+This won't guarantee that the file is safe, but it gives the system a much better starting point than blindly trusting a client.
+
+For `img-to-pdf`, any unsupported or invalid attachments are ignored and reported back in the email reply to the sender. However, if an image exceeds limits, the system will reject the conversion request rather than silently ignoring it.
+
+<Tip>
+	[Magika](https://github.com/google/magika), from Google, is a really useful tool for determining the file type of an attachment.
+
+	I've not used it in this project, but you could use it to ensure that attachments are actually images, and not something else — just make sure you import from `magika` and **not** `magika/node`.
+</Tip>
+
+### Image processing
+
+After decoding and validating the images, they need to be normalised before they're added to the PDF.
+
+It's worth considering that not all images a user sends will be consistent with one another. For instance, a user might send:
+
+- photos from an iPhone, potentially as `.HEIC` files
+- screenshots
+- scanned documents
+- images with EXIF metadata
+- a mix of portrait and landscape images
+- very large images compressed into a small file size
+
+<Note>
+  For HEIC and HEIF images, `img-to-pdf` can identify the file type from the bytes, but conversion depends on Cloudflare Images being available in the Worker runtime.
+
+  The docs for this specific feature can be found [here](https://developers.cloudflare.com/images/optimization/transformations/bindings/).
+</Note>
+
+Therefore, the system needs to be able to handle a variety of cases, including:
+
+- applying EXIF orientation so images are visually upright
+- determining the PDF page orientation based on dimensions
+- handling or removing image metadata
+- limiting the size of the image
+- potentially compressing the image before embedding it into the PDF
+
+#### Orientation
+
+For `img-to-pdf`, I handled orientation in two phases: first, using the EXIF metadata (if it's a JPEG), and then using its dimensions.
+
+Before images are added to the PDF, the system determines the EXIF orientation and applies it as it places the image on a page. Then, using the oriented dimensions, it decides the page's orientation.
+
+This means each image can produce a page that matches its corrected shape. Portrait images can be placed on portrait pages, landscape images on landscape pages, and the final PDF can contain a mix of both.
+
+Otherwise, the system might see the raw dimensions of a phone photo, treat it as landscape, and generate a landscape page even though the image is meant to be displayed upright as portrait.
+
+```ts
+const normalized = await normalizeAttachmentBytes(attachment);
+const embeddedImage =
+  normalized.mimeType === "image/jpeg"
+    ? await pdf.embedJpg(normalized.bytes)
+    : await pdf.embedPng(normalized.bytes);
+const orientedDimensions = getOrientedDimensions({
+  height: embeddedImage.height,
+  orientation: normalized.orientation,
+  width: embeddedImage.width,
+});
+
+const layout = computePageLayout({
+  imageHeight: orientedDimensions.height,
+  imageWidth: orientedDimensions.width,
+});
+
+const page = pdf.addPage([layout.pageWidth, layout.pageHeight]);
+page.drawImage(
+  embeddedImage,
+  getImageDrawOptions({
+    normalized,
+    rawHeight: embeddedImage.height,
+    rawWidth: embeddedImage.width,
+    renderHeight: layout.renderHeight,
+    renderWidth: layout.renderWidth,
+    x: layout.x,
+    y: layout.y,
+  })
+);
+```
+
+Another edge case I considered was square images.
+
+A square image does not inherently imply either portrait or landscape orientation, so the system uses a best-fit approach. It compares how the image would fit on each page orientation and chooses the layout that gives the best result, with portrait as the fallback.
+
+This also avoids treating every landscape image as requiring a landscape page. For example, a small `300x200` image is technically landscape, but it may still fit perfectly well on a portrait page without needing to be scaled down or cropped.
+
+#### Metadata
+
+EXIF metadata often includes information about the camera, timestamps, software details, and sometimes location data.
+
+For `img-to-pdf`, it's not necessary to preserve this information in the generated PDF. As such, metadata from JPEGs and PNGs is stripped, and the original format is preserved; converted formats are re-encoded before embedding.
+
+#### Size limits
+
+A small compressed image can expand into a much larger pixel buffer once decoded. That means a file can look cheap at first, but become expensive or dangerous to process.
+
+Cloudflare Email Routing rejects messages over 25 MiB before they reach the Worker; however, that does not eliminate processing risk.
+
+A compressed image can still expand to a much larger pixel buffer after decoding, and decoding multiple images can quickly consume memory.
+
+Due to this, it's important to enforce size limits before doing expensive work:
+
+```txt noHeader
+const MAX_ATTACHMENTS = 20;
+const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
+const MAX_TOTAL_BYTES = 25 * 1024 * 1024;
+const MAX_PIXELS = 8_000_000;
+```
+
+#### Compression
+
+Compression is a useful way to reduce the size of a file — but, in this case, it mustn't be applied blindly.
+
+A photo might compress well as a JPEG, but a scanned document may become a blurry mess, _especially_ if aggressively compressed.
+
+Generally, when compressing images, you should:
+
+- keep JPEGs as JPEGs where possible; and,
+- avoid aggressive compression for documents, screenshots, or text-heavy images
+
+For `img-to-pdf`, I deliberately chose not to compress images to avoid compromising their quality — it’s something I’ll consider in the future.
+
+<Tip>
+  Try [jSquash](https://github.com/jamsinclair/jSquash) if you're thinking about image compression.
+
+  It's suitable for serverless environments like Cloudflare Workers, though it may require additional setup to work correctly.
+</Tip>
+
+### Generating the PDF
+
+For PDF generation, I used [`pdf-lib`](https://pdf-lib.js.org/), which works well in serverless environments and can embed both JPEG and PNG images.
+
+At this point, the system has already selected attachments that appear to be supported images and rejected requests that exceed the configured limits.
+
+However, the PDF generation can still fail because a file may pass inspection but fail when embedded or decoded.
+
+Therefore, the process looks roughly like this:
+
+```ts
+const pdf = await PDFDocument.create();
+
+const skippedAttachments: SkippedAttachment[] = [];
+let imageCount = 0;
+for (const attachment of attachments) {
+  try {
+    const normalized = await normalizeAttachmentBytes(attachment);
+
+    const embeddedImage =
+      normalized.mimeType === "image/jpeg"
+        ? await pdf.embedJpg(normalized.bytes)
+        : await pdf.embedPng(normalized.bytes);
+
+    const orientedDimensions = getOrientedDimensions({
+      height: embeddedImage.height,
+      orientation: normalized.orientation,
+      width: embeddedImage.width,
+    });
+
+    const layout = computePageLayout({
+      imageHeight: orientedDimensions.height,
+      imageWidth: orientedDimensions.width,
+    });
+
+    const page = pdf.addPage([layout.pageWidth, layout.pageHeight]);
+
+    page.drawImage(
+      embeddedImage,
+      getImageDrawOptions({
+        normalized,
+        rawHeight: embeddedImage.height,
+        rawWidth: embeddedImage.width,
+        renderHeight: layout.renderHeight,
+        renderWidth: layout.renderWidth,
+        x: layout.x,
+        y: layout.y,
+      })
+    );
+
+    imageCount += 1;
+  } catch (error) {
+    skippedAttachments.push({
+      filename: attachment.filename,
+      reason: getSkippedAttachmentReason(error),
+    });
+  }
+}
+
+const pdfBytes = await pdf.save();
+```
+
+The process is designed to continue even if some attachments fail.
+
+<Tip>
+  Users might not want the request to continue if some attachments fail. There are a few ways you _could_ handle this:
+  
+  - Notify the user that some attachments failed and ask whether they want to proceed or submit a new request.
+  - Allow the user to set preferences for how the system should handle failed attachments (e.g. continue with valid attachments, or cancel).
+</Tip>
+
+### Sending the PDF
+
+After the PDF has been generated, the system replies to the original email with the PDF attached.
+
+If any attachments are skipped or fail conversion, the reply will include the reasons why.
+
+At this point, the user has successfully completed their request — just as if they had used a website.
+
+That is what makes email work well as an interface here. Emails are familiar, and the user never has to visit a website, create an account page, or navigate to an upload form.
+
+Of course, there are drawbacks to using an email interface, but I'll cover those after breaking down the billing system.
+
+## Billing over email
+
+Billing is where email interfaces get awkward.
+
+On a website, billing is typically rather straightforward: the user signs in, clicks an upgrade button, completes checkout, and returns to the app.
+
+With email, there is no account page, no persistent session, and no obvious place to put a "Manage billing" button.
+
+For `img-to-pdf`, I handled this by making billing itself an email command, and the model is simple:
+
+1. A sender emails images to the service.
+2. The system identifies the sender from the `From` header.
+3. The sender is mapped to a user and a billing account.
+4. Free users are limited to a certain number of conversions per hour.
+5. Premium users can continue without that hourly conversion limit.
+6. If the user wants to upgrade or manage their billing, they reply with "BILLING".
+7. The system replies with a Stripe Billing Portal link.
+
+That means the user never needs a dashboard for `img-to-pdf`.
+
+### Creating a billing account
+
+The first time a sender uses the service, `img-to-pdf` creates an account for them using their email address.
+
+From there, it uses Stripe to create a customer and assign them a free tier subscription.
+
+By assigning them a free-tier subscription, the user can switch plans in Stripe’s billing portal instead of going through a checkout flow — though there might be drawbacks to this approach.
+
+```ts
+return await ensureAuthAccountWithBilling(input.db, {
+  billingProvider: input.billingProvider,
+  email: input.email,
+  nowMs: input.nowMs,
+});
+```
+
+This gives the system one consistent billing state for every sender — even if they never upgrade.
+
+### Limiting free users
+
+For the free tier, `img-to-pdf` applies a conversion limit before doing expensive work. At the time of writing, this limit is set to 3 conversions per hour.
+
+As such, before the Worker parses the full MIME body, it checks whether the sender is allowed to attempt another conversion:
+
+```ts
+const usageGate = await handleUsageGate({
+  account,
+  database: env.DATABASE,
+  email: senderIdentity.accountAddress,
+  hourlyLimit: emailRateLimitMax,
+  message,
+  nowMs: now,
+});
+```
+
+If the sender has exceeded the limit, the system replies with a message saying so, including when the limit resets and instructions to reply with `BILLING` if they want unlimited conversions.
+
+<Note>
+  Paid users still have their usage tracked, but they bypass the free tier's hourly limit.
+
+  "Unlimited" is a bit of a misnomer here — for now, it means "no hourly limit", but depending on how much traffic the service gets, I might need to change that.
+</Note>
+
+### The `BILLING` command
+
+Since there's no dashboard, the system needs a way for users to manage their billing.
+
+Essentially, a user can send an email or reply to an existing email with the word `BILLING`, and the system will treat it as a billing request.
+
+```ts
+const BILLING_COMMAND_REGEX = /^\s*BILLING\s*$/i;
+
+export const isBillingCommand = (parsedEmail: ParsedEmail): boolean =>
+  BILLING_COMMAND_REGEX.test(
+    (parsedEmail.text ?? "")
+      .split("\n")
+      .find((line) => line.trim().length > 0) ?? ""
+  );
+```
+
+When that happens, `img-to-pdf` creates a Stripe Billing Portal session, or reuses an active one, and replies to the sender with a link to the portal.
+
+That email includes:
+
+- the user's current plan
+- recent usage
+- hourly usage for free users
+- a Stripe Billing Portal link
+
+The link lets users upgrade, downgrade, cancel, update payment details, or view invoices using Stripe's hosted portal.
+
+### Avoiding billing email spam
+
+One small detail I added was billing reply deduplication.
+
+Essentially, a user _could_ repeatedly reply with "BILLING" in the same thread, resulting in multiple billing emails being sent.
+
+To prevent this, the system records billing emails by sender and thread, and then suppresses duplicate billing replies while the existing portal session is active.
+
+### Keeping the billing state up to date
+
+As with most Stripe implementations, webhooks are used to keep the billing state up to date.
+
+It’s really just about exposing a path for Stripe to send events to the Worker, validating the signature, and then updating the database accordingly.
+
+In `img-to-pdf`, the webhook checks whether the subscription includes the managed premium price; if so, and the subscription is active, the local user is marked as premium. Otherwise, they stay on the free tier.
+
+## Preventing abuse
+
+A product with an email interface is easy to underestimate, but every inbound email is an untrusted request that can trigger compute, storage, billing logic, and outbound mail.
+
+There are many attack vectors, but the main ones are:
+
+- [Mail loops](#mail-loops)
+- [Rate limiting](#rate-limiting)
+- [Email Spoofing](#handling-email-spoofing)
+- [Attachment bombs](#attachment-bombs)
+
+<Tip>
+  Make sure you consider these things if you're implementing an email interface
+  for your product — you could be putting your users' data at risk.
+</Tip>
+
+### Mail loops
+
+Mail loops occur when your system responds to an automatically generated email.
+
+For example:
+
+1. Someone emails the service.
+2. The service replies.
+3. The recipient has an auto-responder.
+4. The auto-responder emails the service.
+5. The service treats that as a new request.
+6. The cycle repeats.
+
+This can burn compute, damage deliverability, and send a lot of unnecessary emails.
+
+To prevent this, I ignore emails that have the hallmarks of automated messages, including:
+
+- Emails that have bounced.
+- Delivery status notifications.
+- Out-of-office replies.
+- Emails that contain `Auto-Submitted` headers.
+
+Also, not every invalid email needs a reply — sometimes, the safest response is to silently drop the message or reject it. Here's what I did:
+
+```ts
+export const detectAutomatedEmail = ({
+  headers,
+  senderAddress,
+  outboundAllowlist,
+}: {
+  headers: Headers;
+  senderAddress: string;
+  outboundAllowlist: readonly string[];
+}): InboundIgnoreDecision | null => {
+  if (isAutoSubmitted(headers)) {
+    return { classification: "automated", reason: "auto_submitted" };
+  }
+
+  if (checkAutomatedPrecedence(headers)) {
+    return { classification: "automated", reason: "precedence" };
+  }
+
+  if (isDeliveryStatusNotification(headers)) {
+    return {
+      classification: "automated",
+      reason: "delivery_status_notification",
+    };
+  }
+
+  if (isMailerDaemonSender(senderAddress)) {
+    return { classification: "automated", reason: "mailer_daemon" };
+  }
+
+  if (AUTO_RESPONDER_HEADERS.some((key) => headers.has(key))) {
+    return { classification: "automated", reason: "autoresponder" };
+  }
+
+  const allowlist = new Set(outboundAllowlist.map(normalizeAddress));
+  if (isSenderInAllowlist(senderAddress, allowlist)) {
+    return { classification: "self_sent", reason: "self_sender" };
+  }
+
+  return null;
+};
+```
+
+### Rate limiting
+
+It's just as easy for an attacker to spam many emails as it is for them to spam an unprotected API.
+
+The difference is that, with an email interface, a single request can trigger several expensive steps:
+
+- accepting the email
+- parsing the MIME body
+- decoding attachments
+- processing images
+- generating a PDF
+- sending an outbound email with an attachment
+
+So rate limiting needs to happen before the expensive work begins.
+
+### Handling email spoofing
+
+Spoofing a victim's email is the obvious risk. And for `img-to-pdf`, the sender's email address is used as the account identifier, but it's not treated as a general-purpose authorisation mechanism.
+
+The basic rules are:
+
+1. Don't use the `Reply-To` header for account-sensitive actions.
+2. Only send confirmations and results to the canonical sender.
+3. Reject messages where the sender cannot be reliably parsed.
+4. Reject (or restrict) messages that fail sender authentication checks.
+5. Require confirmation for destructive or high-impact actions.
+
+If the system honoured `Reply-To`, an attacker could easily spoof the victim’s address and receive the response in their own name.
+
+<Note>
+  In practice, running sender authentication checks means treating authentication
+  results such as SPF, DKIM, and DMARC as risk signals, rather than blindly
+  trusting the `From` header.
+</Note>
+
+For destructive or high-impact actions, the first email should only create a pending action. It should not complete it.
+
+1. User emails: delete my account
+2. The system creates a pending deletion request.
+3. The system sends a confirmation email to the account's email address.
+4. User replies to that confirmation.
+5. System checks that the reply references the confirmation email.
+6. Only then does the system perform the deletion.
+
+<Caution>
+	The confirmation reply **must** reference the `Message-ID` of the system's confirmation email through `In-Reply-To`. Otherwise:
+
+	1. An attacker could send a spoofed follow-up with a confirmation; or,
+	2. A poorly designed system _could_ interpret a confirmation or rejection for another request.
+</Caution>
+
+This system doesn't make email perfect, but it does prevent the common spoofing case where an attacker can start an action, but can't receive the confirmation email needed to complete it.
+
+### Attachment bombs
+
+Attachment bombs are files designed to look small at first, but become expensive or dangerous once decoded.
+
+A small compressed image can decode into a huge bitmap, a file extension can lie, and metadata can be much larger than expected.
+
+As such, the system mustn't blindly trust:
+
+- the file extension
+- the declared `Content-Type`
+- the filename
+- the compressed file size
+- the email client's attachment metadata
+
+Instead, the service should inspect the actual file content and apply restrictions before processing it.
+
+## Limitations
+
+Email works well for `img-to-pdf` because the task is simple, asynchronous, and doesn't require real-time interaction. But that doesn’t mean it’s the right tool for every product.
+
+The first limitation is interactivity. 
+There is no upload progress, preview screen, drag-and-drop ordering, inline validation, or immediate way for the user to correct a mistake. 
+If something goes wrong, the system must reply with an explanation, and the user must send another email.
+
+Attachment handling can also be unpredictable. 
+Different email clients may rename files, compress images, change metadata, alter ordering, or hide details that would be obvious in a normal upload flow. 
+For a product like `img-to-pdf`, this means the system must be explicit about what it accepts, skips, or rejects.
+
+There are also deliverability concerns.
+The generated PDF might be too large, the reply might bounce, or the email might end up in spam.
+With a website, the user is still present when the result is created; with email, successful generation and successful delivery are two separate things.
+
+Another limitation is account identity.
+An email address works well as a lightweight account key, but it is not the same as an authenticated session.
+Aliases, forwarded mail, shared inboxes, spoofed messages, and changed addresses can all complicate the model.
+That is why higher-risk actions need confirmation rather than being completed from a single inbound email.
+
+Finally, every inbound email is an operational risk.
+A single message can trigger MIME parsing, attachment decoding, image processing, PDF generation, billing checks, database writes, and outbound mail. 
+That makes abuse prevention, rate limiting, and early rejection just as important as the core product logic.
+
+So, email works best when the task is simple, asynchronous, and obvious.
+For `img-to-pdf`, that shape suits the task — the user sends files and receives a single file back.
+For anything requiring complex interaction, live editing, strong authentication, or precise control, a traditional web interface would still be a better fit.
+
+## Final thoughts
+
+I built `img-to-pdf` as a fun side project to explore the possibilities of using email as an interface for a SaaS product.
+
+It’s a really interesting idea, and I think as AI becomes more powerful, we’ll see more and more products use email as an interface.
+
+And of course, plenty of products already use email as an interface; however, all the ones I could find use it for very specific purposes within a larger product.
+
+For instance, via email, [GitHub](https://github.com/features/issues) lets you reply to issue notifications & pull requests; [Intercom](https://www.intercom.com/) lets users create or reply to tickets; [Linear](https://linear.app/) lets users create and reply to issues, etc.

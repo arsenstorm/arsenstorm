@@ -71,7 +71,8 @@ function Home() {
 				</section>
 			)}
 
-			<section>
+			{/* I'll add these back later */}
+			<section className="hidden">
 				<div className="mb-4 flex flex-row items-center justify-between">
 					<h2 className="font-medium text-neutral-950 text-sm dark:text-neutral-50">
 						Experiments

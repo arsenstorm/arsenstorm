@@ -49,7 +49,8 @@
     "editor.defaultFormatter": "biomejs.biome"
   },
   "[mdx]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false
   },
   "[svelte]": {
     "editor.defaultFormatter": "biomejs.biome"
