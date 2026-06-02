@@ -1,3 +1,4 @@
+import { clsx } from "clsx";
 import { HomeIcon, Moon, Sun, Volume2, VolumeX } from "lucide-react";
 import {
 	setAudioEnabled,
@@ -52,9 +53,15 @@ export function ThemeSwitch() {
 	);
 }
 
-export function Controls({ noHomeLink = false }: { noHomeLink?: boolean }) {
+export function Controls({
+	noHomeLink = false,
+	className,
+}: {
+	noHomeLink?: boolean;
+	className?: string;
+}) {
 	return (
-		<div className="flex items-center gap-4">
+		<div className={clsx("flex items-center gap-4 pt-0.5", className)}>
 			{noHomeLink ? null : (
 				<HapticLink className={ICON_BUTTON} to="/">
 					<HomeIcon className="size-4" />
