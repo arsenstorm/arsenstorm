@@ -59,6 +59,10 @@ type CodeBlockProps = ComponentPropsWithoutRef<"pre"> & {
 	"data-language"?: string;
 };
 
+type MdxImageProps = ComponentPropsWithoutRef<"img"> & {
+	invertInDarkMode?: boolean;
+};
+
 type SectionHeadingProps = ComponentPropsWithoutRef<"h2"> & {
 	level: "h2" | "h3" | "h4" | "h5" | "h6";
 	levelClassName: string;
@@ -399,9 +403,42 @@ function MdxSeparator(props: ComponentPropsWithoutRef<"hr">) {
 	);
 }
 
+function MdxImage({
+	alt,
+	className,
+	height,
+	invertInDarkMode = false,
+	src,
+	width,
+	...props
+}: MdxImageProps) {
+	return (
+		<div className="not-prose relative -mx-4 my-6 flex flex-col rounded-[14px] bg-neutral-200 p-0.5 dark:bg-neutral-800">
+			<p className="order-last mt-1 mb-0.5 ml-4 font-medium text-neutral-600 text-xs tracking-tight dark:text-neutral-400">
+				{alt ?? "Image"}
+			</p>
+			<div className="overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-900">
+				<img
+					alt={alt ?? "Image"}
+					className={clsx(
+						"pointer-events-none select-none",
+						invertInDarkMode && "dark:invert",
+						className
+					)}
+					height={height}
+					src={src}
+					width={width}
+					{...props}
+				/>
+			</div>
+		</div>
+	);
+}
+
 export const writeupComponents: MDXComponents = {
 	Caution,
 	Danger,
+	Image: MdxImage,
 	Info,
 	Note,
 	Success,
@@ -424,4 +461,5 @@ export const writeupComponents: MDXComponents = {
 	ul: MdxUnorderedList,
 	hr: MdxSeparator,
 	strong: MdxStrong,
+	img: MdxImage,
 };

@@ -22,7 +22,7 @@ function Home() {
 						Arsen Shkrumelyak
 					</h1>
 					<p className="mt-1 max-w-[56ch] text-pretty text-base text-neutral-500 dark:text-neutral-400">
-						I build things worth building.
+						I build software with care.
 					</p>
 				</div>
 				<Controls noHomeLink />

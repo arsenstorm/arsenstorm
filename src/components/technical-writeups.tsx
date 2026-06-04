@@ -25,7 +25,7 @@ export function TechnicalWriteups() {
 				) : null}
 			</div>
 			<ItemGroup
-				groupBy="month"
+				groupBy="all"
 				id="writeups-list"
 				items={TECHNICAL_WRITEUPS}
 				showAll={false}

@@ -14,7 +14,7 @@ type ItemGroupItem = {
 } & Partial<InternalItemLink>;
 
 interface ItemGroupProps {
-	groupBy?: "year" | "month";
+	groupBy?: "year" | "month" | "all";
 	id?: string;
 	items: ItemGroupItem[];
 	showAll?: boolean;
@@ -25,6 +25,11 @@ function groupByDate(
 	groupBy: ItemGroupProps["groupBy"]
 ): [string, ItemGroupProps["items"]][] {
 	const map = new Map<string, ItemGroupProps["items"]>();
+
+	if (groupBy === "all") {
+		return [[items[0]?.publishedAt ?? "", items]];
+	}
+
 	for (const item of items) {
 		const key =
 			groupBy === "year"
