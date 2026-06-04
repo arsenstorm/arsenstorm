@@ -1,23 +1,19 @@
 import { defineSound, ensureReady } from "@web-kits/audio";
 import { useCallback, useSyncExternalStore } from "react";
+import { click, hover, toggleOn } from "../../.web-kits/minimal";
 
 const STORAGE_KEY = "interface-sounds-enabled";
 
-const hover = defineSound({
-	source: { type: "sine", frequency: { start: 520, end: 620 } },
-	envelope: { attack: 0.004, decay: 0.07, sustain: 0, release: 0.04 },
-	gain: 0.06,
-});
-
-const click = defineSound({
-	source: { type: "triangle", frequency: { start: 880, end: 440 } },
-	envelope: { attack: 0.002, decay: 0.09, sustain: 0, release: 0.05 },
-	gain: 0.12,
-});
+const playHoverSound = defineSound(hover);
+const playClickSound = defineSound(click);
+const playToggleOnSound = defineSound(toggleOn);
 
 let enabled = true;
 let primed = false;
+let readyPromise: Promise<void> | null = null;
 const listeners = new Set<() => void>();
+
+type SoundPlayer = () => void;
 
 function readStored(): boolean {
 	if (typeof window === "undefined") {
@@ -50,8 +46,24 @@ async function prime() {
 	if (primed) {
 		return;
 	}
-	await ensureReady();
-	primed = true;
+	readyPromise ??= ensureReady()
+		.then(() => {
+			primed = true;
+		})
+		.catch((error: unknown) => {
+			readyPromise = null;
+			throw error;
+		});
+	await readyPromise;
+}
+
+async function playWhenReady(sound: SoundPlayer) {
+	try {
+		await prime();
+		sound();
+	} catch {
+		// Audio startup can be rejected by browser autoplay policy or device state.
+	}
 }
 
 export function setAudioEnabled(next: boolean) {
@@ -63,7 +75,7 @@ export function setAudioEnabled(next: boolean) {
 		window.localStorage.setItem(STORAGE_KEY, String(next));
 	}
 	if (next) {
-		prime().then(() => click());
+		playWhenReady(playToggleOnSound);
 	}
 	for (const listener of listeners) {
 		listener();
@@ -81,14 +93,14 @@ export function useInterfaceSounds() {
 		if (!(isEnabled && primed)) {
 			return;
 		}
-		hover();
+		playHoverSound();
 	}, [isEnabled]);
 
 	const playClick = useCallback(() => {
 		if (!isEnabled) {
 			return;
 		}
-		prime().then(() => click());
+		playWhenReady(playClickSound);
 	}, [isEnabled]);
 
 	return { playHover, playClick };
