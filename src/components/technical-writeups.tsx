@@ -1,5 +1,5 @@
-import { HapticLink } from "#/components/haptic-link";
 import { ItemGroup } from "#/components/item-group.tsx";
+import { Link } from "#/components/link";
 import { hasTechnicalWriteups, TECHNICAL_WRITEUPS } from "#/writeups";
 
 export function TechnicalWriteups() {
@@ -16,12 +16,12 @@ export function TechnicalWriteups() {
 					Technical Writeups
 				</h2>
 				{TECHNICAL_WRITEUPS.length > 3 ? (
-					<HapticLink
+					<Link
 						className="text-neutral-500 text-sm underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50"
 						to="/technical-writeups"
 					>
 						View all
-					</HapticLink>
+					</Link>
 				) : null}
 			</div>
 			<ItemGroup

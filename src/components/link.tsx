@@ -1,26 +1,22 @@
 import { createLink, type LinkComponent } from "@tanstack/react-router";
 import type { AnchorHTMLAttributes, PointerEvent, Ref } from "react";
-import { useWebHaptics } from "web-haptics/react";
 import { useInterfaceSounds } from "#/lib/interface-sounds";
 
 type AnchorProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
 	ref?: Ref<HTMLAnchorElement>;
 };
 
-function useHapticHandlers(
+function useSoundHandlers(
 	onPointerDown?: AnchorProps["onPointerDown"],
 	onPointerEnter?: AnchorProps["onPointerEnter"]
 ) {
-	const { trigger } = useWebHaptics();
 	const { playHover, playClick } = useInterfaceSounds();
 	return {
 		onPointerDown: (e: PointerEvent<HTMLAnchorElement>) => {
-			trigger("success");
 			playClick();
 			onPointerDown?.(e);
 		},
 		onPointerEnter: (e: PointerEvent<HTMLAnchorElement>) => {
-			trigger(8);
 			playHover();
 			onPointerEnter?.(e);
 		},
@@ -28,10 +24,10 @@ function useHapticHandlers(
 }
 
 /**
- * External link — plain anchor with haptic + sound feedback.
+ * External link — plain anchor with sound feedback.
  * Auto-sets target="_blank" and rel="noopener noreferrer" for http(s) hrefs.
  */
-export function HapticAnchor({
+export function Anchor({
 	href,
 	onPointerDown,
 	onPointerEnter,
@@ -40,7 +36,7 @@ export function HapticAnchor({
 	ref,
 	...props
 }: AnchorProps) {
-	const handlers = useHapticHandlers(onPointerDown, onPointerEnter);
+	const handlers = useSoundHandlers(onPointerDown, onPointerEnter);
 	const external = href?.startsWith("http");
 	return (
 		<a
@@ -55,21 +51,21 @@ export function HapticAnchor({
 }
 
 /**
- * Internal link — TanStack Router Link with haptic + sound feedback.
+ * Internal link — TanStack Router Link with sound feedback.
  * `to` is type-checked against the route tree.
  */
-function HapticLinkInner({
+function LinkInner({
 	onPointerDown,
 	onPointerEnter,
 	ref,
 	...props
 }: AnchorProps) {
-	const handlers = useHapticHandlers(onPointerDown, onPointerEnter);
+	const handlers = useSoundHandlers(onPointerDown, onPointerEnter);
 	return <a ref={ref} {...props} {...handlers} />;
 }
 
-const CreatedHapticLink = createLink(HapticLinkInner);
+const CreatedLink = createLink(LinkInner);
 
-export const HapticLink: LinkComponent<typeof HapticLinkInner> = (props) => (
-	<CreatedHapticLink preload="intent" {...props} />
+export const Link: LinkComponent<typeof LinkInner> = (props) => (
+	<CreatedLink preload="intent" {...props} />
 );

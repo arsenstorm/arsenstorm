@@ -1,4 +1,4 @@
-import { HapticAnchor, HapticLink } from "#/components/haptic-link";
+import { Anchor, Link } from "#/components/link";
 
 interface InternalItemLink {
 	params?: { slug: string };
@@ -88,26 +88,26 @@ export function ItemGroup({
 
 							if (item.href) {
 								content = (
-									<HapticAnchor
+									<Anchor
 										className="group flex flex-col gap-0.5"
 										href={item.href}
 									>
 										{title}
 										{description}
-									</HapticAnchor>
+									</Anchor>
 								);
 							}
 
 							if (item.to) {
 								content = (
-									<HapticLink
+									<Link
 										className="group flex flex-col gap-0.5"
 										params={item.params ?? { slug: "placeholder" }}
 										to={item.to}
 									>
 										{title}
 										{description}
-									</HapticLink>
+									</Link>
 								);
 							}
 

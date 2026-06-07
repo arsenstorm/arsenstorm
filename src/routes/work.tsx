@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Controls } from "#/components/controls";
-import { HapticLink } from "#/components/haptic-link.tsx";
 import { ItemGroup } from "#/components/item-group.tsx";
+import { Link } from "#/components/link.tsx";
 import { PROJECTS } from "#/lib/projects.ts";
 import { pageMeta } from "#/lib/seo";
 
@@ -35,12 +35,12 @@ function Work() {
 					<h2 className="font-medium text-neutral-950 text-sm dark:text-neutral-50">
 						All of my work
 					</h2>
-					<HapticLink
+					<Link
 						className="text-neutral-500 text-sm underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50"
 						to="/"
 					>
 						Go back
-					</HapticLink>
+					</Link>
 				</div>
 				<ItemGroup id="projects-list" items={PROJECTS} />
 			</section>

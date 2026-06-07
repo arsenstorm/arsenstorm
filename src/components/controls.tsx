@@ -6,7 +6,7 @@ import {
 	useInterfaceSounds,
 } from "#/lib/interface-sounds";
 import { setTheme, useTheme } from "#/lib/theme";
-import { HapticLink } from "./haptic-link";
+import { Link } from "./link";
 
 const ICON_BUTTON =
 	"relative text-zinc-400 transition-colors after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-x-1/2 after:-translate-y-1/2 hover:text-zinc-950 dark:text-zinc-500 dark:hover:text-zinc-50";
@@ -63,9 +63,9 @@ export function Controls({
 	return (
 		<div className={clsx("flex items-center gap-4 pt-0.5", className)}>
 			{noHomeLink ? null : (
-				<HapticLink className={ICON_BUTTON} to="/">
+				<Link className={ICON_BUTTON} to="/">
 					<HomeIcon className="size-4" />
-				</HapticLink>
+				</Link>
 			)}
 			<AudioToggle />
 			<ThemeSwitch />

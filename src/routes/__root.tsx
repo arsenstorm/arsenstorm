@@ -3,7 +3,7 @@ import type { ErrorComponentProps } from "@tanstack/react-router";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { Controls } from "#/components/controls";
-import { HapticLink } from "#/components/haptic-link";
+import { Link } from "#/components/link";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
@@ -92,9 +92,9 @@ function NotFound() {
 				title="404"
 			/>
 			<p className="text-sm">
-				<HapticLink className={LINK_STYLE} to="/">
+				<Link className={LINK_STYLE} to="/">
 					← Back home
-				</HapticLink>
+				</Link>
 			</p>
 		</main>
 	);
@@ -115,9 +115,9 @@ function ErrorPage({ error, reset }: ErrorComponentProps) {
 				<button className={LINK_STYLE} onClick={reset} type="button">
 					Try again
 				</button>
-				<HapticLink className={LINK_STYLE} to="/">
+				<Link className={LINK_STYLE} to="/">
 					Back home
-				</HapticLink>
+				</Link>
 			</div>
 		</main>
 	);

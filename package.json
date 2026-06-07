@@ -16,8 +16,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwindcss": "^4.3.0",
-    "three": "^0.184.0",
-    "web-haptics": "^0.0.6"
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.12",

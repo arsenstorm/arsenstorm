@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Controls } from "#/components/controls";
-import { HapticAnchor, HapticLink } from "#/components/haptic-link";
 import { ItemGroup } from "#/components/item-group.tsx";
+import { Anchor, Link } from "#/components/link";
 import { TechnicalWriteups } from "#/components/technical-writeups.tsx";
 import { PROJECTS } from "#/lib/projects.ts";
 
@@ -33,12 +33,12 @@ function Home() {
 					<h2 className="font-medium text-neutral-950 text-sm dark:text-neutral-50">
 						Work
 					</h2>
-					<HapticLink
+					<Link
 						className="text-neutral-500 text-sm underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50"
 						to="/work"
 					>
 						View all
-					</HapticLink>
+					</Link>
 				</div>
 				<ItemGroup id="projects-list" items={PROJECTS} showAll={false} />
 			</section>
@@ -54,12 +54,12 @@ function Home() {
 				<ul className="flex flex-col gap-2">
 					{ELSEWHERE.map((item) => (
 						<li className="text-sm" key={item.label}>
-							<HapticAnchor
+							<Anchor
 								className="text-neutral-500 underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50"
 								href={item.href}
 							>
 								{item.label}
-							</HapticAnchor>
+							</Anchor>
 						</li>
 					))}
 				</ul>
