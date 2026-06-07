@@ -10,8 +10,25 @@
     "directory": "./dist/client",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page",
-    "run_worker_first": ["/readme", "/api/weather", "/api/github"]
+    "run_worker_first": ["/readme", "/api/weather", "/api/github", "/og"]
   },
+  "browser": {
+    "binding": "BROWSER"
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "OG_RENDERER",
+        "class_name": "OGRenderer"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["OGRenderer"]
+    }
+  ],
   "preview_urls": false,
   "workers_dev": false,
   "secrets": {
@@ -43,6 +60,12 @@
     {
       "binding": "STATS",
       "id": "447b449e1b474bb89fb21f60906f1c18"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "OG_IMAGES",
+      "bucket_name": "arsenstorm-og-images"
     }
   ]
 }

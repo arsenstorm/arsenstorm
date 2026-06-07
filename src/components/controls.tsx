@@ -9,7 +9,7 @@ import { setTheme, useTheme } from "#/lib/theme";
 import { Link } from "./link";
 
 const ICON_BUTTON =
-	"relative text-zinc-400 transition-colors after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-x-1/2 after:-translate-y-1/2 hover:text-zinc-950 dark:text-zinc-500 dark:hover:text-zinc-50";
+	"relative text-neutral-400 transition-colors after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-x-1/2 after:-translate-y-1/2 hover:text-neutral-950 dark:text-neutral-500 dark:hover:text-neutral-50";
 
 export function AudioToggle() {
 	const enabled = useAudioEnabled();

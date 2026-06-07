@@ -1,5 +1,5 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { Controls } from "#/components/controls";
+import { PageHeading } from "#/components/page-heading.tsx";
 import { writeupComponents } from "#/components/writeup-content";
 import { pageMeta } from "#/lib/seo";
 import {
@@ -23,7 +23,8 @@ export const Route = createFileRoute("/technical-writeups/$slug")({
 	head: ({ loaderData }) => ({
 		meta: pageMeta(
 			loaderData?.writeup?.title ?? "",
-			loaderData?.writeup?.description ?? ""
+			loaderData?.writeup?.description ?? "",
+			loaderData?.writeup?.href ?? "/technical-writeups"
 		),
 	}),
 	component: TechnicalWriteup,
@@ -39,17 +40,7 @@ function TechnicalWriteup() {
 
 	return (
 		<main className="mx-auto max-w-xl space-y-12 px-6 py-24">
-			<header className="flex items-start justify-between gap-4">
-				<div>
-					<h1 className="font-medium text-base text-neutral-950 dark:text-neutral-50">
-						{writeup.title}
-					</h1>
-					<p className="mt-1 max-w-[56ch] text-pretty text-base text-neutral-500 dark:text-neutral-400">
-						{writeup.description}
-					</p>
-				</div>
-				<Controls />
-			</header>
+			<PageHeading description={writeup.description} title={writeup.title} />
 
 			<article>
 				<Content components={writeupComponents} />

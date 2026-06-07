@@ -1,11 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Controls } from "#/components/controls";
 import { ItemGroup } from "#/components/item-group.tsx";
-import { Anchor, Link } from "#/components/link";
+import { Anchor } from "#/components/link";
+import { PageHeading } from "#/components/page-heading.tsx";
+import { Section } from "#/components/section.tsx";
 import { TechnicalWriteups } from "#/components/technical-writeups.tsx";
 import { PROJECTS } from "#/lib/projects.ts";
+import { pageMeta } from "#/lib/seo";
 
-export const Route = createFileRoute("/")({ component: Home });
+const TITLE = "Arsen Shkrumelyak";
+const DESCRIPTION = "I build software with care.";
+
+export const Route = createFileRoute("/")({
+	head: () => ({
+		meta: pageMeta(TITLE, DESCRIPTION),
+	}),
+	component: Home,
+});
 
 const ELSEWHERE = [
 	{ label: "GitHub", href: "https://github.com/arsenstorm" },
@@ -16,41 +26,17 @@ const ELSEWHERE = [
 function Home() {
 	return (
 		<main className="mx-auto max-w-xl space-y-12 px-6 py-24">
-			<header className="flex items-start justify-between gap-4">
-				<div>
-					<h1 className="font-medium text-base text-neutral-950 dark:text-neutral-50">
-						Arsen Shkrumelyak
-					</h1>
-					<p className="mt-1 max-w-[56ch] text-pretty text-base text-neutral-500 dark:text-neutral-400">
-						I build software with care.
-					</p>
-				</div>
-				<Controls noHomeLink />
-			</header>
+			<PageHeading description={DESCRIPTION} noHomeLink title={TITLE} />
 
-			<section>
-				<div className="mb-4 flex flex-row items-center justify-between">
-					<h2 className="font-medium text-neutral-950 text-sm dark:text-neutral-50">
-						Work
-					</h2>
-					<Link
-						className="text-neutral-500 text-sm underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50"
-						to="/work"
-					>
-						View all
-					</Link>
-				</div>
+			<Section cta={{ label: "View all", to: "/work" }} title="Work">
 				<ItemGroup id="projects-list" items={PROJECTS} showAll={false} />
-			</section>
+			</Section>
 
 			<TechnicalWriteups />
 
 			{/* TODO: Add back Experiments */}
 
-			<section>
-				<h2 className="mb-4 font-medium text-neutral-950 text-sm dark:text-neutral-50">
-					Elsewhere
-				</h2>
+			<Section title="Elsewhere">
 				<ul className="flex flex-col gap-2">
 					{ELSEWHERE.map((item) => (
 						<li className="text-sm" key={item.label}>
@@ -63,7 +49,7 @@ function Home() {
 						</li>
 					))}
 				</ul>
-			</section>
+			</Section>
 		</main>
 	);
 }

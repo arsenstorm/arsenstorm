@@ -1,6 +1,6 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { Controls } from "#/components/controls";
 import { ItemGroup } from "#/components/item-group";
+import { PageHeading } from "#/components/page-heading.tsx";
 import { pageMeta } from "#/lib/seo";
 import { hasTechnicalWriteups, TECHNICAL_WRITEUPS } from "#/writeups";
 
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/technical-writeups/")({
 		}
 	},
 	head: () => ({
-		meta: pageMeta(TITLE, DESCRIPTION),
+		meta: pageMeta(TITLE, DESCRIPTION, "/technical-writeups"),
 	}),
 	component: TechnicalWriteups,
 });
@@ -22,17 +22,7 @@ export const Route = createFileRoute("/technical-writeups/")({
 function TechnicalWriteups() {
 	return (
 		<main className="mx-auto max-w-xl space-y-12 px-6 py-24">
-			<header className="flex items-start justify-between gap-4">
-				<div>
-					<h1 className="font-medium text-base text-neutral-950 dark:text-neutral-50">
-						{TITLE}
-					</h1>
-					<p className="mt-1 max-w-[56ch] text-pretty text-base text-neutral-500 dark:text-neutral-400">
-						{DESCRIPTION}
-					</p>
-				</div>
-				<Controls />
-			</header>
+			<PageHeading description={DESCRIPTION} title={TITLE} />
 
 			<section>
 				<ItemGroup groupBy="month" items={TECHNICAL_WRITEUPS} />
