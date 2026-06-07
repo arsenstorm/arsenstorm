@@ -1,17 +1,20 @@
 import clsx from "clsx";
-import { ChevronsDownUp, ChevronsUpDown, Link } from "lucide-react";
+import { ChevronsDownUp, ChevronsUpDown, Link as LinkIcon } from "lucide-react";
 import type { MDXComponents } from "mdx/types.js";
 import { AnimatePresence } from "motion/react";
 import {
 	type ComponentPropsWithoutRef,
+	type PointerEvent,
 	useCallback,
 	useEffect,
 	useId,
 	useRef,
 	useState,
 } from "react";
+import { Anchor } from "#/components/link";
 import Clipboard from "#/icons/clipboard.tsx";
 import ClipboardCheck from "#/icons/clipboard-check.tsx";
+import { useInterfaceSounds } from "#/lib/interface-sounds";
 import {
 	Caution,
 	Danger,
@@ -63,6 +66,8 @@ type MdxImageProps = ComponentPropsWithoutRef<"img"> & {
 	invertInDarkMode?: boolean;
 };
 
+type SoundButtonProps = ComponentPropsWithoutRef<"button">;
+
 type SectionHeadingProps = ComponentPropsWithoutRef<"h2"> & {
 	level: "h2" | "h3" | "h4" | "h5" | "h6";
 	levelClassName: string;
@@ -81,16 +86,45 @@ function shouldOpenInNewTab(href: string | undefined) {
 	return href?.startsWith("http://") || href?.startsWith("https://");
 }
 
-function MdxAnchor({ href, ...props }: ComponentPropsWithoutRef<"a">) {
+function SoundButton({
+	onPointerDown,
+	onPointerEnter,
+	...props
+}: SoundButtonProps) {
+	const { playClick, playHover } = useInterfaceSounds();
+
+	return (
+		<button
+			onPointerDown={(event: PointerEvent<HTMLButtonElement>) => {
+				playClick();
+				onPointerDown?.(event);
+			}}
+			onPointerEnter={(event: PointerEvent<HTMLButtonElement>) => {
+				playHover();
+				onPointerEnter?.(event);
+			}}
+			{...props}
+		/>
+	);
+}
+
+function MdxAnchor({
+	className,
+	href,
+	...props
+}: ComponentPropsWithoutRef<"a">) {
 	const opensInNewTab = shouldOpenInNewTab(href);
 
 	return (
-		<a
-			className="text-neutral-950 underline decoration-neutral-300 underline-offset-4 transition-colors hover:decoration-neutral-950 dark:text-neutral-50 dark:decoration-neutral-700 dark:hover:decoration-neutral-50"
+		<Anchor
+			className={clsx(
+				"text-neutral-950 underline decoration-neutral-300 underline-offset-4 transition-colors hover:decoration-neutral-950 dark:text-neutral-50 dark:decoration-neutral-700 dark:hover:decoration-neutral-50",
+				className
+			)}
 			href={href}
-			{...props}
 			rel={opensInNewTab ? "noopener noreferrer" : undefined}
 			target={opensInNewTab ? "_blank" : undefined}
+			{...props}
 		/>
 	);
 }
@@ -126,13 +160,17 @@ function MdxSectionHeading({
 		>
 			<span className="min-w-0">{children}</span>
 			{id ? (
-				<a
+				<Anchor
 					aria-label="Link to section"
 					className="hidden size-[1lh] shrink-0 items-center justify-center rounded-md text-neutral-300 transition-colors hover:text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 group-hover:flex dark:text-neutral-700 dark:focus-visible:ring-white/30 dark:hover:text-neutral-50"
 					href={`#${id}`}
 				>
-					<Link aria-hidden="true" className="size-[0.58lh]" strokeWidth={2} />
-				</a>
+					<LinkIcon
+						aria-hidden="true"
+						className="size-[0.58lh]"
+						strokeWidth={2}
+					/>
+				</Anchor>
 			) : null}
 		</Heading>
 	);
@@ -334,7 +372,7 @@ function MdxCodeBlock({
 					</p>
 					<div className="flex items-center gap-1">
 						{canExpand ? (
-							<button
+							<SoundButton
 								aria-controls={codeBlockId}
 								aria-expanded={expanded}
 								aria-label={expanded ? "Collapse code" : "Expand code"}
@@ -347,9 +385,9 @@ function MdxCodeBlock({
 									className="size-3.5"
 									strokeWidth={2}
 								/>
-							</button>
+							</SoundButton>
 						) : null}
-						<button
+						<SoundButton
 							aria-label={copied ? "Copied code" : "Copy code"}
 							className={codeBlockActionClass}
 							onClick={copyCode}
@@ -358,7 +396,7 @@ function MdxCodeBlock({
 							<AnimatePresence>
 								{copied ? <ClipboardCheck /> : <Clipboard />}
 							</AnimatePresence>
-						</button>
+						</SoundButton>
 					</div>
 				</div>
 			)}
@@ -378,7 +416,7 @@ function MdxCodeBlock({
 				</pre>
 				{isCollapsed && canExpand ? (
 					<div className="pointer-events-none absolute inset-x-0 bottom-0 flex h-20 items-end justify-center rounded-b-xl bg-linear-to-b from-neutral-100/0 via-neutral-100/90 to-neutral-100 pb-3 dark:via-neutral-900/90 dark:to-neutral-900">
-						<button
+						<SoundButton
 							aria-controls={codeBlockId}
 							aria-expanded={expanded}
 							className="pointer-events-auto h-6 rounded-md px-3 font-medium text-neutral-600 text-xs transition-colors hover:bg-neutral-950/2.5 hover:text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 dark:text-neutral-400 dark:focus-visible:ring-white/30 dark:hover:bg-white/5 dark:hover:text-neutral-50"
@@ -386,7 +424,7 @@ function MdxCodeBlock({
 							type="button"
 						>
 							Click to Expand
-						</button>
+						</SoundButton>
 					</div>
 				) : null}
 			</div>
@@ -447,6 +485,7 @@ export const writeupComponents: MDXComponents = {
 	Panel,
 	a: MdxAnchor,
 	blockquote: MdxBlockquote,
+	button: SoundButton,
 	code: MdxInlineCode,
 	del: MdxStrikethrough,
 	h2: MdxHeading2,
