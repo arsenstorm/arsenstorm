@@ -5,13 +5,14 @@ import { PageHeading } from "#/components/page-heading.tsx";
 import { Section } from "#/components/section.tsx";
 import { TechnicalWriteups } from "#/components/technical-writeups.tsx";
 import { PROJECTS } from "#/lib/projects.ts";
-import { pageMeta } from "#/lib/seo";
+import { pageLinks, pageMeta } from "#/lib/seo";
 
 const TITLE = "Arsen Shkrumelyak";
 const DESCRIPTION = "I build software with care.";
 
 export const Route = createFileRoute("/")({
 	head: () => ({
+		links: pageLinks(),
 		meta: pageMeta(TITLE, DESCRIPTION),
 	}),
 	component: Home,

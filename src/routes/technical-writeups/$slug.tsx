@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { PageHeading } from "#/components/page-heading.tsx";
 import { writeupComponents } from "#/components/writeup-content";
-import { pageMeta } from "#/lib/seo";
+import { pageLinks, pageMeta, technicalWriteupJsonLd } from "#/lib/seo";
 import {
 	findTechnicalWriteup,
 	hasTechnicalWriteups,
@@ -21,11 +21,16 @@ export const Route = createFileRoute("/technical-writeups/$slug")({
 		return { writeup: toTechnicalWriteupSummary(writeup) };
 	},
 	head: ({ loaderData }) => ({
+		links: pageLinks(loaderData?.writeup?.href ?? "/technical-writeups"),
 		meta: pageMeta(
 			loaderData?.writeup?.title ?? "",
 			loaderData?.writeup?.description ?? "",
-			loaderData?.writeup?.href ?? "/technical-writeups"
+			loaderData?.writeup?.href ?? "/technical-writeups",
+			{ type: "article" }
 		),
+		scripts: loaderData?.writeup
+			? [technicalWriteupJsonLd(loaderData.writeup)]
+			: [],
 	}),
 	component: TechnicalWriteup,
 });

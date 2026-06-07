@@ -3,13 +3,14 @@ import { ItemGroup } from "#/components/item-group.tsx";
 import { PageHeading } from "#/components/page-heading";
 import { Section } from "#/components/section.tsx";
 import { PROJECTS } from "#/lib/projects.ts";
-import { pageMeta } from "#/lib/seo";
+import { pageLinks, pageMeta } from "#/lib/seo";
 
 const TITLE = "My Work";
 const DESCRIPTION = "These are the things I've worked on.";
 
 export const Route = createFileRoute("/work")({
 	head: () => ({
+		links: pageLinks("/work"),
 		meta: pageMeta(TITLE, DESCRIPTION, "/work"),
 	}),
 	component: Work,
