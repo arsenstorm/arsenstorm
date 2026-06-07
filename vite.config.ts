@@ -7,6 +7,8 @@ import { defineConfig } from "vite";
 import { createMdxPlugin } from "./vite/mdx";
 import { shouldPrerenderPath } from "./vite/prerender";
 
+const SITE_URL = "https://arsenstorm.com";
+
 const config = defineConfig({
 	resolve: { tsconfigPaths: true },
 	plugins: [
@@ -22,6 +24,10 @@ const config = defineConfig({
 				crawlLinks: true,
 				failOnError: true,
 				filter: ({ path }) => shouldPrerenderPath(path),
+			},
+			sitemap: {
+				enabled: true,
+				host: SITE_URL,
 			},
 		}),
 		viteReact({ include: /\.(jsx|js|mdx|md|tsx|ts)$/ }),
