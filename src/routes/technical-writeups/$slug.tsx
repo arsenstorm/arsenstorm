@@ -1,6 +1,6 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
+import { writeupComponents } from "#/components/mdx";
 import { PageHeading } from "#/components/page-heading.tsx";
-import { writeupComponents } from "#/components/writeup-content";
 import { pageLinks, pageMeta, technicalWriteupJsonLd } from "#/lib/seo";
 import {
 	findTechnicalWriteup,
