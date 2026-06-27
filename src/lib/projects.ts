@@ -8,6 +8,13 @@ export interface Project {
 export const PROJECTS: Project[] = [
 	{
 		year: "2026",
+		title: "Open Live Object Streaming (OLOS)",
+		description:
+			"A protocol for low-latency live streaming on top of object storage.",
+		href: "https://github.com/arsenstorm/olos",
+	},
+	{
+		year: "2026",
 		title: "arsenstorm",
 		description: "This site. A small corner of the internet.",
 		href: "https://github.com/arsenstorm/arsenstorm",

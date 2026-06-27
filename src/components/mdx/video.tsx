@@ -134,7 +134,7 @@ function Video({ poster, src, title }: VideoProps) {
 	return (
 		<div className="not-prose relative -mx-4 my-6 flex flex-col rounded-[20px] bg-neutral-200/50 p-2 dark:bg-neutral-800/50">
 			{title ? (
-				<p className="order-last mt-1 mb-0.5 ml-4 font-medium text-neutral-600 text-xs tracking-tight dark:text-neutral-400">
+				<p className="order-last mt-2 ml-4 font-medium text-neutral-600 text-xs tracking-tight dark:text-neutral-400">
 					{title}
 				</p>
 			) : null}

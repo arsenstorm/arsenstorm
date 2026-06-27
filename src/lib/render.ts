@@ -3,7 +3,8 @@ import { DARK_COLORS, LIGHT_COLORS } from "#/lib/variables";
 
 const BP_MEDIUM = 550;
 const BP_LARGE = 700;
-const BODY_COPY = "I'm Arsen, a builder, philosopher, and tinkerer.";
+const BODY_COPY_LINE_1 = "I'm Arsen.";
+const BODY_COPY_LINE_2 = "I build software with care.";
 
 interface Props {
 	height: number;
@@ -219,13 +220,13 @@ export const main = (props: Props & Main) => {
 
 		@media (width > ${BP_MEDIUM}px) {
 			.intro {
-				grid-area: 1 / 3 / span 1 / span 4;
+				grid-area: 1 / 1 / span 1 / span 4;
 				font-size: 22px;
 			}
 		}
 		@media (width > ${BP_LARGE}px) {
 			.intro {
-				grid-area: 1 / 4 / span 1 / span 3;
+				grid-area: 1 / 1 / span 1 / span 3;
 			}
 		}
 
@@ -255,7 +256,7 @@ export const main = (props: Props & Main) => {
 			animation-delay: 2s, var(--animate-in-graph-delay);
 		}
 		@keyframes scroll {
-			0% { transform: translateX(60px); }
+			0% { transform: translateX(0); }
 			100% { transform: translateX(calc(-100% + 100cqw)); }
 		}
 
@@ -308,8 +309,14 @@ export const main = (props: Props & Main) => {
 	const html = `
 		<main class="wrapper grid">
 			<article class="intro">
-				<p>${BODY_COPY.split("")
+				<p>${BODY_COPY_LINE_1.split("")
 					.map((c, i) => `<span class="fade-in" style="--i: ${i};">${c}</span>`)
+					.join("")}</p>
+				<p>${BODY_COPY_LINE_2.split("")
+					.map(
+						(c, i) =>
+							`<span class="fade-in" style="--i: ${i + BODY_COPY_LINE_1.length};">${c}</span>`
+					)
 					.join("")}</p>
 			</article>
 			<article class="graph">
@@ -511,8 +518,14 @@ export const fallback = (props: Props & { width: number }) => {
 	const html = `
 		<main class="wrapper">
 			<div class="intro">
-				<p>${BODY_COPY.split("")
+				<p>${BODY_COPY_LINE_1.split("")
 					.map((c, i) => `<span class="fade-in" style="--i: ${i};">${c}</span>`)
+					.join("")}</p>
+				<p>${BODY_COPY_LINE_2.split("")
+					.map(
+						(c, i) =>
+							`<span class="fade-in" style="--i: ${i + BODY_COPY_LINE_1.length};">${c}</span>`
+					)
 					.join("")}</p>
 				<p class="hint fade-in">
 					Slight issue... Firefox doesn't support <code>foreignObject</code> yet.

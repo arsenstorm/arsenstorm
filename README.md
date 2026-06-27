@@ -25,7 +25,7 @@
 <img src="data:null;," width="100%" height="0" align="left" alt="">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://arsenstorm.com/readme?section=fallback&theme=dark">
-  <img src="https://arsenstorm.com/readme?section=fallback&theme=light" alt="" width="420" align="left">
+  <img src="https://arsenstorm.com/readme?section=fallback&theme=light" alt="" width="420" height="0" align="left">
 </picture>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://arsenstorm.com/readme?section=main&theme=dark">
