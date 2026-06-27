@@ -94,7 +94,7 @@ function renderReadmeSection({
 
 	return main({
 		...options,
-		height: 290,
+		height: 230,
 		length,
 		location,
 		sizes,

@@ -5,6 +5,7 @@ const BP_MEDIUM = 550;
 const BP_LARGE = 700;
 const BODY_COPY_LINE_1 = "I'm Arsen.";
 const BODY_COPY_LINE_2 = "I build software with care.";
+const LINE_GAP_CHARS = 30;
 
 interface Props {
 	height: number;
@@ -58,16 +59,12 @@ export const shared = `
 		--color-dot-bg-4-dark: ${DARK_COLORS.bg4};
 		--color-dot-border-dark: ${DARK_COLORS.border};
 
-		--default-delay: 1s;
+		--default-delay: 0.3s;
 		--default-duration: 1.55s;
 		--default-stagger: 0.1s;
 
-		--animate-in-menu-delay: calc(var(--default-delay) + var(--default-stagger) * 0);
-		--animate-in-links-delay: calc(var(--default-delay) + var(--default-stagger) * 1);
-		--animate-in-contributions-delay: calc(var(--default-delay) + var(--default-stagger) * 5);
-		--animate-in-readme-delay: calc(var(--default-delay) + var(--default-stagger) * 6);
-		--animate-in-copy-delay: calc(var(--default-delay) + var(--default-stagger) * 7);
-		--animate-in-graph-delay: calc(var(--default-delay) + var(--default-stagger) * 17);
+		--animate-in-copy-delay: var(--default-delay);
+		--animate-in-graph-delay: calc(var(--default-delay) + var(--default-stagger) * 10);
 	}
 
 	[data-theme="dark"] {
@@ -201,9 +198,9 @@ export const main = (props: Props & Main) => {
 		}
 
 		.wrapper {
-			align-items: flex-end;
-			grid-template-rows: 1fr auto;
-			row-gap: 20px;
+			align-items: end;
+			grid-template-rows: auto auto;
+			row-gap: 16px;
 		}
 
 		.intro {
@@ -253,7 +250,7 @@ export const main = (props: Props & Main) => {
 			animation-timing-function: linear, ease-out;
 			animation-duration: calc(30s + (var(--_w) * 0.06s)), 2.5s;
 			animation-fill-mode: both, both;
-			animation-delay: 2s, var(--animate-in-graph-delay);
+			animation-delay: var(--animate-in-graph-delay), var(--animate-in-graph-delay);
 		}
 		@keyframes scroll {
 			0% { transform: translateX(0); }
@@ -315,7 +312,7 @@ export const main = (props: Props & Main) => {
 				<p>${BODY_COPY_LINE_2.split("")
 					.map(
 						(c, i) =>
-							`<span class="fade-in" style="--i: ${i + BODY_COPY_LINE_1.length};">${c}</span>`
+							`<span class="fade-in" style="--i: ${i + BODY_COPY_LINE_1.length + LINE_GAP_CHARS};">${c}</span>`
 					)
 					.join("")}</p>
 			</article>
@@ -524,7 +521,7 @@ export const fallback = (props: Props & { width: number }) => {
 				<p>${BODY_COPY_LINE_2.split("")
 					.map(
 						(c, i) =>
-							`<span class="fade-in" style="--i: ${i + BODY_COPY_LINE_1.length};">${c}</span>`
+							`<span class="fade-in" style="--i: ${i + BODY_COPY_LINE_1.length + LINE_GAP_CHARS};">${c}</span>`
 					)
 					.join("")}</p>
 				<p class="hint fade-in">

@@ -2,6 +2,7 @@ import handler from "@tanstack/react-start/server-entry";
 import { handleGitHubActivity, refreshGitHubStats } from "#/worker/github";
 import { OGRenderer as WorkerOGRenderer } from "#/worker/og-renderer";
 import { handleOgImage } from "#/worker/og-route";
+import { handleReadmePreview } from "#/worker/readme-preview";
 import { handleSvg } from "#/worker/readme-svg";
 import type { Env } from "#/worker/types";
 import { handleWeather, refreshWeather } from "#/worker/weather";
@@ -27,6 +28,10 @@ export default {
 
 		if (url.pathname === "/readme") {
 			return await handleSvg(request, env);
+		}
+
+		if (url.pathname === "/readme/preview") {
+			return handleReadmePreview();
 		}
 
 		if (url.pathname === "/api/weather") {
