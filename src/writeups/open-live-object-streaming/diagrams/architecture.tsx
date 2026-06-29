@@ -13,9 +13,9 @@ export function OlosArchitecture() {
 			<Arrow dashed x1={290} x2={290} y1={96} y2={184} />
 			<Arrow dashed x1={357} x2={448} y1={78} y2={128} />
 
-			{/* data plane (solid) */}
-			<Arrow x1={130} x2={250} y1={152} y2={184} />
-			<Arrow x1={345} x2={448} y1={184} y2={150} />
+			{/* data plane (solid) — enter/exit storage's sides, mirroring the coordinator */}
+			<Arrow x1={130} x2={223} y1={152} y2={202} />
+			<Arrow x1={357} x2={448} y1={202} y2={152} />
 
 			<Label x={177} y={100}>
 				slots · commits
@@ -26,10 +26,10 @@ export function OlosArchitecture() {
 			<Label x={402} y={100}>
 				manifest
 			</Label>
-			<Label x={188} y={170}>
+			<Label x={177} y={180}>
 				bytes
 			</Label>
-			<Label x={398} y={168}>
+			<Label x={402} y={180}>
 				media
 			</Label>
 
