@@ -14,6 +14,14 @@ import { MdxCodeBlock, MdxInlineCode } from "./code";
 import { MdxImage } from "./image";
 import { SoundButton } from "./sound";
 import {
+	MdxTable,
+	MdxTableBody,
+	MdxTableCell,
+	MdxTableHead,
+	MdxTableHeader,
+	MdxTableRow,
+} from "./table";
+import {
 	MdxAnchor,
 	MdxBlockquote,
 	MdxHeading2,
@@ -68,4 +76,10 @@ export const writeupComponents: MDXComponents = {
 	hr: MdxSeparator,
 	strong: MdxStrong,
 	img: MdxImage,
+	table: MdxTable,
+	thead: MdxTableHead,
+	tbody: MdxTableBody,
+	tr: MdxTableRow,
+	th: MdxTableHeader,
+	td: MdxTableCell,
 };

@@ -104,7 +104,7 @@ function Callout({
 	return (
 		<aside
 			className={clsx(
-				"not-prose -mx-4 my-6 flex flex-col rounded-[14px] p-0.5",
+				"not-prose -mx-4 my-4 flex flex-col rounded-[14px] p-0.5",
 				visual.frameClassName,
 				className
 			)}

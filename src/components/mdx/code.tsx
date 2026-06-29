@@ -150,7 +150,7 @@ function MdxCodeBlock({
 		: style;
 
 	return (
-		<div className="not-prose -mx-4 my-6 flex flex-col rounded-[14px] bg-neutral-200 p-0.5 dark:bg-neutral-800">
+		<div className="not-prose -mx-4 my-4 flex flex-col rounded-[14px] bg-neutral-200 p-0.5 dark:bg-neutral-800">
 			{hideHeader ? null : (
 				<div className="my-1 flex items-center justify-between gap-2 pr-2 pl-4">
 					<p className="font-medium text-neutral-950 text-xs tracking-tight dark:text-neutral-50">

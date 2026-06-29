@@ -15,7 +15,7 @@ function MdxImage({
 	...props
 }: MdxImageProps) {
 	return (
-		<div className="not-prose relative -mx-4 my-6 flex flex-col rounded-[14px] bg-neutral-200 p-0.5 dark:bg-neutral-800">
+		<div className="not-prose relative -mx-4 my-4 flex flex-col rounded-[14px] bg-neutral-200 p-0.5 dark:bg-neutral-800">
 			<p className="order-last mt-1 mb-0.5 ml-4 font-medium text-neutral-600 text-xs tracking-tight dark:text-neutral-400">
 				{alt ?? "Image"}
 			</p>

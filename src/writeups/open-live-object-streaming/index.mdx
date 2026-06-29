@@ -1,0 +1,358 @@
+import { OlosArchitecture } from "./diagrams/architecture.tsx";
+import { CommitSequence } from "./diagrams/commit-sequence.tsx";
+import { LatencyBreakdown } from "./diagrams/latency-breakdown.tsx";
+import { LiveWindow } from "./diagrams/live-window.tsx";
+import { PublishLoop } from "./diagrams/publish-loop.tsx";
+import { SlotStateMachine } from "./diagrams/slot-state-machine.tsx";
+
+export const metadata = {
+  title: "Streaming Live Video from Object Storage",
+	description: "What if live video could be streamed from object storage?",
+	publishedAt: "2026-06-21",
+	tags: ["Live Streaming", "Protocols"],
+};
+
+Almost every live streaming system starts with a media server. But what if it didn't need one?
+
+I’ve been working on **OLOS**, shorthand for **Open Live Object Streaming**, a draft protocol for low-latency live streaming on top of commodity object storage.
+
+Essentially, object storage holds the media, and a coordinator decides what's part of the live stream.
+
+## Inspiration
+
+Cloudflare R2 has always been an interesting primitive to me.
+
+It is cheap, HTTP-native, globally cacheable, and works with Workers. But it is also just object storage — it stores and serves bytes. It has no built-in concept of a live stream, a current playback position, a committed media window, or a safe way for publishers to upload live media.
+
+I first started exploring this after watching [this video](https://www.youtube.com/watch?v=JEDb0jXhI_k) from [@developedbyed](https://x.com/developedbyed), which showed how R2 could be used to store multiple HLS segments of a single video instead of just a single `.mp4` file.
+
+That led me to wonder whether I could use R2 to live stream video, so I quickly built a working prototype that let me stream in near real time.
+
+But the more I worked on it, the more I realised that the interesting part wasn’t really Cloudflare R2, nor was it only video.
+
+The interesting part was the boundary between **untrusted uploaded objects** and **official live stream state**.
+
+So I took the idea further and began developing it into a protocol for publishing live objects.
+
+## The problem
+
+Object storage is very good at storing and serving immutable files, but live streaming is not just about storing and serving files.
+
+A live stream needs state:
+
+1. What is the current live edge?
+2. Which objects are part of the stream?
+3. Which objects are still pending?
+4. Which objects should readers be told are part of the stream?
+5. Which objects should appear in the manifest?
+6. Which objects are too old and should fall out of the live window?
+
+Traditional live streaming systems solve this with stateful infrastructure: ingest servers, packagers, origins, and sometimes custom low-latency delivery systems.
+
+That works, but it's expensive to operate and scale.
+
+Object storage looks attractive because it is much cheaper and simpler.
+
+But the naive version of “live streaming from a bucket” is dangerous.
+
+For example, a publisher (the streamer) must not be able to:
+
+- choose arbitrary object keys
+- overwrite committed media
+- upload playlists
+- inject playlist text
+- poison caches
+- turn the bucket into arbitrary file-hosting
+- make readers infer stream state from bucket listings
+
+In other words, object storage should hold the media bytes, but it must not define the live stream.
+
+## The protocol
+
+When I first started working on OLOS, I was focused on video streaming, but video is just one type of data that can be streamed.
+
+The protocol is built on the idea that a live stream can be represented as an ordered sequence of immutable objects, with only a trusted coordinator determining which objects are officially part of the stream.
+
+<OlosArchitecture />
+
+For video, those objects include CMAF init segments, parts, and media segments.
+
+### Objects and live state
+
+OLOS separates a live stream into two things:
+
+1. **Objects** — immutable bytes stored in object storage.
+2. **Live state** — the authoritative state maintained by a coordinator.
+
+Objects are cheap to store and serve, but live state is what makes the objects useful.
+
+By design, objects are inert. Uploading one grants it no status — it can sit in the bucket forever and never become part of the stream. The coordinator decides which objects are live, in what order, and for how long.
+
+A publisher only ever does one thing: upload objects to a location the coordinator gave it. Everything else — whether those objects count, when they appear in the manifest, when they fall out of the window — is live state, and live state never lives in the bucket.
+
+Every object moves through a small, one-way state machine:
+
+<SlotStateMachine />
+
+A slot is `issued` when the coordinator hands out an upload location, `upload_observed` once it has seen the object added to storage, and `committed` only after it has verified the object and folded it into the stream. Slots can also fall to `expired`, `rejected`, or `revoked`, but they never skip ahead: nothing is committed without first being observed. Even a `committed` slot can be revoked, but only once it has already fallen out of the live window.
+
+## The life of an object
+
+So how does an uploaded object become part of the stream? It happens in four phases, and every one keeps the coordinator from having to trust the publisher:
+
+1. The publisher asks the coordinator for an upload slot.
+2. The publisher uploads objects directly to object storage.
+3. The coordinator observes the object that actually landed.
+4. The coordinator commits the object and advances the live edge.
+
+The publisher talks to the coordinator twice — to get a slot, and to commit — but the media itself never passes through the coordinator. The sequence below traces those four phases as the individual messages on the wire.
+
+<CommitSequence />
+
+### Slots and upload grants
+
+Before a publisher can upload anything, it has to ask the coordinator for a slot.
+
+A slot is a promise about exactly one object: this key, this content type, these byte bounds, valid until that moment. The coordinator records it as `issued` state and hands back a short-lived, presigned upload grant.
+
+<Note>
+  In a `direct-public` deployment, the publisher doesn't choose the object key. 
+  
+  The coordinator derives the key server-side from the object's intent — rendition, media sequence, part number, kind — plus a fresh 16-byte nonce. The delivery URL is then built from the configured `mediaBaseUrl` and that key, so future object URLs can't be guessed by anyone watching the stream.
+</Note>
+
+For an S3-compatible store, OLOS presigns a single `PutObjectCommand` bound to the exact key, the declared content type, and a create-if-absent condition:
+
+```ts
+const command = new PutObjectCommand({
+  Bucket: options.bucket,
+  ContentType: options.slot.contentType,
+  IfNoneMatch: "*",
+  Key: options.slot.objectKey,
+  Metadata: { "olos-slot-id": options.slot.id },
+});
+```
+
+`IfNoneMatch: "*"` means the upload can only *create* an object, never overwrite one. A publisher can't replace committed media, pick a different key, or start an upload after the grant expires. The slot's identity is also stamped into the object's metadata (`x-amz-meta-olos-slot-id`), so the coordinator can later confirm the object it observes is the one it issued the slot for.
+
+Once it has a grant, the publisher uploads the object straight to storage:
+
+```ts
+const upload = await fetch(grant.uploadUrl, {
+  body: grant.bytes,
+  headers: grant.requiredHeaders,
+  method: "PUT",
+});
+```
+
+`grant.requiredHeaders` holds the headers the PUT must send — the content type, `If-None-Match`, and the `x-amz-meta-olos-slot-id` metadata. If the PUT succeeds, the object exists in the bucket — but, as far as the stream is concerned, nothing has happened yet.
+
+### Observing the upload
+
+The publisher then tells the coordinator it's done. But the coordinator doesn't take its word for it.
+
+Instead, it *observes* the object: it looks at what actually landed in storage. For S3, that's a `HeadObject` call, which returns the real content length, content type, etag, and metadata:
+
+```ts
+const output = await client.send(new HeadObjectCommand({ Bucket, Key }));
+```
+
+This is where the protocol stops trusting the publisher. The size checked against the slot's bounds is the *observed* size, not a number the publisher claimed in its completion hint; the content type is the value storage recorded for the object, not one supplied to the commit.
+
+<Note>
+  Object storage events (such as S3 event notifications) can also drive this step, which is useful for recovery, reconciliation, and provider-driven commit paths. But an event is only ever a hint — it's normalised, matched to an issued slot by exact key, and then committed through the same path as a publisher's completion hint. An event is never publication authority by itself.
+</Note>
+
+### Committing
+
+Commit is where an observed object becomes part of the stream. It's also where most of the protocol's rules live.
+
+Before anything is folded into live state, the commit has to clear a series of checks:
+
+1. The object's metadata slot ID has to match the slot.
+2. The object has to match the slot's content type and size.
+3. The slot can't have expired (subject to an optional late tolerance).
+4. A duplicate commit for the same slot has to be idempotent, not contradictory.
+5. An optional `commitPolicy` hook gets the final say.
+
+The `commitPolicy` hook is the seam for the application. OLOS knows nothing about users, quotas, or moderation, so anything that depends on application state goes through it:
+
+```ts
+const policy = options.commitPolicy?.({ commitId, object, slot, state });
+// → { status: "allowed" } | { status: "rejected", error }
+```
+
+The hook can only allow or reject; it can't touch coordinator state. And it runs on every path that can publish an object — commits, provider events, reconciliation, recovery — so recovery can't slip in something the live path would reject.
+
+<Caution>
+  Idempotency is essential here. Publishers retry, events get redelivered, and recovery jobs re-run, so the same commit can arrive more than once.
+  
+  Committing the same slot twice with the same object returns the existing commit; committing it with a *different* object is a conflict, not an overwrite.
+</Caution>
+
+### The cursor and the live window
+
+Once an object is committed, it gets folded into a `CommittedWindow` — the ordered set of objects currently considered live — and the coordinator advances the **cursor**.
+
+The cursor is the source of truth for the live edge readers see, and everything a viewer sees is rendered from it. It has one rule the whole protocol leans on: **it only ever moves forward.**
+
+<LiveWindow />
+
+```ts
+const update = resolveCursorUpdate({ candidateCursor, currentCursor });
+// → "advanced" | "idempotent" | "regression"
+```
+
+A candidate cursor behind the current one is rejected as a regression. That's what makes it safe for several things to race on the same session at once — a live publisher, a redelivered event, a recovery job, a retention sweep. The cursor is persisted with a conditional write (compare-and-set on an etag), so two concurrent writers can't both win.
+
+The ordering rule also unlocks parallel parts. Commits don't have to arrive in order — the cursor only advances across the *contiguous prefix* of committed objects. An out-of-order commit is still recorded; it just doesn't move the live edge until the gap before it fills, which lets a publisher upload a segment's parts in parallel:
+
+<PublishLoop />
+
+Finally, as the cursor moves on, older objects fall out of the live window and surface as `retiredObjects`, so the runtime can delete their bytes in the same step. Otherwise the persisted state — and every manifest render — would grow with the age of the stream instead of staying proportional to the window.
+
+## Serving the stream
+
+Reading is the easy half, because there's nothing to trust.
+
+A viewer requests an HLS manifest, and the coordinator renders it directly from the cursor and the `CommittedWindow`. It never lists the bucket to find out what's live, and it never reads playlist text a publisher uploaded — there is no such thing. The manifest is computed from trusted state every time.
+
+For low-latency playback, OLOS uses LL-HLS with blocking playlist reloads: a player can request a future media sequence and part (`_HLS_msn` / `_HLS_part`), and the request blocks until the cursor reaches it or the wait times out. The reference configuration runs 0.5s parts, 2s segments, and a 3s blocking-reload wait.
+
+<Note>
+  The blocking reload needs a way to wake up when the cursor advances. A single process can use an in-memory notifier; a distributed deployment must provide its own — such as a queue, a pub/sub channel, or a durable signal.
+  
+  OLOS decides *when* a wait can be released, but it doesn't own the wake-up mechanism.
+</Note>
+
+**Uploading an object to the bucket grants nothing** — an object is part of the stream only once the coordinator has committed it and the manifest reflects it.
+
+## Benchmarks
+
+The reference deployment is found in the [OLOS repo](https://github.com/arsenstorm/olos):
+
+- The `streamer` example is an RTMP/ffmpeg bridge: it takes OBS over RTMP, transmuxes the stream to fragmented MP4 with ffmpeg, and publishes the chunks to OLOS as LL-HLS parts and segments.
+- The `api` example is the coordinator — a Cloudflare Worker and `StreamCoordinator` Durable Object holding the live state, with R2 as the media store.
+- The `player` example plays the stream in a browser.
+
+End to end, that's the streaming software (such as [OBS](https://obsproject.com/)) → bridge → OLOS → R2 → player. I measured its latency by eye — watching how far the player lagged the live source — which is why it's a rough range, around 4 to 4.5 seconds when deployed to Cloudflare.
+
+Most of that isn't OLOS, though: it's the encoder's buffer, the LL-HLS part and segment cadence, and the player's own buffering — costs any low-latency HLS system pays. To find out what the *protocol* itself adds, I benchmarked the commit-and-serve path on its own.
+
+The benchmark pushes real H.264 video through an in-process coordinator backed by in-memory storage. There's no S3 and no network — stripping those out isolates the encode pipeline, the local coordinator path, and the benchmark harness.
+
+Over 1,000 parts on an M1 Pro with 100ms parts:
+
+<LatencyBreakdown />
+
+Almost all of it is encode fill (~122ms). The OLOS path this entire write-up is about (committing the object, then waking the blocking manifest reload) adds about **1.2 milliseconds** at the median, combined. Overall, that's 126ms end to end at the median (202ms at p95, 334ms at p99), measured directly.
+
+| stage | p50 | p95 |
+| --- | --- | --- |
+| encode fill | 121.7 ms | 134.4 ms |
+| publish (commit) | 1.02 ms | 68.3 ms |
+| wake (manifest) | 0.16 ms | 0.24 ms |
+| fetch | 0.30 ms | 1.26 ms |
+
+<Note>
+  The benchmark runs the streamer and the player in a single process, so under load they compete for the same event loop — which is what inflates `publish` to 68ms at p95.
+</Note>
+
+So in this local benchmark, the coordinator's own work is roughly a millisecond per object at the median.
+
+## Surviving failure
+
+A stream runs for a long time, and things fail while it runs: processes restart, publishers drop, storage events arrive late or twice. None of that corrupts the stream because the coordinator's authoritative live state is persisted and not stored in memory. The cursor, the committed window, the open slots — all of it lives in the coordinator's state store, separate from the media store that holds the bytes, behind the same compare-and-set the cursor uses. A coordinator that restarts mid-stream loses nothing: the next request reloads the persisted state and continues from the cursor it left at.
+
+<Note>
+  In the reference deployment, the coordinator is a Durable Object, so the state store and the coordinator are the same thing.
+</Note>
+
+A publisher holds a short-lived lease that’s not a commit lock. A publisher that drops simply lets its lease expire, which a standby can detect via the health endpoint and take over. If two publishers commit different slots at once, neither is rejected for racing; safety there comes from the forward-only cursor and its compare-and-set.
+
+The trickier failure is a publisher that uploads an object and then dies before committing it. Its bytes are in the bucket, but on an `issued` slot — inert, in no manifest, exactly as if nothing had been uploaded. Two things can still finish the job: a storage event for that object's key, or a recovery sweep over the session's open slots. Both run the same observe-and-commit path a live publisher uses — re-reading the object, re-checking its size, type, and slot identity — so a recovered commit can never be something the live path would have rejected. The slot's expiry, plus any configured late tolerance, bounds how late this can happen, and because commits are idempotent, the sweep can run as often as needed.
+
+The coordinator reads the real size from storage and rejects anything outside the slot's byte bounds, but it doesn't inspect the contents — so an object that satisfies the byte bounds without being a valid part would still commit. A tight `minBytes` rules out anything too small to be real; closing the gap entirely would require a content check that the protocol doesn’t do.
+
+<Note>
+  OLOS provides the recovery sweep but doesn't run it on a schedule — a deployment invokes it itself, on a timer or in response to a storage event. Cleaning up objects a publisher uploaded but never committed is the deployment's job too.
+</Note>
+
+## The threat model
+
+Every inbound upload is an untrusted request, and the protocol's job is to make sure none of it can become live state on its own. The attacks generally fall into a few categories:
+
+- [Untrusted object keys](#untrusted-object-keys)
+- [Overwriting or planting bytes](#overwriting-or-planting-bytes)
+- [Substituting the object](#substituting-the-object)
+- [Injecting state through the bucket](#injecting-state-through-the-bucket)
+
+### Untrusted object keys
+
+A publisher never names the object it uploads — the coordinator [derives every key itself](#slots-and-upload-grants), salted with a random nonce, so live URLs can't be guessed, probed, or pre-seeded.
+
+### Overwriting or planting bytes
+
+Because the [upload grant](#slots-and-upload-grants) is create-only and scoped to a single object, committed media can't be overwritten, and the grant can't be repurposed into general file-hosting.
+
+The origin also serves committed bytes with `nosniff`, so a mislabelled object can't be reinterpreted, and nothing can be planted or swapped behind a cached URL.
+
+### Substituting the object
+
+Placing objects in a bucket isn't the same as committing them. The coordinator [observes what actually arrived](#observing-the-upload) — taking the size and type from storage rather than the publisher's word, and matching the slot ID baked into the object's metadata — so a swapped or mismatched object is never committed.
+
+### Injecting state through the bucket
+
+By design, there's no publisher-supplied playlist to inject text into: the [manifest](#serving-the-stream) is computed from trusted state and never from bucket listings, so a publisher can't make an object appear live just by uploading it.
+
+## Why a protocol?
+
+When I started, this was just "can I live stream from R2?". A handler, a bucket, some segments. So why turn it into a protocol with layers and a conformance suite?
+
+Because the interesting part — the boundary between uploaded objects and official live state — has nothing to do with R2, S3, or even video. OLOS isn't an encoder, a muxer, or a WebRTC competitor; it just defines that boundary, in layers that each answer one question:
+
+- **Core** — what makes an uploaded object a committed part of the stream: slots, observations, commits, cursors, the committed window.
+- **LL-HLS binding** — how the committed window becomes a playable low-latency manifest.
+- **S3-compatible binding** — the minimum a storage backend has to provide: exact-key uploads, conditional create, consistent reads, optional events.
+- **Direct-public deployment** — the configuration where committed bytes are served straight from the media origin.
+
+Keeping the core media-agnostic is what makes the rest swappable. The same store contract works with S3, R2, GCS, or a Durable Object, and the conformance suite pinpoints what “an OLOS coordinator” actually means, so two independent implementations can agree on the boundary rather than each inventing their own.
+
+It's also why video itself isn't special. The committed object the coordinator tracks is deliberately plain:
+
+```ts expanded
+interface CommittedObject {
+  commitId: OlosId;
+  contentType?: string;
+  deliveryUrl: string;
+  duration?: number;
+  etag?: string;
+  objectKey: string;
+  slotId: OlosId;
+}
+```
+
+There's nothing about codecs, frames, or pixels in there — just an immutable, addressable, optionally time-indexed object. The video-specific concepts (parts, byteranges, keyframe-aligned segments) live one layer up, in the LL-HLS binding, not in the commit semantics. So the same core — *an ordered sequence of committed objects with a moving live edge* — fits anything that arrives as a stream of immutable chunks over time:
+
+- **Audio** — a radio show or a live podcast, with no video track at all.
+- **Captions and transcripts** — live subtitle segments committed alongside the media they describe.
+- **Telemetry and sensor data** — a drone's position, a car's lap data, a live scoreboard.
+- **Market data** — a stream of price ticks where every chunk is immutable and order is everything.
+
+<Note>
+  The core has been designed to be media-agnostic, and `RENDITION_KINDS` admits `audio`, `text`, and `metadata` alongside `video`. 
+  
+  Currently, the only binding I've built is the video-first LL-HLS one.
+</Note>
+
+## Final thoughts
+
+I started this because I wanted to see whether Cloudflare R2 could be used for low-latency video live streaming.
+
+But OLOS has become more interesting than that — not simply “put video segments in a bucket”, but a way to separate uploaded objects from official live state.
+
+Object storage is a powerful primitive, but it is deliberately dumb. It does not know what a live stream is. And OLOS adds just enough structure around it to make live publication possible without letting the bucket define the stream.
+
+---
+
+You can find the protocol and reference implementation [on GitHub](https://github.com/arsenstorm/olos).
