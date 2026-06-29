@@ -1,3 +1,7 @@
+import { ConfirmationHandshake } from "./diagrams/confirmation-handshake.tsx";
+import { EmailPipeline } from "./diagrams/pipeline.tsx";
+import { MailLoop } from "./diagrams/mail-loop.tsx";
+
 export const metadata = {
   title: "Using Email as an Interface",
   description: "What if you built a SaaS product without a website?",
@@ -29,6 +33,8 @@ From there, it functions roughly like this:
 6. Then, reply to the original email with the generated PDF attached.
 
 In the following sections, I'll go over the most important and interesting parts of the code for this product, including MIME parsing, limitations, abuse prevention, and more.
+
+<EmailPipeline />
 
 ## Handling incoming emails
 
@@ -533,6 +539,8 @@ To prevent this, I ignore emails that have the hallmarks of automated messages, 
 - Out-of-office replies.
 - Emails that contain `Auto-Submitted` headers.
 
+<MailLoop />
+
 Also, not every invalid email needs a reply — sometimes, the safest response is to silently drop the message or reject it. Here's what I did:
 
 ```ts
@@ -620,6 +628,8 @@ For destructive or high-impact actions, the first email should only create a pen
 4. User replies to that confirmation.
 5. The system checks that the reply references the confirmation email.
 6. Only then does the system perform the deletion.
+
+<ConfirmationHandshake />
 
 <Caution>
 	The confirmation reply **must** reference the `Message-ID` of the system's confirmation email through `In-Reply-To`. Otherwise:
