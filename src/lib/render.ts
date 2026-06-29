@@ -193,14 +193,14 @@ export const main = (props: Props & Main) => {
 			--size-dot-gap: ${props.dots.gap};
 			--size-dot: ${props.dots.size};
 			--size-year-gap: ${props.year.gap};
-			--size-label-height: 20;
+			--size-label-height: 0;
 			--duration: 360;
 		}
 
 		.wrapper {
 			align-items: end;
 			grid-template-rows: auto auto;
-			row-gap: 16px;
+			row-gap: 8px;
 		}
 
 		.intro {
@@ -208,6 +208,7 @@ export const main = (props: Props & Main) => {
 			grid-area: 1 / 1 / span 1 / span 6;
 			font-size: 18px;
 			font-weight: 300;
+			line-height: 1.2;
 		}
 		.intro span {
 			contain: content;
@@ -240,7 +241,7 @@ export const main = (props: Props & Main) => {
 			gap: calc(var(--size-year-gap) * 1px);
 
 			contain: strict;
-			inline-size: calc(var(--_w) * 1px);
+			inline-size: calc(var(--track-w) * 1px);
 			block-size: calc(var(--_h) * 1px);
 			will-change: transform;
 			backface-visibility: hidden;
@@ -250,11 +251,12 @@ export const main = (props: Props & Main) => {
 			animation-timing-function: linear, ease-out;
 			animation-duration: calc(30s + (var(--_w) * 0.06s)), 2.5s;
 			animation-fill-mode: both, both;
+			animation-iteration-count: infinite, 1;
 			animation-delay: var(--animate-in-graph-delay), var(--animate-in-graph-delay);
 		}
 		@keyframes scroll {
 			0% { transform: translateX(0); }
-			100% { transform: translateX(calc(-100% + 100cqw)); }
+			100% { transform: translateX(calc(var(--loop-w) * -1px)); }
 		}
 
 		.year {
@@ -303,6 +305,16 @@ export const main = (props: Props & Main) => {
 	const dots = (year: Year) =>
 		year.days.map((level) => `<div class="dot dot--${level}"></div>`).join("");
 
+	const years = props.years
+		.map(
+			(year, i) => `
+						<div class="year year--${i}" style="--w: ${props.sizes[i][0]}; --h: ${props.sizes[i][1]};">
+							<div class="year__days">${dots(year)}</div>
+						</div>
+					`
+		)
+		.join("");
+
 	const html = `
 		<main class="wrapper grid">
 			<article class="intro">
@@ -317,16 +329,9 @@ export const main = (props: Props & Main) => {
 					.join("")}</p>
 			</article>
 			<article class="graph">
-				<div class="years" style="--w: ${props.length}; --h: ${props.sizes[0][1]};">
-					${props.years
-						.map(
-							(year, i) => `
-						<div class="year year--${i}" style="--w: ${props.sizes[i][0]}; --h: ${props.sizes[i][1]};">
-							<div class="year__days">${dots(year)}</div>
-						</div>
-					`
-						)
-						.join("")}
+				<div class="years" style="--w: ${props.length}; --loop-w: ${props.length + props.year.gap}; --track-w: ${props.length * 2 + props.year.gap}; --h: ${props.sizes[0][1]};">
+					${years}
+					${years}
 				</div>
 			</article>
 		</main>
