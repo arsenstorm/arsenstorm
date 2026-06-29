@@ -84,7 +84,7 @@ EOF
 
 ## Sender identification
 
-In a product with an email interface, the sender's email address is the account identifier (or one of).
+In a product with an email interface, the sender's email address is the account identifier (or one of the account identifiers).
 
 This product, `img-to-pdf`, has one purpose:
 
@@ -101,13 +101,13 @@ When handling incoming emails, you'll need to parse the MIME body to extract inf
 
 I used [`postal-mime`](https://github.com/postalsys/postal-mime), which is designed for serverless environments like Cloudflare Workers.
 
-However, in `img-to-pdf`, the system first extracts and validates the `From` header, before parsing the full MIME body — this is done as part of the broader [Preventing abuse](#preventing-abuse) process.
+However, in `img-to-pdf`, the system first extracts and validates the `From` header before parsing the full MIME body — this is done as part of the broader [Preventing abuse](#preventing-abuse) process.
 
 And, when using Cloudflare Email Routing, there are a few different email addresses you'll see on an incoming message:
 
 1. The envelope sender, exposed by Cloudflare as `message.from`.
 2. The `From` header, which is the sender address shown in most email clients.
-3. The `Reply-To` header, which tells clients where replies should be sent.
+3. The `Reply-To` header, which tells clients where to send replies.
 
 `img-to-pdf` uses the address in the `From` header after normalising it to look up or create a corresponding user.
 
@@ -117,7 +117,7 @@ After that, the system needs to check whether the sender is allowed to perform a
 2. The sender is allowed to perform the merge, to which we'll continue to the next step.
 
 <Note>
-  For `img-to-pdf`, I opted to simply use a limited free tier alongside an unlimited premium tier — whether a sender can perform the merge is simply a matter of whether they've exceeded the limits of the tier they're on.
+  For `img-to-pdf`, I opted to use a limited free tier alongside an unlimited premium tier — whether a sender can perform the merge depends on whether they've exceeded their tier's limits.
 
   More details are in the [Billing over email](#billing-over-email) section.
 </Note>
@@ -132,7 +132,7 @@ The core of the product is a simple process that works like this:
 4. Generate one PDF page per **successfully processed image**.
 5. Sending the PDF back to the sender.
 
-In the previous step, we already parsed the MIME body; now we’ll need to decode and validate the attachments.
+In the previous step, we parsed the MIME body; now we’ll decode and validate the attachments.
 
 <Caution>
   An attachment can claim to be a JPEG, use a `.jpg` filename, and still contain something else entirely. Every attachment **must** be treated as untrusted.
@@ -140,7 +140,7 @@ In the previous step, we already parsed the MIME body; now we’ll need to decod
 
 ### Decoding attachments
 
-After parsing the MIME body, each attachment needs to be extracted into byte arrays for inspection before we can process them.
+After parsing the MIME body, each attachment needs to be extracted as a byte array for inspection before we can process it.
 
 Essentially, we need to check:
 
@@ -219,7 +219,7 @@ Therefore, the system needs to be able to handle a variety of cases, including:
 
 For `img-to-pdf`, I handled orientation in two phases: first, using the EXIF metadata (if it's a JPEG), and then using its dimensions.
 
-Before images are added to the PDF, the system determines the EXIF orientation and applies it as it places the image on a page. Then, using the oriented dimensions, it decides the page's orientation.
+Before images are added to the PDF, the system determines the EXIF orientation and applies it when placing the image on a page. Then, using the oriented dimensions, it decides the page's orientation.
 
 This means each image can produce a page that matches its corrected shape. Portrait images can be placed on portrait pages, landscape images on landscape pages, and the final PDF can contain a mix of both.
 
@@ -273,7 +273,7 @@ For `img-to-pdf`, it's not necessary to preserve this information in the generat
 
 A small compressed image can expand into a much larger pixel buffer once decoded. That means a file can look cheap at first, but become expensive or dangerous to process.
 
-Cloudflare Email Routing rejects messages over 25 MiB before they reach the Worker; however, that does not eliminate processing risk.
+Cloudflare Email Routing rejects messages larger than 25 MiB before they reach the Worker; however, this does not eliminate the risk of processing.
 
 A compressed image can still expand to a much larger pixel buffer after decoding, and decoding multiple images can quickly consume memory.
 
@@ -294,7 +294,7 @@ A photo might compress well as a JPEG, but a scanned document may become a blurr
 
 Generally, when compressing images, you should:
 
-- keep JPEGs as JPEGs where possible; and,
+- keep JPEGs as JPEGs where possible; and
 - avoid aggressive compression for documents, screenshots, or text-heavy images
 
 For `img-to-pdf`, I deliberately chose not to compress images to avoid compromising their quality — it’s something I’ll consider in the future.
@@ -311,7 +311,7 @@ For PDF generation, I used [`pdf-lib`](https://pdf-lib.js.org/), which works wel
 
 At this point, the system has already selected attachments that appear to be supported images and rejected requests that exceed the configured limits.
 
-However, the PDF generation can still fail because a file may pass inspection but fail when embedded or decoded.
+However, PDF generation can still fail because a file may pass inspection but fail during embedding or decoding.
 
 Therefore, the process looks roughly like this:
 
@@ -412,7 +412,7 @@ That means the user never needs a dashboard for `img-to-pdf`.
 
 The first time a sender uses the service, `img-to-pdf` creates an account for them using their email address.
 
-From there, it uses Stripe to create a customer and assign them a free tier subscription.
+From there, it uses Stripe to create a customer and assign them a free-tier subscription.
 
 By assigning them a free-tier subscription, the user can switch plans in Stripe’s billing portal instead of going through a checkout flow — though there might be drawbacks to this approach.
 
@@ -443,7 +443,7 @@ const usageGate = await handleUsageGate({
 });
 ```
 
-If the sender has exceeded the limit, the system replies with a message saying so, including when the limit resets and instructions to reply with `BILLING` if they want unlimited conversions.
+If the sender has exceeded the limit, the system replies with a message indicating the limit and when it resets, and includes instructions to reply with `BILLING` to request unlimited conversions.
 
 <Note>
   Paid users still have their usage tracked, but they bypass the free tier's hourly limit.
@@ -618,7 +618,7 @@ For destructive or high-impact actions, the first email should only create a pen
 2. The system creates a pending deletion request.
 3. The system sends a confirmation email to the account's email address.
 4. User replies to that confirmation.
-5. System checks that the reply references the confirmation email.
+5. The system checks that the reply references the confirmation email.
 6. Only then does the system perform the deletion.
 
 <Caution>
@@ -644,7 +644,7 @@ As such, the system mustn't blindly trust:
 - the compressed file size
 - the email client's attachment metadata
 
-Instead, the service should inspect the actual file content and apply restrictions before processing it.
+Instead, the service should inspect the file's contents and apply restrictions before processing it.
 
 ## Limitations
 
@@ -663,7 +663,7 @@ The generated PDF might be too large, the reply might bounce, or the email might
 With a website, the user is still present when the result is created; with email, successful generation and successful delivery are two separate things.
 
 Another limitation is account identity.
-An email address works well as a lightweight account key, but it is not the same as an authenticated session.
+An email address works well as a lightweight account key, but it is not equivalent to an authenticated session.
 Aliases, forwarded mail, shared inboxes, spoofed messages, and changed addresses can all complicate the model.
 That is why higher-risk actions need confirmation rather than being completed from a single inbound email.
 
