@@ -120,7 +120,7 @@ function SheetHeading({ children }: { children: React.ReactNode }) {
 
 function CV() {
 	return (
-		<div className="cv-backdrop min-h-dvh px-4 pt-10 pb-28">
+		<div className="cv-backdrop min-h-dvh px-4 pt-10 pb-24">
 			{/** biome-ignore lint/security/noDangerouslySetInnerHtml: scoped print/@page rules can't be expressed with utility classes */}
 			<style dangerouslySetInnerHTML={{ __html: PRINT_STYLES }} />
 
