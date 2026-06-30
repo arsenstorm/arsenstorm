@@ -81,6 +81,10 @@ export class OGRenderer implements DurableObject {
 	}
 
 	private async generate(renderRequest: OgRenderRequest): Promise<ArrayBuffer> {
+		if (renderRequest.format === "pdf") {
+			return await this.generatePdf(renderRequest.url);
+		}
+
 		const browser = await this.getBrowser();
 		const page = await browser.newPage();
 
@@ -112,6 +116,33 @@ export class OGRenderer implements DurableObject {
 			}
 
 			return normalizeScreenshot(await page.screenshot({ type: "png" }));
+		} finally {
+			await page.close();
+		}
+	}
+
+	private async generatePdf(targetUrl: string): Promise<ArrayBuffer> {
+		const browser = await this.getBrowser();
+		const page = await browser.newPage();
+
+		try {
+			// `domcontentloaded`, not `networkidle0`: the dev server's HMR socket
+			// keeps the network busy forever, and the CV page is prerendered so the
+			// full content is already in the initial HTML.
+			await page.goto(targetUrl, {
+				timeout: OG_PAGE_LOAD_TIMEOUT_MS,
+				waitUntil: "domcontentloaded",
+			});
+			// Wait for web fonts (Inter) so the PDF doesn't fall back to a default face.
+			await page.evaluateHandle("document.fonts.ready");
+			const pdf = await page.pdf({
+				format: "A4",
+				// Respect the page's `@page { size: A4 }` and print background colours.
+				preferCSSPageSize: true,
+				printBackground: true,
+			});
+
+			return new Uint8Array(pdf).buffer as ArrayBuffer;
 		} finally {
 			await page.close();
 		}

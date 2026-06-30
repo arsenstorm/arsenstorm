@@ -37,7 +37,8 @@
   "javascript": {
     "formatter": {
       "quoteStyle": "double"
-    }
+    },
+    "globals": ["__CV_CONTENT_HASH__", "__OG_TEMPLATE_HASH__"]
   },
   "extends": [
     "ultracite/biome/core",

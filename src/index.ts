@@ -1,4 +1,5 @@
 import handler from "@tanstack/react-start/server-entry";
+import { handleCvPdf } from "#/worker/cv-pdf-route";
 import { handleGitHubActivity, refreshGitHubStats } from "#/worker/github";
 import { OGRenderer as WorkerOGRenderer } from "#/worker/og-renderer";
 import { handleOgImage } from "#/worker/og-route";
@@ -44,6 +45,10 @@ export default {
 
 		if (url.pathname === OG_PATH) {
 			return await handleOgImage(request, env, ctx);
+		}
+
+		if (url.pathname === "/cv.pdf") {
+			return await handleCvPdf(request, env, ctx);
 		}
 
 		return await handleAssetOrStart(request, env);

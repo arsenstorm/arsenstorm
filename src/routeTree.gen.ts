@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkRouteImport } from './routes/work'
+import { Route as CvRouteImport } from './routes/cv'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TechnicalWriteupsIndexRouteImport } from './routes/technical-writeups/index'
 import { Route as TechnicalWriteupsSlugRouteImport } from './routes/technical-writeups/$slug'
@@ -17,6 +18,11 @@ import { Route as TechnicalWriteupsSlugRouteImport } from './routes/technical-wr
 const WorkRoute = WorkRouteImport.update({
   id: '/work',
   path: '/work',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CvRoute = CvRouteImport.update({
+  id: '/cv',
+  path: '/cv',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,12 +43,14 @@ const TechnicalWriteupsSlugRoute = TechnicalWriteupsSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cv': typeof CvRoute
   '/work': typeof WorkRoute
   '/technical-writeups/$slug': typeof TechnicalWriteupsSlugRoute
   '/technical-writeups/': typeof TechnicalWriteupsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cv': typeof CvRoute
   '/work': typeof WorkRoute
   '/technical-writeups/$slug': typeof TechnicalWriteupsSlugRoute
   '/technical-writeups': typeof TechnicalWriteupsIndexRoute
@@ -50,6 +58,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/cv': typeof CvRoute
   '/work': typeof WorkRoute
   '/technical-writeups/$slug': typeof TechnicalWriteupsSlugRoute
   '/technical-writeups/': typeof TechnicalWriteupsIndexRoute
@@ -58,14 +67,21 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/cv'
     | '/work'
     | '/technical-writeups/$slug'
     | '/technical-writeups/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/work' | '/technical-writeups/$slug' | '/technical-writeups'
+  to:
+    | '/'
+    | '/cv'
+    | '/work'
+    | '/technical-writeups/$slug'
+    | '/technical-writeups'
   id:
     | '__root__'
     | '/'
+    | '/cv'
     | '/work'
     | '/technical-writeups/$slug'
     | '/technical-writeups/'
@@ -73,6 +89,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CvRoute: typeof CvRoute
   WorkRoute: typeof WorkRoute
   TechnicalWriteupsSlugRoute: typeof TechnicalWriteupsSlugRoute
   TechnicalWriteupsIndexRoute: typeof TechnicalWriteupsIndexRoute
@@ -85,6 +102,13 @@ declare module '@tanstack/react-router' {
       path: '/work'
       fullPath: '/work'
       preLoaderRoute: typeof WorkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cv': {
+      id: '/cv'
+      path: '/cv'
+      fullPath: '/cv'
+      preLoaderRoute: typeof CvRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -113,6 +137,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CvRoute: CvRoute,
   WorkRoute: WorkRoute,
   TechnicalWriteupsSlugRoute: TechnicalWriteupsSlugRoute,
   TechnicalWriteupsIndexRoute: TechnicalWriteupsIndexRoute,

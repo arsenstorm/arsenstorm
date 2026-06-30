@@ -1,4 +1,6 @@
-export const OG_CACHE_VERSION = "1";
+// Content hash of the OG template (vite.config.ts) — busts every cached OG
+// image automatically whenever the template changes.
+export const OG_CACHE_VERSION = __OG_TEMPLATE_HASH__;
 export const OG_DEFAULT_WIDTH = 1200;
 export const OG_DEFAULT_HEIGHT = 630;
 export const OG_FAILURE_COOLDOWN_MS = 60_000;
@@ -16,6 +18,7 @@ export interface OgDimensions {
 
 export interface OgRenderRequest {
 	cacheKey: string;
+	format: "png" | "pdf";
 	url: string;
 }
 
@@ -75,5 +78,7 @@ export function readOgRenderRequest(request: Request): OgRenderRequest | null {
 		return null;
 	}
 
-	return { cacheKey, url: parsedTarget.toString() };
+	const format = url.searchParams.get("format") === "pdf" ? "pdf" : "png";
+
+	return { cacheKey, format, url: parsedTarget.toString() };
 }
