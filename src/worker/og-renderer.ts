@@ -122,10 +122,10 @@ export class OGRenderer implements DurableObject {
 	}
 
 	private async generatePdf(targetUrl: string): Promise<ArrayBuffer> {
-		const browser = await this.getBrowser();
-		const page = await browser.newPage();
+		const browser = await puppeteer.launch(this.env.BROWSER);
 
 		try {
+			const page = await browser.newPage();
 			// `domcontentloaded`, not `networkidle0`: the dev server's HMR socket
 			// keeps the network busy forever, and the CV page is prerendered so the
 			// full content is already in the initial HTML.
@@ -144,7 +144,7 @@ export class OGRenderer implements DurableObject {
 
 			return new Uint8Array(pdf).buffer as ArrayBuffer;
 		} finally {
-			await page.close();
+			await browser.close();
 		}
 	}
 }
