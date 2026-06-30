@@ -18,11 +18,11 @@ export const Route = createFileRoute("/")({
 	component: Home,
 });
 
-const ELSEWHERE: { label: string; href?: string; to?: string }[] = [
+const ELSEWHERE: { label: string; href: string }[] = [
 	{ label: "GitHub", href: "https://github.com/arsenstorm" },
 	{ label: "Twitter", href: "https://x.com/arsenstorm" },
 	{ label: "Email", href: "mailto:arsen@shkrumelyak.com" },
-	{ label: "CV", to: "/cv" },
+	{ label: "CV", href: "/cv" },
 ];
 
 function Home() {
