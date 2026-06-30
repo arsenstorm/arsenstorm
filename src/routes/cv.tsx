@@ -64,7 +64,7 @@ const SELECTED_PROJECTS: {
 	},
 	{
 		title: "Kayle ID",
-		href: "https://kayle.id",
+		href: "https://github.com/kayleai/kayle-id-v1",
 		year: "2026",
 		summary: "Privacy-first identity verification and developer platform.",
 		tech: "TypeScript, Cloudflare Workers, webhooks, NFC document reading",

@@ -23,7 +23,7 @@ export const PROJECTS: Project[] = [
 		year: "2026",
 		title: "Kayle ID",
 		description: "Privacy-first identity verification.",
-		href: "https://kayle.id",
+		href: "https://github.com/kayleai/kayle-id-v1",
 	},
 	{
 		year: "2026",
