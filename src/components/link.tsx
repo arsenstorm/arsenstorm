@@ -69,3 +69,10 @@ const CreatedLink = createLink(LinkInner);
 export const Link: LinkComponent<typeof LinkInner> = (props) => (
 	<CreatedLink preload="intent" {...props} />
 );
+
+export const MaybeExternalLink = ({ href, ...props }: AnchorProps) =>
+	href?.startsWith("http") ? (
+		<Anchor href={href} {...props} />
+	) : (
+		<Link to={href} {...props} />
+	);

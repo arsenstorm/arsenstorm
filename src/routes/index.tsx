@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ItemGroup } from "#/components/item-group.tsx";
-import { Anchor, Link } from "#/components/link";
+import { MaybeExternalLink } from "#/components/link.tsx";
 import { PageHeading } from "#/components/page-heading.tsx";
 import { Section } from "#/components/section.tsx";
 import { TechnicalWriteups } from "#/components/technical-writeups.tsx";
@@ -9,9 +9,6 @@ import { pageLinks, pageMeta } from "#/lib/seo";
 
 const TITLE = "Arsen Shkrumelyak";
 const DESCRIPTION = "I build software with care.";
-
-const ELSEWHERE_CLASS =
-	"text-neutral-500 underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50";
 
 export const Route = createFileRoute("/")({
 	head: () => ({
@@ -43,21 +40,16 @@ function Home() {
 
 			<Section title="Elsewhere">
 				<ul className="flex flex-col gap-2">
-					{ELSEWHERE.map((item) =>
-						item.href ? (
-							<li className="text-sm" key={item.label}>
-								<Anchor className={ELSEWHERE_CLASS} href={item.href}>
-									{item.label}
-								</Anchor>
-							</li>
-						) : (
-							<li className="text-sm" key={item.label}>
-								<Link className={ELSEWHERE_CLASS} to={item.to}>
-									{item.label}
-								</Link>
-							</li>
-						)
-					)}
+					{ELSEWHERE.map((item) => (
+						<li className="text-sm" key={item.label}>
+							<MaybeExternalLink
+								className="text-neutral-500 underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50"
+								href={item.href}
+							>
+								{item.label}
+							</MaybeExternalLink>
+						</li>
+					))}
 				</ul>
 			</Section>
 		</main>

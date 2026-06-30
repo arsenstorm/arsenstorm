@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Download } from "lucide-react";
 import { Controls } from "#/components/controls.tsx";
-import { Anchor, Link } from "#/components/link";
+import { Anchor, Link, MaybeExternalLink } from "#/components/link";
 import { pageLinks, pageMeta } from "#/lib/seo";
 import { TECHNICAL_WRITEUPS } from "#/writeups";
 
@@ -160,12 +160,12 @@ function CV() {
 								<div className="flex items-baseline justify-between gap-4">
 									<p className="font-medium text-[13px] text-neutral-900">
 										{project.href ? (
-											<Anchor
+											<MaybeExternalLink
 												className="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950"
 												href={project.href}
 											>
 												{project.title}
-											</Anchor>
+											</MaybeExternalLink>
 										) : (
 											project.title
 										)}
