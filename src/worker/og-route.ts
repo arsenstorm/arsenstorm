@@ -4,6 +4,7 @@ import {
 	normalizeOgPath,
 	OG_CACHE_VERSION,
 } from "./og-shared";
+import { fetchSelf } from "./self-fetch";
 import { type Env, PNG_HEADERS } from "./types";
 
 type CloudflareCacheStorage = CacheStorage & { readonly default: Cache };
@@ -49,8 +50,16 @@ async function getOgFromCache(
 	return response;
 }
 
-async function preflightOgTarget(targetUrl: string): Promise<boolean> {
-	const response = await fetch(targetUrl, { headers: { accept: "text/html" } });
+async function preflightOgTarget(
+	targetUrl: string,
+	env: Env
+): Promise<boolean> {
+	// Must go through fetchSelf: a plain fetch() to our own hostname never
+	// re-invokes this Worker (Cloudflare same-zone loop prevention).
+	const response = await fetchSelf(
+		new Request(targetUrl, { headers: { accept: "text/html" } }),
+		env
+	);
 	if (!response.ok) {
 		return false;
 	}
@@ -111,7 +120,7 @@ export async function handleOgImage(
 		return cached;
 	}
 
-	if (!(await preflightOgTarget(targetUrl))) {
+	if (!(await preflightOgTarget(targetUrl, env))) {
 		return ogErrorResponse("Page does not expose an OG template.", 404);
 	}
 

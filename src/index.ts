@@ -1,10 +1,10 @@
-import handler from "@tanstack/react-start/server-entry";
 import { handleCvPdf } from "#/worker/cv-pdf-route";
 import { handleGitHubActivity, refreshGitHubStats } from "#/worker/github";
 import { OGRenderer as WorkerOGRenderer } from "#/worker/og-renderer";
 import { handleOgImage } from "#/worker/og-route";
 import { handleReadmePreview } from "#/worker/readme-preview";
 import { handleSvg } from "#/worker/readme-svg";
+import { fetchSelf } from "#/worker/self-fetch";
 import type { Env } from "#/worker/types";
 import { handleWeather, refreshWeather } from "#/worker/weather";
 
@@ -13,15 +13,6 @@ const GITHUB_STATS_REFRESH_CRON = "0 */6 * * *";
 const OG_PATH = "/og";
 
 export class OGRenderer extends WorkerOGRenderer {}
-
-async function handleAssetOrStart(request: Request, env: Env) {
-	const assetResponse = await env.ASSETS.fetch(request);
-	if (assetResponse.status !== 404) {
-		return assetResponse;
-	}
-
-	return await handler.fetch(request);
-}
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext) {
@@ -51,7 +42,7 @@ export default {
 			return await handleCvPdf(request, env, ctx);
 		}
 
-		return await handleAssetOrStart(request, env);
+		return await fetchSelf(request, env);
 	},
 
 	async scheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionContext) {
