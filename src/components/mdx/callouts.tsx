@@ -33,7 +33,7 @@ type CalloutProps = ComponentPropsWithoutRef<"aside"> & {
 const CALLOUT_VISUALS: Record<CalloutVariant, CalloutVisual> = {
 	caution: {
 		contentClassName:
-			"bg-rose-50 text-rose-950 dark:bg-rose-950/25 dark:text-rose-100",
+			"bg-rose-50 text-rose-950 dark:bg-rose-950/50 dark:text-rose-100",
 		frameClassName: "bg-rose-200 dark:bg-rose-800/80",
 		icon: WarningIcon,
 		label: "Caution",
@@ -41,7 +41,7 @@ const CALLOUT_VISUALS: Record<CalloutVariant, CalloutVisual> = {
 	},
 	danger: {
 		contentClassName:
-			"bg-red-50 text-red-950 dark:bg-red-950/25 dark:text-red-100",
+			"bg-red-50 text-red-950 dark:bg-red-950/50 dark:text-red-100",
 		frameClassName: "bg-red-200 dark:bg-red-800/80",
 		icon: DangerIcon,
 		label: "Danger",
@@ -49,7 +49,7 @@ const CALLOUT_VISUALS: Record<CalloutVariant, CalloutVisual> = {
 	},
 	info: {
 		contentClassName:
-			"bg-sky-50 text-sky-950 dark:bg-sky-950/25 dark:text-sky-100",
+			"bg-sky-50 text-sky-950 dark:bg-sky-950/50 dark:text-sky-100",
 		frameClassName: "bg-sky-200 dark:bg-sky-800/80",
 		icon: InfoIcon,
 		label: "Info",
@@ -57,15 +57,15 @@ const CALLOUT_VISUALS: Record<CalloutVariant, CalloutVisual> = {
 	},
 	note: {
 		contentClassName:
-			"bg-neutral-100 text-neutral-700 dark:bg-neutral-950 dark:text-neutral-300",
-		frameClassName: "bg-neutral-200 dark:bg-neutral-700",
+			"bg-neutral-100 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300",
+		frameClassName: "bg-neutral-200 dark:bg-neutral-800",
 		icon: InfoIcon,
 		label: "Note",
 		labelClassName: "text-neutral-950 dark:text-neutral-50",
 	},
 	success: {
 		contentClassName:
-			"bg-emerald-50 text-emerald-950 dark:bg-emerald-950/25 dark:text-emerald-100",
+			"bg-emerald-50 text-emerald-950 dark:bg-emerald-950/50 dark:text-emerald-100",
 		frameClassName: "bg-emerald-200 dark:bg-emerald-800/80",
 		icon: SuccessIcon,
 		label: "Success",
@@ -73,7 +73,7 @@ const CALLOUT_VISUALS: Record<CalloutVariant, CalloutVisual> = {
 	},
 	tip: {
 		contentClassName:
-			"bg-teal-50 text-teal-950 dark:bg-teal-950/25 dark:text-teal-100",
+			"bg-teal-50 text-teal-950 dark:bg-teal-950/50 dark:text-teal-100",
 		frameClassName: "bg-teal-200 dark:bg-teal-800/80",
 		icon: Lightbulb,
 		label: "Tip",
@@ -81,7 +81,7 @@ const CALLOUT_VISUALS: Record<CalloutVariant, CalloutVisual> = {
 	},
 	warning: {
 		contentClassName:
-			"bg-amber-50 text-amber-950 dark:bg-amber-950/25 dark:text-amber-100",
+			"bg-amber-50 text-amber-950 dark:bg-amber-950/50 dark:text-amber-100",
 		frameClassName: "bg-amber-200 dark:bg-amber-800/80",
 		icon: WarningIcon,
 		label: "Warning",
@@ -112,7 +112,7 @@ function Callout({
 		>
 			<div
 				className={clsx(
-					"my-1 flex items-center gap-1.5 px-3.5 font-medium text-xs tracking-tight",
+					"my-2 flex items-center gap-1.5 px-3.5 font-medium text-xs tracking-tight",
 					visual.labelClassName
 				)}
 			>

@@ -1,0 +1,207 @@
+import { DynamicPageDemo } from "./demos/dynamic-page-demo.tsx";
+import { IframeCrossOriginDemo } from "./demos/iframe-cross-origin-demo.tsx";
+import { IframeSameOriginDemo } from "./demos/iframe-same-origin-demo.tsx";
+import { SecretsDemo } from "./demos/secrets-demo.tsx";
+import { ShadowDomDemo } from "./demos/shadow-dom-demo.tsx";
+import { SignInDemo } from "./demos/sign-in-demo.tsx";
+
+export const metadata = {
+  title: "Browser Workflows that Record Themselves",
+  description: "What if browser automation didn't need a script?",
+  publishedAt: "2026-07-06",
+  tags: ["Browser", "Automation", "Workflow"],
+};
+
+Browser automation usually means describing a workflow to the machine.
+
+I’ve been building an extension that works the other way round: you perform the workflow once, and it records the clicks, typing, and form submissions so it can replay them later.
+
+<Tip>
+  Every demo in this write-up is a small working app — real forms, real shadow roots, real iframes — each built around a DOM feature that breaks naive automation.
+
+  You can install the extension from the [release page on GitHub](https://github.com/arsenstorm/automated-web/releases) if you'd like to try it out with the demos below.
+</Tip>
+
+## Inspiration
+
+Logging into the same admin panel, filling the same invoice form, pulling the same weekly export — the browser is full of small chores that never feel worth automating properly, but happen often enough to be annoying.
+
+The usual tools can handle these — a Playwright script, an automation platform — but they all start with you writing the workflow down, and they all break the same way: the page changes, and the selectors need maintaining by hand. That's a lot of describing for a chore that takes thirty seconds.
+
+The extension skips that step. It records what you already do, turns it into a workflow, and replays it without leaving the machine.
+
+## Recording what you do
+
+A content script sits in every page and listens for three things: clicks, input changes, and form submissions. Each becomes a step: the action, the element, and just enough context to find that element again.
+
+Here's a first workflow to record — any email will do:
+
+<SignInDemo />
+
+Record it, and the flow becomes three steps: an input on `#demo-email`, an input on `#demo-password`, and a submit of `#demo-signin-form`. So where do names like `#demo-email` come from?
+
+<Tip>
+  Inputs are recorded on `change`, not on every keystroke — a step is the
+  _final_ value of a field, so retyping your email replaces the earlier step
+  instead of appending twenty of them.
+</Tip>
+
+### Selectors that survive
+
+The hard part of recording isn't capturing events — it's describing elements so they can be found again next week, on a page that has re-rendered itself from scratch.
+
+The recorder runs a small ladder for each element, taking the first candidate that is unique in its document:
+
+```ts
+export function describeElement(el: Element): ElementDescriptor {
+  const root = el.getRootNode();
+  const scope = root instanceof ShadowRoot ? root : el.ownerDocument;
+  let selector = cssPath(el);
+  for (const candidate of attributeCandidates(el)) {
+    if (isUnique(scope, candidate)) {
+      selector = candidate;
+      break;
+    }
+  }
+  if (root instanceof ShadowRoot) {
+    selector = describeElement(root.host).selector + SHADOW_DELIM + selector;
+  }
+  return { selector, text: trimmedText(el) };
+}
+```
+
+The candidates, in order: `id`, `data-testid`, an anchor's `href`, `name`, `aria-label` — and only then a short positional CSS path as the fallback.
+
+One deliberate detail: ids like `:r1:` or `ember123` are rejected outright. Frameworks generate them fresh on every render, so a selector built on one will never match again. The recorder keeps a small regex of these machine-id shapes and ignores any id that matches it.
+
+Each click also records the element's visible text. At replay time, if the selector misses but exactly one element of the same tag has the same text, that element wins — text is what _you_ used to find the button, so it's a reasonable fallback for the machine too.
+
+## Keeping secrets out of recordings
+
+A workflow recorder that stores passwords is a keylogger with a settings page. So, unless you intentionally opt in, it won't record sensitive data.
+
+When a field looks sensitive — `type="password"`, or an `autocomplete` hinting at credentials or card data — the step is kept, but the value is dropped **at capture**, before it ever leaves the page:
+
+```ts
+record({
+  kind: "input",
+  selector,
+  value: sensitive && !recordSecrets ? "" : el.value,
+  sensitive,
+});
+```
+
+Record this one and check the workflow afterwards: the cardholder's name is stored, but the card number isn't.
+
+<SecretsDemo />
+
+<Warning>
+  Storing secrets can be enabled in the extension's settings, but this is a security risk and is not recommended.
+</Warning>
+
+## Seeing through shadow DOM
+
+Web components make recording harder. Events that happen inside a shadow root are **retargeted**: by the time a click bubbles out to the document, `event.target` claims it happened on the host element, not the button you actually pressed.
+
+However, the real target is still available through `composedPath()` — its first entry is the element all the way inside:
+
+```ts
+const eventTarget = (event: Event): EventTarget | null => {
+  const first = event.composedPath?.()[0];
+  return first instanceof Element ? first : event.target;
+};
+```
+
+A selector for that inner element can't be a plain CSS string either, because `querySelector` doesn't cross shadow boundaries. So the recorder builds a chain — one selector per shadow root, host first, joined with `>>>` — and replay walks it back down, hopping through each `shadowRoot` as it goes.
+
+These two counters are identical, except one shadow root is open and the other closed:
+
+<ShadowDomDemo />
+
+Record a click on each and compare the steps. The open one records `#shadow-open-host >>> button` — the recorder saw all the way in. The closed one can't be seen into: `composedPath()` is truncated at a closed boundary, so all that can be recorded is `#shadow-closed-host` itself.
+
+## Crossing into iframes
+
+A page is not one document — it's a tree of them. Checkout forms, payment fields, embedded widgets: the elements you interact with are often in an iframe, and an automation tool that only watches the top document simply doesn't see them.
+
+The extension's answer is to run its content script in **every frame** it has permission to reach, and to remember, for each recorded step, which document it happened in.
+
+### Same-origin frames
+
+This subscribe widget is a separate document with its own URL, loaded from the same origin as the article:
+
+<IframeSameOriginDemo />
+
+Record a subscription and every step carries the frame's URL alongside the selector. That stamp is the important part: a step that says `#frame-subscribe` is ambiguous on a page with five frames; a step that says `#frame-subscribe` _in that document_ is not.
+
+### Cross-origin frames
+
+Most real widgets, however, are loaded from someone else's origin, and the browser's same-origin policy makes them completely opaque to the page that embeds them. You can verify this yourself: buy something in the widget below — the frame's own script sees the click and says so — then press the second button, which asks this article's JavaScript to read the frame's document:
+
+<IframeCrossOriginDemo />
+
+The article's JavaScript is blind here. The extension does not need to be because it doesn't reach across the boundary at all — its content script runs _inside_ the frame, as it does in every frame the extension has permission for, and records from there. Each frame records its own document and reports to the extension's background process.
+
+The background then stamps each batch with the frame URL from the message’s sender — a value the browser fills in, and pages can’t forge — so the recorded frame URL can be trusted even if the frame’s own code can’t.
+
+At replay, the recorded frame URL is matched back to a live frame. Widget frames often change their query strings between visits, so an exact match is tried first and an origin-plus-path match second.
+
+<Note>
+  The checkout frame above is a `srcdoc` iframe, so a recording on this page
+  stamps it as `about:srcdoc` — every srcdoc frame looks the same to replay.
+  Real embedded widgets carry distinguishing URLs.
+</Note>
+
+## Replaying it back
+
+Replay is a loop over the recorded steps, driven from the extension's background: find the element, act on it, move on. The interesting cases are the ones where "find the element" isn't immediate.
+
+Modern pages render late. This profile editor does too — its Save button only renders after a delay, like anything behind a lazy import:
+
+<DynamicPageDemo />
+
+Record the flow — edit, type a name, save — and replay it. The third step can't click a button that doesn't exist yet, so each step polls for its element before acting:
+
+```ts
+const waitForElement = async (selector: string): Promise<Element | null> => {
+  const deadline = Date.now() + ELEMENT_TIMEOUT_MS;
+  for (;;) {
+    const el = deepQuery(document, selector);
+    if (el) {
+      return el;
+    }
+    if (Date.now() >= deadline) {
+      return null;
+    }
+    await sleep(POLL_INTERVAL_MS);
+  }
+};
+```
+
+Polling looks crude next to a `MutationObserver`, but an observer can't see mutations inside shadow roots, and the selector chain has to be re-walked from the top on every check anyway.
+
+The other principle is that **a stuck run pauses rather than guesses**. If the element never shows up — the page changed, the frame is gone, a captcha appeared — the run stops with a reason and waits for you to resume it or skip the step.
+
+## Noticing your habits
+
+Recording still requires you to notice the chore and press record. The extension's miner removes even that: it watches the event stream in the background, cuts it into sessions, and fingerprints each session's _shape_ — the kinds of actions and where they happened, deliberately ignoring the values you typed and the query strings you passed through.
+
+A session ends when you go idle or navigate back to where the flow started — from the outside, that navigation is what doing the same thing again looks like. When the same shape shows up three times, the miner suggests saving that flow as a workflow.
+
+If you dismiss the suggestion, it won't ask again for a while; if you tell it _never_, that flow is never suggested again.
+
+## Limitations
+
+- **Closed shadow roots** record the host, not the element inside. If the component doesn't react to a host click at replay, the run pauses for you.
+- **`srcdoc` and URL-churning iframes** can defeat frame matching — every srcdoc frame is `about:srcdoc`, and a widget that regenerates its whole URL between visits falls back to origin-plus-path matching at best.
+- **Canvas UIs** can't be recorded. A drawing app or a spreadsheet rendered onto `<canvas>` has no elements to describe.
+- **Positional selectors change.** When the ladder bottoms out at an nth-of-type path, a page that reorders itself breaks the step.
+- **CAPTCHAs end the fun.** If a CAPTCHA or anti-bot challenge blocks the next step, replay pauses rather than trying to bypass it.
+
+## Final thoughts
+
+I started this because I was tired of doing the same five clicks every week. But it became more interesting than that: the best description of a workflow turned out to be a faithful recording of someone doing it — and the real work is making that recording _survive_ re-renders, shadow roots, iframes, and pages that render late.
+
+The demos I built for this write-up are a small sample of exactly the DOM features that make browser automation hard.
+
+The best automation script is the one nobody had to write.

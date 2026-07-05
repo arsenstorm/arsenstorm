@@ -190,7 +190,7 @@ function MdxCodeBlock({
 				<pre
 					className={clsx(
 						"overflow-x-auto rounded-xl bg-neutral-100 p-4 text-neutral-700 text-xs leading-6 dark:bg-neutral-900 dark:text-neutral-300",
-						isCollapsed && "overflow-y-hidden"
+						isCollapsed && "overflow-hidden!"
 					)}
 					data-language={language}
 					id={codeBlockId}

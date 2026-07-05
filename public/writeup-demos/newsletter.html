@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Newsletter widget</title>
+    <style>
+      body {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        font: 12px InterVariable, ui-sans-serif, system-ui, sans-serif;
+        background: transparent;
+        color: #171717;
+      }
+      form {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px;
+      }
+      input {
+        height: 32px;
+        box-sizing: border-box;
+        padding: 0 10px;
+        font: inherit;
+        color: inherit;
+        background: transparent;
+        border: 1px solid #d4d4d4;
+        border-radius: 6px;
+      }
+      button {
+        height: 32px;
+        padding: 0 12px;
+        font: inherit;
+        font-weight: 500;
+        cursor: pointer;
+        border: 0;
+        border-radius: 6px;
+        background: #171717;
+        color: #fafafa;
+      }
+      [hidden] {
+        display: none;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          color: #fafafa;
+        }
+        input {
+          border-color: #404040;
+        }
+        button {
+          background: #f5f5f5;
+          color: #171717;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- The same-origin iframe target for the automating-browser-workflows
+         write-up: a working subscribe widget the extension can record and
+         replay inside this frame's own document. -->
+    <form id="frame-newsletter">
+      <label for="frame-email" hidden>Email</label>
+      <input
+        id="frame-email"
+        type="email"
+        placeholder="you@example.com"
+        autocomplete="off"
+      />
+      <button id="frame-subscribe" type="submit">Subscribe</button>
+    </form>
+    <p id="frame-done" hidden>Subscribed ✓</p>
+    <script>
+      const form = document.getElementById("frame-newsletter");
+      const done = document.getElementById("frame-done");
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        form.hidden = true;
+        done.hidden = false;
+      });
+    </script>
+  </body>
+</html>
