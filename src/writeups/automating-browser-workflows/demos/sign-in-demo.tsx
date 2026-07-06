@@ -28,7 +28,7 @@ export function SignInDemo() {
 	};
 
 	return (
-		<Panel onReset={reset} title="Try it: a sign-in form">
+		<Panel demo="sign-in" onReset={reset} title="Try it: a sign-in form">
 			<div className={sandboxClass}>
 				{signedIn ? (
 					<p className="text-neutral-950 text-xs dark:text-neutral-50">

@@ -17,7 +17,7 @@ export function SecretsDemo() {
 	};
 
 	return (
-		<Panel onReset={reset} title="Try it: secret fields">
+		<Panel demo="secrets" onReset={reset} title="Try it: secret fields">
 			<div className={sandboxClass}>
 				{saved ? (
 					<p className="text-neutral-950 text-xs dark:text-neutral-50">

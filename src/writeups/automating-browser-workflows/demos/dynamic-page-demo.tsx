@@ -44,7 +44,11 @@ export function DynamicPageDemo() {
 	};
 
 	return (
-		<Panel onReset={reset} title="Try it: a page that renders late">
+		<Panel
+			demo="dynamic"
+			onReset={reset}
+			title="Try it: a page that renders late"
+		>
 			<div className={sandboxClass}>
 				{stage === "idle" ? (
 					<button
