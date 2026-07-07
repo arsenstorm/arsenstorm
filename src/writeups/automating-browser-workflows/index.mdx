@@ -2,8 +2,8 @@ import { DynamicPageDemo } from "./demos/dynamic-page-demo.tsx";
 import { IframeCrossOriginDemo } from "./demos/iframe-cross-origin-demo.tsx";
 import { IframeSameOriginDemo } from "./demos/iframe-same-origin-demo.tsx";
 import { SecretsDemo } from "./demos/secrets-demo.tsx";
+import { NewsletterDemo } from "./demos/newsletter-demo.tsx";
 import { ShadowDomDemo } from "./demos/shadow-dom-demo.tsx";
-import { SignInDemo } from "./demos/sign-in-demo.tsx";
 
 export const metadata = {
   title: "Browser Workflows that Record Themselves",
@@ -36,9 +36,9 @@ A content script sits in every page and listens for three things: clicks, input 
 
 Here's a first workflow to record — any email will do:
 
-<SignInDemo />
+<NewsletterDemo />
 
-Record it, and the flow becomes three steps: an input on `#demo-email`, an input on `#demo-password`, and a submit of `#demo-signin-form`. So where do names like `#demo-email` come from?
+Record it, and the flow becomes two steps: an input on `#demo-email` and a submit of `#demo-newsletter-form`. So where do names like `#demo-email` come from?
 
 <Tip>
   Inputs are recorded on `change`, not on every keystroke — a step is the
