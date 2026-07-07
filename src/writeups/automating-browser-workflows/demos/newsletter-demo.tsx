@@ -46,6 +46,7 @@ export function NewsletterDemo() {
 								id="demo-email"
 								onChange={(event) => setEmail(event.target.value)}
 								placeholder="you@example.com"
+								required
 								type="email"
 								value={email}
 							/>
