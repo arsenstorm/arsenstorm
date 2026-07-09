@@ -96,7 +96,7 @@ const EDUCATION = [
 	{
 		period: "2023—2026",
 		institution: "BSc Computer Science, University of Greenwich",
-		detail: "Graduated · Classification pending · London, UK",
+		detail: "Graduated · First Class Honours · London, UK",
 	},
 ];
 
