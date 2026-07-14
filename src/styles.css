@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+/* Screen-only so printing in dark mode still produces a light document. */
+@custom-variant dark {
+	@media screen {
+		&:where(.dark, .dark *) {
+			@slot;
+		}
+	}
+}
 
 @theme {
 	--font-sans: "InterVariable", sans-serif;

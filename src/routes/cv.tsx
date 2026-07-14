@@ -112,7 +112,7 @@ const PRINT_STYLES = `
 
 function SheetHeading({ children }: { children: React.ReactNode }) {
 	return (
-		<h2 className="mb-2 border-neutral-200 border-b pb-1 font-medium text-[11px] text-neutral-900 uppercase tracking-wider">
+		<h2 className="mb-2 border-neutral-200 border-b pb-1 font-medium text-[11px] text-neutral-900 uppercase tracking-wider dark:border-neutral-800 dark:text-neutral-100">
 			{children}
 		</h2>
 	);
@@ -124,18 +124,18 @@ function CV() {
 			{/** biome-ignore lint/security/noDangerouslySetInnerHtml: scoped print/@page rules can't be expressed with utility classes */}
 			<style dangerouslySetInnerHTML={{ __html: PRINT_STYLES }} />
 
-			<article className="cv-sheet mx-auto w-full max-w-[210mm] space-y-5 rounded-xl bg-white p-6 text-neutral-800 shadow-lg outline outline-neutral-100 sm:p-10 md:min-h-[297mm] md:p-[16mm] dark:outline-neutral-900">
+			<article className="cv-sheet mx-auto w-full max-w-[210mm] space-y-5 rounded-xl bg-white p-6 text-neutral-800 shadow-lg outline outline-neutral-100 sm:p-10 md:min-h-[297mm] md:p-[16mm] dark:bg-neutral-950 dark:text-neutral-200 dark:outline-neutral-900">
 				<header>
-					<h1 className="font-semibold text-2xl text-neutral-950 tracking-tight">
+					<h1 className="font-semibold text-2xl text-neutral-950 tracking-tight dark:text-neutral-50">
 						Arsen Shkrumelyak
 					</h1>
-					<p className="mt-0.5 text-neutral-600 text-sm">
+					<p className="mt-0.5 text-neutral-600 text-sm dark:text-neutral-400">
 						Software Engineer · London, UK
 					</p>
-					<div className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-neutral-600 text-xs">
+					<div className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-neutral-600 text-xs dark:text-neutral-400">
 						{CONTACT.map((item) => (
 							<Anchor
-								className="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950"
+								className="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:decoration-neutral-700 dark:hover:text-neutral-50"
 								href={item.href}
 								key={item.label}
 							>
@@ -147,7 +147,7 @@ function CV() {
 
 				<section>
 					<SheetHeading>Profile</SheetHeading>
-					<p className="text-pretty text-[13px] text-neutral-700 leading-relaxed">
+					<p className="text-pretty text-[13px] text-neutral-700 leading-relaxed dark:text-neutral-300">
 						{PROFILE}
 					</p>
 				</section>
@@ -158,10 +158,10 @@ function CV() {
 						{SELECTED_PROJECTS.map((project) => (
 							<li key={project.title}>
 								<div className="flex items-baseline justify-between gap-4">
-									<p className="font-medium text-[13px] text-neutral-900">
+									<p className="font-medium text-[13px] text-neutral-900 dark:text-neutral-100">
 										{project.href ? (
 											<MaybeExternalLink
-												className="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950"
+												className="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:decoration-neutral-700 dark:hover:text-neutral-50"
 												href={project.href}
 											>
 												{project.title}
@@ -170,15 +170,15 @@ function CV() {
 											project.title
 										)}
 									</p>
-									<span className="shrink-0 text-[12px] text-neutral-400 tabular-nums">
+									<span className="shrink-0 text-[12px] text-neutral-400 tabular-nums dark:text-neutral-600">
 										{project.year}
 									</span>
 								</div>
-								<p className="text-[12px] text-neutral-600 italic leading-snug">
+								<p className="text-[12px] text-neutral-600 italic leading-snug dark:text-neutral-400">
 									{project.summary}
 									{project.links?.map((link) => (
 										<Anchor
-											className="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950"
+											className="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:decoration-neutral-700 dark:hover:text-neutral-50"
 											href={link.href}
 											key={link.href}
 										>
@@ -187,7 +187,7 @@ function CV() {
 										</Anchor>
 									))}
 								</p>
-								<ul className="mt-1 flex list-disc flex-col gap-0.5 pl-4 text-[12px] text-neutral-700 leading-snug marker:text-neutral-300">
+								<ul className="mt-1 flex list-disc flex-col gap-0.5 pl-4 text-[12px] text-neutral-700 leading-snug marker:text-neutral-300 dark:text-neutral-300 dark:marker:text-neutral-700">
 									{project.bullets.map((bullet) => (
 										<li key={bullet}>{bullet}</li>
 									))}
@@ -213,13 +213,13 @@ function CV() {
 									key={writeup.slug}
 								>
 									<Link
-										className="text-[13px] text-neutral-800 underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950"
+										className="text-[13px] text-neutral-800 underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:text-neutral-200 dark:decoration-neutral-700 dark:hover:text-neutral-50"
 										params={writeup.params}
 										to={writeup.to}
 									>
 										{writeup.title}
 									</Link>
-									<span className="shrink-0 text-[12px] text-neutral-400 tabular-nums">
+									<span className="shrink-0 text-[12px] text-neutral-400 tabular-nums dark:text-neutral-600">
 										{writeup.publishedAt.slice(0, 4)}
 									</span>
 								</li>
@@ -236,12 +236,14 @@ function CV() {
 								key={entry.institution}
 							>
 								<div>
-									<p className="font-medium text-[13px] text-neutral-900">
+									<p className="font-medium text-[13px] text-neutral-900 dark:text-neutral-100">
 										{entry.institution}
 									</p>
-									<p className="text-[12px] text-neutral-600">{entry.detail}</p>
+									<p className="text-[12px] text-neutral-600 dark:text-neutral-400">
+										{entry.detail}
+									</p>
 								</div>
-								<span className="shrink-0 text-[12px] text-neutral-400 tabular-nums">
+								<span className="shrink-0 text-[12px] text-neutral-400 tabular-nums dark:text-neutral-600">
 									{entry.period}
 								</span>
 							</li>
