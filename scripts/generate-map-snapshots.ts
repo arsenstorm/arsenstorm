@@ -49,6 +49,15 @@ function getMapSnapshotCredentials(): MapSnapshotCredentials {
 	};
 }
 
+// The map images are only used by a currently-unmounted component, and CI
+// (GitHub Actions) has no Apple MapKit secrets configured — skip instead of
+// failing the build when credentials aren't present.
+function hasMapSnapshotCredentials(): boolean {
+	return Boolean(
+		env.APPLE_KEY_ID && env.APPLE_PRIVATE_KEY && env.APPLE_TEAM_ID
+	);
+}
+
 function privateKeyToArrayBuffer(privateKey: string): ArrayBuffer {
 	const base64 = privateKey
 		.replaceAll("\\n", "\n")
@@ -135,6 +144,13 @@ async function fetchMapSnapshot(
 }
 
 async function main(): Promise<void> {
+	if (!hasMapSnapshotCredentials()) {
+		stdout.write(
+			"Skipping map snapshots (Apple MapKit credentials not set).\n"
+		);
+		return;
+	}
+
 	const credentials = getMapSnapshotCredentials();
 
 	await mkdir(MAP_OUTPUT_DIRECTORY, { recursive: true });

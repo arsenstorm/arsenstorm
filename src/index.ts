@@ -1,8 +1,6 @@
 import { handle } from "@astrojs/cloudflare/handler";
-import { handleCvPdf } from "#/worker/cv-pdf-route";
+import { ogImagePath } from "#/lib/seo";
 import { handleGitHubActivity, refreshGitHubStats } from "#/worker/github";
-import { OGRenderer as WorkerOGRenderer } from "#/worker/og-renderer";
-import { handleOgImage } from "#/worker/og-route";
 import { handleReadmePreview } from "#/worker/readme-preview";
 import { handleSvg } from "#/worker/readme-svg";
 import type { Env } from "#/worker/types";
@@ -11,8 +9,11 @@ import { handleWeather, refreshWeather } from "#/worker/weather";
 const WEATHER_REFRESH_CRON = "0 * * * *";
 const GITHUB_STATS_REFRESH_CRON = "0 */6 * * *";
 const OG_PATH = "/og";
-
-export class OGRenderer extends WorkerOGRenderer {}
+const CV_PDF_HEADERS = {
+	"cache-control": "public, max-age=3600, stale-while-revalidate=86400",
+	"content-disposition": 'inline; filename="Arsen-Shkrumelyak-CV.pdf"',
+	"content-type": "application/pdf",
+};
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext) {
@@ -35,11 +36,19 @@ export default {
 		}
 
 		if (url.pathname === OG_PATH) {
-			return await handleOgImage(request, env, ctx);
+			const path = url.searchParams.get("path") ?? "/";
+			return Response.redirect(
+				new URL(ogImagePath(path), url.origin).toString(),
+				301
+			);
 		}
 
 		if (url.pathname === "/cv.pdf") {
-			return await handleCvPdf(request, env, ctx);
+			const asset = await env.ASSETS.fetch(request);
+			if (!asset.ok) {
+				return asset;
+			}
+			return new Response(asset.body, { headers: CV_PDF_HEADERS });
 		}
 
 		return await handle(request, env, ctx);
