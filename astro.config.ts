@@ -43,6 +43,10 @@ export default defineConfig({
 	// Restore the hover-preload feel of the old client-side router: fetch the
 	// next page into the browser cache as soon as a link is hovered/focused.
 	prefetch: { defaultStrategy: "hover", prefetchAll: true },
+	// In Chromium, upgrade prefetch to full Speculation Rules prerendering: the
+	// next page is rendered in a hidden renderer on hover, so navigation commits
+	// instantly. Other browsers fall back to plain prefetch.
+	experimental: { clientPrerender: true },
 	adapter: cloudflare({
 		// Prerender pages in Node, not workerd: the site is fully static and needs
 		// no Cloudflare bindings at build time, and the workerd prerenderer chokes

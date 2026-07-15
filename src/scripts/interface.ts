@@ -74,6 +74,27 @@ document.addEventListener("pointerdown", (event) => {
 	}
 });
 
+// Prime eagerly on load: Chrome allows audio once the user has interacted with
+// the domain this session, so hover sounds keep working after a full-page
+// navigation without needing a fresh click on every page. On a truly fresh
+// visit the attempt is rejected and the pointerdown listener above primes
+// instead. Speculation-Rules-prerendered pages defer until activation, when
+// the audio APIs become available.
+function primeEagerly() {
+	prime().catch(() => {
+		// Blocked by autoplay policy — first pointerdown will prime.
+	});
+}
+
+const prerenderingDocument = document as Document & { prerendering?: boolean };
+if (prerenderingDocument.prerendering) {
+	document.addEventListener("prerenderingchange", primeEagerly, {
+		once: true,
+	});
+} else {
+	primeEagerly();
+}
+
 type Theme = "light" | "dark";
 
 // applyTheme and disableTransitionsDuring: ported VERBATIM from src/lib/theme.ts,
