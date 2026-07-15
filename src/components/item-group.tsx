@@ -1,17 +1,12 @@
-import { Anchor, Link } from "#/components/link";
+import { Anchor } from "#/components/link";
 
-interface InternalItemLink {
-	params?: { slug: string };
-	to: "/technical-writeups/$slug";
-}
-
-type ItemGroupItem = {
+interface ItemGroupItem {
 	description: string;
 	href?: string;
 	publishedAt?: string;
 	title: string;
 	year?: string;
-} & Partial<InternalItemLink>;
+}
 
 interface ItemGroupProps {
 	groupBy?: "year" | "month" | "all";
@@ -95,19 +90,6 @@ export function ItemGroup({
 										{title}
 										{description}
 									</Anchor>
-								);
-							}
-
-							if (item.to) {
-								content = (
-									<Link
-										className="group flex flex-col gap-0.5"
-										params={item.params ?? { slug: "placeholder" }}
-										to={item.to}
-									>
-										{title}
-										{description}
-									</Link>
 								);
 							}
 

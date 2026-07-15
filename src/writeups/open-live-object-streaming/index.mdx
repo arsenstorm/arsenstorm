@@ -1,16 +1,16 @@
+---
+title: "Streaming Live Video from Object Storage"
+description: "What if live video could be streamed from object storage?"
+publishedAt: "2026-06-29"
+tags: ["Live Streaming", "Protocols"]
+---
+
 import { OlosArchitecture } from "./diagrams/architecture.tsx";
 import { CommitSequence } from "./diagrams/commit-sequence.tsx";
 import { LatencyBreakdown } from "./diagrams/latency-breakdown.tsx";
 import { LiveWindow } from "./diagrams/live-window.tsx";
 import { PublishLoop } from "./diagrams/publish-loop.tsx";
 import { SlotStateMachine } from "./diagrams/slot-state-machine.tsx";
-
-export const metadata = {
-  title: "Streaming Live Video from Object Storage",
-	description: "What if live video could be streamed from object storage?",
-	publishedAt: "2026-06-29",
-	tags: ["Live Streaming", "Protocols"],
-};
 
 Almost every live streaming system starts with a media server. But what if it didn't need one?
 

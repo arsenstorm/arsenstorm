@@ -1,6 +1,8 @@
-// Content hash of the OG template (vite.config.ts) — busts every cached OG
-// image automatically whenever the template changes.
-export const OG_CACHE_VERSION = __OG_TEMPLATE_HASH__;
+import { OG_TEMPLATE_HASH } from "./content-hashes.gen";
+
+// Content hash of the OG template (scripts/generate-content-hashes.ts) —
+// busts every cached OG image automatically whenever the template changes.
+export const OG_CACHE_VERSION = OG_TEMPLATE_HASH;
 export const OG_DEFAULT_WIDTH = 1200;
 export const OG_DEFAULT_HEIGHT = 630;
 export const OG_FAILURE_COOLDOWN_MS = 60_000;
@@ -23,11 +25,14 @@ export interface OgRenderRequest {
 }
 
 export function isAllowedOgOrigin(origin: string): boolean {
-	const { hostname } = new URL(origin);
+	const { hostname, protocol } = new URL(origin);
 	return (
 		origin === SITE_ORIGIN ||
 		hostname === "localhost" ||
-		hostname === "127.0.0.1"
+		hostname === "127.0.0.1" ||
+		// wrangler dev presents the zone host over plain http; the production
+		// route pattern (wrangler.jsonc) is https-only, so http implies local dev.
+		protocol === "http:"
 	);
 }
 

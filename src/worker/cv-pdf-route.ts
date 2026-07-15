@@ -1,3 +1,4 @@
+import { CV_CONTENT_HASH } from "./content-hashes.gen";
 import { createOgTargetUrl } from "./og-shared";
 import { type Env, isLocalRequest } from "./types";
 
@@ -25,16 +26,17 @@ async function hashHtml(html: string): Promise<string> {
 		.slice(0, 16);
 }
 
-// In production the cache key is the build-time content hash (vite.config.ts).
-// In dev that hash is frozen when the dev server starts, so editing the CV
-// wouldn't re-render the PDF — there we hash the live HTML instead, so any edit
-// produces a new key and rebuilds, while an unchanged page is served from cache.
+// In production the cache key is the build-time content hash
+// (scripts/generate-content-hashes.ts). In dev that hash is frozen when the
+// dev server starts, so editing the CV wouldn't re-render the PDF — there we
+// hash the live HTML instead, so any edit produces a new key and rebuilds,
+// while an unchanged page is served from cache.
 async function resolveCacheKey(
 	request: Request,
 	targetUrl: string
 ): Promise<string> {
 	if (!isLocalRequest(request)) {
-		return `cv/${__CV_CONTENT_HASH__}.pdf`;
+		return `cv/${CV_CONTENT_HASH}.pdf`;
 	}
 
 	const response = await fetch(targetUrl, { headers: { accept: "text/html" } });

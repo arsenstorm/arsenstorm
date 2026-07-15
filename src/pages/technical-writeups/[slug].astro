@@ -1,0 +1,40 @@
+---
+export const prerender = true;
+
+import { render } from "astro:content";
+import { writeupComponents } from "#/components/mdx";
+import { PageHeading } from "#/components/page-heading.tsx";
+import BaseLayout from "#/layouts/base-layout.astro";
+import { technicalWriteupJsonLd } from "#/lib/seo";
+import { getWriteups } from "#/lib/writeups";
+
+export async function getStaticPaths() {
+	const writeups = await getWriteups();
+	return writeups.map((writeup) => ({
+		params: { slug: writeup.slug },
+		props: { writeup },
+	}));
+}
+
+const { writeup } = Astro.props;
+const { Content } = await render(writeup.entry);
+---
+
+<BaseLayout
+	description={writeup.description}
+	jsonLd={technicalWriteupJsonLd(writeup)}
+	path={writeup.href}
+	title={writeup.title}
+	type="article"
+>
+	<main class="mx-auto max-w-xl space-y-12 px-6 py-24">
+		<PageHeading description={writeup.description} title={writeup.title} />
+
+		<article>
+			<Content components={writeupComponents} />
+		</article>
+	</main>
+	<script>
+		import "#/scripts/code-blocks";
+	</script>
+</BaseLayout>

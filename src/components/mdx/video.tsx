@@ -1,3 +1,6 @@
+// Server-rendered only: if a writeup uses <Video> again, the custom elements
+// must be registered client-side — add to [slug].astro's script:
+// import "hls-video-element"; import "media-chrome";
 import clsx from "clsx";
 import HlsVideo from "hls-video-element/react";
 import {

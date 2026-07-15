@@ -1,10 +1,10 @@
+import { handle } from "@astrojs/cloudflare/handler";
 import { handleCvPdf } from "#/worker/cv-pdf-route";
 import { handleGitHubActivity, refreshGitHubStats } from "#/worker/github";
 import { OGRenderer as WorkerOGRenderer } from "#/worker/og-renderer";
 import { handleOgImage } from "#/worker/og-route";
 import { handleReadmePreview } from "#/worker/readme-preview";
 import { handleSvg } from "#/worker/readme-svg";
-import { fetchSelf } from "#/worker/self-fetch";
 import type { Env } from "#/worker/types";
 import { handleWeather, refreshWeather } from "#/worker/weather";
 
@@ -42,7 +42,7 @@ export default {
 			return await handleCvPdf(request, env, ctx);
 		}
 
-		return await fetchSelf(request, env);
+		return await handle(request, env, ctx);
 	},
 
 	async scheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionContext) {

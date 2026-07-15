@@ -1,4 +1,4 @@
-import type { TechnicalWriteupSummary } from "#/writeups";
+import type { WriteupSummary } from "#/lib/writeups";
 
 const SITE_NAME = "Arsen Shkrumelyak";
 const SITE_URL = "https://arsenstorm.com";
@@ -56,22 +56,19 @@ export function pageMeta(
 	];
 }
 
-export function technicalWriteupJsonLd(writeup: TechnicalWriteupSummary) {
-	return {
-		type: "application/ld+json",
-		children: JSON.stringify({
-			"@context": "https://schema.org",
-			"@type": "Article",
-			author: {
-				"@type": "Person",
-				name: SITE_NAME,
-			},
-			datePublished: writeup.publishedAt,
-			description: writeup.description,
-			headline: writeup.title,
-			image: getOgImageUrl(writeup.href),
-			mainEntityOfPage: getAbsoluteUrl(writeup.href),
-			url: getAbsoluteUrl(writeup.href),
-		}),
-	};
+export function technicalWriteupJsonLd(writeup: WriteupSummary): string {
+	return JSON.stringify({
+		"@context": "https://schema.org",
+		"@type": "Article",
+		author: {
+			"@type": "Person",
+			name: SITE_NAME,
+		},
+		datePublished: writeup.publishedAt,
+		description: writeup.description,
+		headline: writeup.title,
+		image: getOgImageUrl(writeup.href),
+		mainEntityOfPage: getAbsoluteUrl(writeup.href),
+		url: getAbsoluteUrl(writeup.href),
+	});
 }

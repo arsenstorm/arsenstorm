@@ -1,4 +1,4 @@
-import { Link } from "./link";
+import { Anchor } from "./link";
 
 export function Section({
 	children,
@@ -6,7 +6,7 @@ export function Section({
 	title,
 }: {
 	children: React.ReactNode;
-	cta?: { label: string; to: string };
+	cta?: { label: string; href: string };
 	title: string;
 }) {
 	return (
@@ -16,12 +16,12 @@ export function Section({
 					{title}
 				</h2>
 				{cta ? (
-					<Link
+					<Anchor
 						className="text-neutral-500 text-sm underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50"
-						to={cta.to}
+						href={cta.href}
 					>
 						{cta.label}
-					</Link>
+					</Anchor>
 				) : null}
 			</div>
 			{children}

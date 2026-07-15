@@ -1,0 +1,46 @@
+---
+import { HEAD_INIT_SCRIPT } from "#/lib/head-scripts";
+import { pageLinks, pageMeta } from "#/lib/seo";
+import "#/styles.css";
+
+interface Props {
+	description: string;
+	jsonLd?: string;
+	path?: string;
+	title: string;
+	type?: "article" | "website";
+}
+
+const { title, description, path = "/", type, jsonLd } = Astro.props;
+
+const meta = pageMeta(title, description, path, type ? { type } : {});
+const links = pageLinks(path);
+---
+
+<html lang="en" class="scrollbar-gutter-stable">
+	<head>
+		<script is:inline set:html={HEAD_INIT_SCRIPT} />
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		{
+			meta.map((entry) =>
+				"title" in entry ? (
+					<title>{entry.title}</title>
+				) : (
+					<meta {...entry} />
+				)
+			)
+		}
+		{links.map((l) => <link {...l} />)}
+		<link rel="preconnect" href="https://rsms.me" />
+		<link href="/manifest.json" id="app-manifest" rel="manifest" />
+		<link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+		{jsonLd && <script type="application/ld+json" set:html={jsonLd} />}
+	</head>
+	<body>
+		<div class="isolate min-h-dvh bg-white font-sans text-neutral-950 antialiased dark:bg-neutral-950 dark:text-neutral-50">
+			<slot />
+		</div>
+		<script>import "#/scripts/interface";</script>
+	</body>
+</html>
