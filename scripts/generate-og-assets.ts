@@ -3,7 +3,7 @@ import { writeFile } from "node:fs/promises";
 import { isAbsolute, join, relative } from "node:path";
 import process, { stdout } from "node:process";
 import { fileURLToPath } from "node:url";
-import puppeteer, { type Page } from "puppeteer";
+import puppeteer, { type Browser, type Page } from "puppeteer";
 import { ogImagePath } from "../src/lib/seo";
 
 const DIST_CLIENT = fileURLToPath(new URL("../dist/client/", import.meta.url));
@@ -260,8 +260,12 @@ async function main(): Promise<void> {
 	});
 	const origin = `http://localhost:${server.port}`;
 
-	const browser = await puppeteer.launch();
+	let browser: Browser | null = null;
 	try {
+		// GitHub's Ubuntu runners restrict unprivileged user namespaces, which
+		// breaks Chrome's sandbox. Safe to disable: we only render our own
+		// freshly built, locally served output.
+		browser = await puppeteer.launch({ args: ["--no-sandbox"] });
 		mkdirSync(OG_OUTPUT_DIRECTORY, { recursive: true });
 
 		const ogPage = await browser.newPage();
@@ -274,7 +278,7 @@ async function main(): Promise<void> {
 		await renderCvPdf(pdfPage, origin);
 		await pdfPage.close();
 	} finally {
-		await browser.close();
+		await browser?.close();
 		await server.stop();
 	}
 }
