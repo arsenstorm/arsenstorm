@@ -29,7 +29,7 @@
       "new_sqlite_classes": ["OGRenderer"]
     }
   ],
-  "preview_urls": false,
+  "preview_urls": true,
   "workers_dev": false,
   "secrets": {
     "required": [
