@@ -40,9 +40,9 @@ export default defineConfig({
 	// directory output made every internal navigation pay a 307 redirect to the
 	// trailing-slash form before the page was served.
 	build: { format: "file" },
-	// Restore the hover-preload feel of the old client-side router: fetch the
-	// next page into the browser cache as soon as a link is hovered/focused.
-	prefetch: { defaultStrategy: "hover", prefetchAll: true },
+	// Prefetch every internal link as it enters the viewport — unlike hover,
+	// this also covers touch devices, which never fire hover at all.
+	prefetch: { defaultStrategy: "viewport", prefetchAll: true },
 	// In Chromium, upgrade prefetch to full Speculation Rules prerendering: the
 	// next page is rendered in a hidden renderer on hover, so navigation commits
 	// instantly. Other browsers fall back to plain prefetch.
