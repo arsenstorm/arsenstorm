@@ -23,6 +23,12 @@ export const UNAVAILABLE_JSON_HEADERS = {
 };
 
 export function isLocalRequest(request: Request): boolean {
-	const hostname = new URL(request.url).hostname;
-	return hostname === "localhost" || hostname === "127.0.0.1";
+	const { hostname, protocol } = new URL(request.url);
+	return (
+		hostname === "localhost" ||
+		hostname === "127.0.0.1" ||
+		// wrangler dev presents the zone host over plain http; the production
+		// route pattern (wrangler.jsonc) is https-only, so http implies local dev.
+		protocol === "http:"
+	);
 }

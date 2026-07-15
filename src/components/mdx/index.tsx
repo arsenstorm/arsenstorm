@@ -12,7 +12,6 @@ import {
 import { Panel } from "@/components/mdx/panel.tsx";
 import { MdxCodeBlock, MdxInlineCode } from "./code";
 import { MdxImage } from "./image";
-import { SoundButton } from "./sound";
 import {
 	MdxTable,
 	MdxTableBody,
@@ -60,7 +59,6 @@ export const writeupComponents: MDXComponents = {
 	Video,
 	a: MdxAnchor,
 	blockquote: MdxBlockquote,
-	button: SoundButton,
 	code: MdxInlineCode,
 	del: MdxStrikethrough,
 	h2: MdxHeading2,

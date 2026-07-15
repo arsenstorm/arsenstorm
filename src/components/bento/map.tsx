@@ -6,7 +6,7 @@ import {
 } from "img-fx";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useTheme } from "#/lib/theme";
+import { useDocumentTheme } from "#/lib/use-document-theme";
 import { BentoBlock } from ".";
 
 const MAP_SURFACE_CLASS = "bg-[#f5f5f5] dark:bg-[#0f0f0f]";
@@ -37,7 +37,7 @@ function getDocumentTheme(): keyof typeof MAP_SNAPSHOT_SRC | null {
 }
 
 export function BentoMap({ className }: { className?: string }) {
-	const theme = useTheme();
+	const theme = useDocumentTheme();
 	const snapshotSrc = MAP_SNAPSHOT_SRC[theme];
 	const images = useMemo(() => [snapshotSrc], [snapshotSrc]);
 	const shouldReduceMotion = useReducedMotion();

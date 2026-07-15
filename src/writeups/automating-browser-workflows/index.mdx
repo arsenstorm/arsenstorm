@@ -1,16 +1,16 @@
+---
+title: "Browser Workflows that Record Themselves"
+description: "What if browser automation didn't need a script?"
+publishedAt: "2026-07-06"
+tags: ["Browser", "Automation", "Workflow"]
+---
+
 import { DynamicPageDemo } from "./demos/dynamic-page-demo.tsx";
 import { IframeCrossOriginDemo } from "./demos/iframe-cross-origin-demo.tsx";
 import { IframeSameOriginDemo } from "./demos/iframe-same-origin-demo.tsx";
 import { SecretsDemo } from "./demos/secrets-demo.tsx";
 import { NewsletterDemo } from "./demos/newsletter-demo.tsx";
 import { ShadowDomDemo } from "./demos/shadow-dom-demo.tsx";
-
-export const metadata = {
-  title: "Browser Workflows that Record Themselves",
-  description: "What if browser automation didn't need a script?",
-  publishedAt: "2026-07-06",
-  tags: ["Browser", "Automation", "Workflow"],
-};
 
 Browser automation usually means describing a workflow to the machine.
 
@@ -36,7 +36,7 @@ A content script sits in every page and listens for three things: clicks, input 
 
 Here's a first workflow to record — any email will do:
 
-<NewsletterDemo />
+<NewsletterDemo client:visible />
 
 Record it, and the flow becomes two steps: an input on `#demo-email` and a submit of `#demo-newsletter-form`. So where do names like `#demo-email` come from?
 
@@ -93,7 +93,7 @@ record({
 
 Record this one and check the workflow afterwards: the cardholder's name is stored, but the card number isn't.
 
-<SecretsDemo />
+<SecretsDemo client:visible />
 
 <Warning>
   Storing secrets can be enabled in the extension's settings, but this is a security risk and is not recommended.
@@ -116,7 +116,7 @@ A selector for that inner element can't be a plain CSS string either, because `q
 
 These two counters are identical, except one shadow root is open and the other closed:
 
-<ShadowDomDemo />
+<ShadowDomDemo client:visible />
 
 Record a click on each and compare the steps. The open one records `#shadow-open-host >>> button` — the recorder saw all the way in. The closed one can't be seen into: `composedPath()` is truncated at a closed boundary, so all that can be recorded is `#shadow-closed-host` itself.
 
@@ -130,7 +130,7 @@ The extension's answer is to run its content script in **every frame** it has pe
 
 This subscribe widget is a separate document with its own URL, loaded from the same origin as the article:
 
-<IframeSameOriginDemo />
+<IframeSameOriginDemo client:visible />
 
 Record a subscription and every step carries the frame's URL alongside the selector. That stamp is the important part: a step that says `#frame-subscribe` is ambiguous on a page with five frames; a step that says `#frame-subscribe` _in that document_ is not.
 
@@ -138,7 +138,7 @@ Record a subscription and every step carries the frame's URL alongside the selec
 
 Most real widgets, however, are loaded from someone else's origin, and the browser's same-origin policy makes them completely opaque to the page that embeds them. You can verify this yourself: buy something in the widget below — the frame's own script sees the click and says so — then press the second button, which asks this article's JavaScript to read the frame's document:
 
-<IframeCrossOriginDemo />
+<IframeCrossOriginDemo client:visible />
 
 The article's JavaScript is blind here. The extension does not need to be because it doesn't reach across the boundary at all — its content script runs _inside_ the frame, as it does in every frame the extension has permission for, and records from there. Each frame records its own document and reports to the extension's background process.
 
@@ -158,7 +158,7 @@ Replay is a loop over the recorded steps, driven from the extension's background
 
 Modern pages render late. This profile editor does too — its Save button only renders after a delay, like anything behind a lazy import:
 
-<DynamicPageDemo />
+<DynamicPageDemo client:visible />
 
 Record the flow — edit, type a name, save — and replay it. The third step can't click a button that doesn't exist yet, so each step polls for its element before acting:
 
