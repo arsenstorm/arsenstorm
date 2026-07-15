@@ -36,6 +36,13 @@ export default defineConfig({
 	// ./dist/client, matching wrangler.jsonc `assets.directory`.
 	outDir: "./dist",
 	trailingSlash: "never",
+	// Emit `work.html` instead of `work/index.html`: links are slashless, so
+	// directory output made every internal navigation pay a 307 redirect to the
+	// trailing-slash form before the page was served.
+	build: { format: "file" },
+	// Restore the hover-preload feel of the old client-side router: fetch the
+	// next page into the browser cache as soon as a link is hovered/focused.
+	prefetch: { defaultStrategy: "hover", prefetchAll: true },
 	adapter: cloudflare({
 		// Prerender pages in Node, not workerd: the site is fully static and needs
 		// no Cloudflare bindings at build time, and the workerd prerenderer chokes
