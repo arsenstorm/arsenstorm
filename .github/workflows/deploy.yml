@@ -31,7 +31,9 @@ jobs:
       - name: Upload preview version
         if: github.event_name == 'pull_request'
         run: |
-          bunx wrangler versions upload 2>&1 | tee version-upload.log
+          # Best-effort: until the v2 Durable Object deletion migration has been
+          # applied by a production deploy, version uploads are rejected (10211).
+          bunx wrangler versions upload 2>&1 | tee version-upload.log || true
           PREVIEW_URL="$(grep -Eo 'https://[a-z0-9-]+\.[a-z0-9-]+\.workers\.dev' version-upload.log | head -1)"
           echo "PREVIEW_URL=$PREVIEW_URL" >> "$GITHUB_ENV"
           {
