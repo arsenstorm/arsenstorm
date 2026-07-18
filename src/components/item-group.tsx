@@ -4,6 +4,8 @@ interface ItemGroupItem {
 	description: string;
 	href?: string;
 	publishedAt?: string;
+	status?: "archived" | "decommissioned";
+	statusNote?: string;
 	title: string;
 	year?: string;
 }
@@ -12,6 +14,7 @@ interface ItemGroupProps {
 	groupBy?: "year" | "month" | "all";
 	id?: string;
 	items: ItemGroupItem[];
+	limit?: number;
 	showAll?: boolean;
 }
 
@@ -47,9 +50,10 @@ export function ItemGroup({
 	id,
 	items,
 	groupBy = "year",
+	limit,
 	showAll = true,
 }: ItemGroupProps) {
-	const visibleItems = showAll ? items : items.slice(0, 3);
+	const visibleItems = showAll ? items : items.slice(0, limit ?? 3);
 
 	const grouped = groupByDate(visibleItems, groupBy);
 
@@ -65,8 +69,15 @@ export function ItemGroup({
 					<ul className="flex flex-col gap-3 rounded-xl bg-neutral-100 px-4 py-3 dark:bg-neutral-900">
 						{groupedItems.map((item) => {
 							const title = (
-								<span className="text-neutral-950 text-sm decoration-neutral-300 underline-offset-4 group-hover:underline dark:text-neutral-50 dark:decoration-neutral-700">
-									{item.title}
+								<span className="flex items-center gap-2">
+									<span className="text-neutral-950 text-sm decoration-neutral-300 underline-offset-4 group-hover:underline dark:text-neutral-50 dark:decoration-neutral-700">
+										{item.title}
+									</span>
+									{item.status ? (
+										<span className="rounded-full bg-neutral-200 px-1.5 py-0.5 text-[10px] text-neutral-500 uppercase tracking-wide dark:bg-neutral-800 dark:text-neutral-400">
+											{item.status}
+										</span>
+									) : null}
 								</span>
 							);
 							const description = (
@@ -74,10 +85,16 @@ export function ItemGroup({
 									{item.description}
 								</span>
 							);
+							const statusNote = item.statusNote ? (
+								<span className="text-pretty text-neutral-500 text-sm italic dark:text-neutral-400">
+									{item.statusNote}
+								</span>
+							) : null;
 							let content = (
 								<div className="flex flex-col gap-0.5">
 									{title}
 									{description}
+									{statusNote}
 								</div>
 							);
 
@@ -89,6 +106,7 @@ export function ItemGroup({
 									>
 										{title}
 										{description}
+										{statusNote}
 									</Anchor>
 								);
 							}

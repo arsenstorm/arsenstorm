@@ -1,0 +1,41 @@
+---
+export const prerender = true;
+
+import { render } from "astro:content";
+import { writeupComponents } from "#/components/mdx";
+import { PageHeading } from "#/components/page-heading.tsx";
+import BaseLayout from "#/layouts/base-layout.astro";
+import { getExperience } from "#/lib/experience";
+
+export async function getStaticPaths() {
+	const entries = await getExperience();
+	return entries.map((entry) => ({
+		params: { slug: entry.slug },
+		props: { entry },
+	}));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry.entry);
+---
+
+<BaseLayout
+	description={entry.summary}
+	path={entry.href}
+	title={entry.company}
+	type="article"
+>
+	<main class="mx-auto max-w-xl space-y-12 px-6 py-24">
+		<PageHeading
+			description={`${entry.role} · ${entry.period}`}
+			title={entry.company}
+		/>
+
+		<article>
+			<Content components={writeupComponents} />
+		</article>
+	</main>
+	<script>
+		import "#/scripts/code-blocks";
+	</script>
+</BaseLayout>

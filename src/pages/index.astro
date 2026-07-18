@@ -1,11 +1,13 @@
 ---
 export const prerender = true;
 
+import { ExperienceList } from "#/components/experience-list.tsx";
 import { ItemGroup } from "#/components/item-group.tsx";
 import { PageHeading } from "#/components/page-heading.tsx";
 import { Section } from "#/components/section.tsx";
 import { TechnicalWriteups } from "#/components/technical-writeups.tsx";
 import BaseLayout from "#/layouts/base-layout.astro";
+import { getExperience } from "#/lib/experience";
 import { PROJECTS } from "#/lib/projects.ts";
 import { getWriteups } from "#/lib/writeups";
 
@@ -20,40 +22,48 @@ const ELSEWHERE: { label: string; href: string }[] = [
 ];
 
 const writeups = await getWriteups();
+
+const experience = (await getExperience()).filter(
+	(item) => item.kind === "experience"
+);
+
+const featuredProjects = PROJECTS.filter((project) => project.featured);
 ---
 
 <BaseLayout description={DESCRIPTION} title={TITLE}>
-	<main class="mx-auto max-w-xl space-y-12 px-6 py-24">
-		<PageHeading description={DESCRIPTION} noHomeLink title={TITLE} />
+  <main class="mx-auto max-w-xl space-y-12 px-6 py-24">
+    <PageHeading description={DESCRIPTION} noHomeLink title={TITLE} />
 
-		<Section cta={{ label: "View all", href: "/work" }} title="Work">
-			<ItemGroup id="projects-list" items={PROJECTS} showAll={false} />
-		</Section>
+    <Section title="Experience">
+      <ExperienceList items={experience} />
+    </Section>
 
-		<TechnicalWriteups items={writeups} />
+    <Section cta={{ label: "View all", href: "/projects" }} title="Projects">
+      <ItemGroup id="projects-list" items={featuredProjects} showAll={false} />
+    </Section>
 
-		{/* TODO: Add back Experiments */}
+    <TechnicalWriteups items={writeups} />
 
-		<Section title="Elsewhere">
-			<ul class="flex flex-col gap-2">
-				{
-					ELSEWHERE.map((item) => {
-						const external = item.href.startsWith("http");
-						return (
-							<li class="text-sm">
-								<a
-									class="text-neutral-500 underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50"
-									href={item.href}
-									rel={external ? "noopener noreferrer" : undefined}
-									target={external ? "_blank" : undefined}
-								>
-									{item.label}
-								</a>
-							</li>
-						);
-					})
-				}
-			</ul>
-		</Section>
-	</main>
+    <Section title="Elsewhere">
+      <ul class="flex flex-col gap-2">
+        {
+          ELSEWHERE.map((item) => {
+            const external = item.href.startsWith("http");
+            return (
+              <li class="text-sm">
+                <a
+                  class="text-neutral-500 underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50"
+                  href={item.href}
+                  rel={external ? "noopener noreferrer" : undefined}
+                  target={external ? "_blank" : undefined}
+                >
+                  {item.label}
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </Section>
+  </main>
 </BaseLayout>

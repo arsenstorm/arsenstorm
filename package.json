@@ -7,7 +7,7 @@
     "@astrojs/sitemap": "^3.7.3",
     "@tailwindcss/vite": "^4.3.0",
     "@web-kits/audio": "^0.1.0",
-    "astro": "^7.0.9",
+    "astro": "^7.1.1",
     "clsx": "^2.1.1",
     "hls-video-element": "^1.5.11",
     "img-fx": "^0.3.1",

@@ -1,6 +1,9 @@
 export interface Project {
 	description: string;
+	featured?: boolean;
 	href?: string;
+	status?: "archived" | "decommissioned";
+	statusNote?: string;
 	title: string;
 	year: string;
 }
@@ -12,6 +15,22 @@ export const PROJECTS: Project[] = [
 		description:
 			"A protocol for low-latency live streaming on top of object storage.",
 		href: "https://github.com/arsenstorm/olos",
+		featured: true,
+	},
+	{
+		year: "2026",
+		title: "Automated Web",
+		description: "Reliable browser automation for real-world workflows.", // TODO: confirm copy + live link
+		href: "/technical-writeups/automating-browser-workflows",
+		featured: true,
+	},
+	{
+		year: "2026",
+		title: "img-to-pdf",
+		description:
+			"An email-native service that merges emailed images into a single PDF.",
+		href: "/technical-writeups/using-email-as-an-interface",
+		featured: true,
 	},
 	{
 		year: "2026",
@@ -42,6 +61,7 @@ export const PROJECTS: Project[] = [
 		title: "iOS ID Reader",
 		description: "iOS app for reading identity documents over NFC.",
 		href: "https://apps.apple.com/us/app/id-reader/id6757679372",
+		featured: true,
 	},
 	{
 		year: "2026",
@@ -55,12 +75,6 @@ export const PROJECTS: Project[] = [
 		title: "World Class Education",
 		description: "Expert tutoring for top students.",
 		href: "https://worldclass.education",
-	},
-	{
-		year: "2025",
-		title: "Anyverse",
-		description: "Helping students get into university for free.",
-		href: "https://anyverse.app",
 	},
 	{
 		year: "2025",
