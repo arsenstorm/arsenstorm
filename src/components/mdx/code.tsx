@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { cn } from "cnfast";
 import { ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 import { type ComponentPropsWithoutRef, useId } from "react";
 import Clipboard from "#/icons/clipboard.tsx";
@@ -53,7 +53,7 @@ function MdxInlineCode({
 	if (language) {
 		return (
 			<code
-				className={clsx("font-mono text-inherit text-xs leading-6", className)}
+				className={cn("font-mono text-inherit text-xs leading-6", className)}
 				data-language={language}
 				{...props}
 			/>
@@ -98,7 +98,7 @@ function MdxCodeBlock({
 								aria-controls={codeBlockId}
 								aria-expanded="false"
 								aria-label="Expand code"
-								className={clsx(codeBlockActionClass, "hidden")}
+								className={cn(codeBlockActionClass, "hidden")}
 								data-code-action="toggle"
 								type="button"
 							>

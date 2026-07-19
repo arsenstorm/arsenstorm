@@ -1,3 +1,4 @@
+import { cn } from "cnfast";
 import { Anchor } from "#/components/link";
 
 interface ItemGroupItem {
@@ -104,7 +105,11 @@ export function ItemGroup({
 							if (item.href) {
 								content = (
 									<Anchor
-										className={`group ${itemClass} transition-colors hover:bg-neutral-200/70 focus-visible:bg-neutral-200/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 focus-visible:ring-inset dark:focus-visible:bg-neutral-800/70 dark:focus-visible:ring-white/30 dark:hover:bg-neutral-800/70`}
+										className={cn(
+											"group",
+											itemClass,
+											"hover:bg-neutral-200/70 focus-visible:bg-neutral-200/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 focus-visible:ring-inset dark:focus-visible:bg-neutral-800/70 dark:focus-visible:ring-white/30 dark:hover:bg-neutral-800/70"
+										)}
 										href={item.href}
 									>
 										{title}

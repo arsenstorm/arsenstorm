@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { cn } from "cnfast";
 import { Link as LinkIcon } from "lucide-react";
 import type { ComponentPropsWithoutRef } from "react";
 import { Anchor } from "../link";
@@ -24,7 +24,7 @@ function MdxAnchor({
 
 	return (
 		<Anchor
-			className={clsx(
+			className={cn(
 				"text-neutral-950 underline decoration-neutral-300 underline-offset-4 transition-colors hover:decoration-neutral-950 dark:text-neutral-50 dark:decoration-neutral-700 dark:hover:decoration-neutral-50",
 				className
 			)}
@@ -57,7 +57,7 @@ function MdxSectionHeading({
 
 	return (
 		<Heading
-			className={clsx(
+			className={cn(
 				"group flex scroll-mt-24 items-start gap-1 text-neutral-950 dark:text-neutral-50",
 				levelClassName,
 				className
@@ -161,11 +161,11 @@ function MdxStrikethrough(props: ComponentPropsWithoutRef<"del">) {
 }
 
 function MdxUnorderedList(props: ComponentPropsWithoutRef<"ul">) {
-	return <ul className={clsx(listClass, "list-disc")} {...props} />;
+	return <ul className={cn(listClass, "list-disc")} {...props} />;
 }
 
 function MdxOrderedList(props: ComponentPropsWithoutRef<"ol">) {
-	return <ol className={clsx(listClass, "list-decimal")} {...props} />;
+	return <ol className={cn(listClass, "list-decimal")} {...props} />;
 }
 
 function MdxListItem(props: ComponentPropsWithoutRef<"li">) {

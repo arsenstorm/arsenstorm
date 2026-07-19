@@ -1,7 +1,4 @@
-// Server-rendered only: if a writeup uses <Video> again, the custom elements
-// must be registered client-side — add to [slug].astro's script:
-// import "hls-video-element"; import "media-chrome";
-import clsx from "clsx";
+import { cn } from "cnfast";
 import HlsVideo from "hls-video-element/react";
 import {
 	MediaControlBar,
@@ -30,7 +27,7 @@ interface VideoProps {
 	title?: string;
 }
 
-const mediaControllerClass = clsx(
+const mediaControllerClass = cn(
 	"relative block aspect-video w-full overflow-hidden bg-neutral-950",
 	"[--media-font-family:var(--font-sans)]",
 	"[--media-font-size:15px]",
@@ -98,13 +95,13 @@ const mediaControllerClass = clsx(
 	"[&_media-loading-indicator[medialoading]:not([mediapaused])_.mdx-video-loading-icon]:opacity-100"
 );
 
-const controlBarClass = clsx(
+const controlBarClass = cn(
 	"absolute inset-x-0 bottom-0 z-1 flex w-full items-center gap-4",
 	"bg-[linear-gradient(to_top,rgb(0_0_0/0.58)_0%,rgb(0_0_0/0.4)_22%,rgb(0_0_0/0.24)_45%,rgb(0_0_0/0.12)_68%,rgb(0_0_0/0.04)_86%,transparent_100%)]",
 	"px-4 pt-20 pb-4"
 );
 
-const scrubberClass = clsx(
+const scrubberClass = cn(
 	"flex min-w-0 flex-1 items-center gap-4",
 	"[&_media-time-display]:!tabular-nums",
 	"[&_media-duration-display]:!tabular-nums",
@@ -113,7 +110,7 @@ const scrubberClass = clsx(
 
 const scrubTimeClass = "min-w-[3ch] shrink-0 tracking-wide";
 
-const scrubRangeClass = clsx(
+const scrubRangeClass = cn(
 	"min-w-0 flex-1",
 	"[&[dragging]]:[--media-range-track-height:6px]",
 	"active:[--media-range-track-height:6px]"
@@ -122,7 +119,7 @@ const scrubRangeClass = clsx(
 const previewBoxClass =
 	"flex flex-col items-center gap-1.5 bg-transparent px-2";
 
-const previewTimeRowClass = clsx(
+const previewTimeRowClass = cn(
 	"flex flex-row items-baseline gap-0 whitespace-nowrap",
 	"[&_media-preview-time-display]:!tabular-nums",
 	"[&_media-preview-time-display]:font-semibold [&_media-preview-time-display]:text-[15px]"

@@ -1,14 +1,18 @@
+import { cn } from "cnfast";
 import { Anchor } from "#/components/link";
 import type { ExperienceSummary } from "#/lib/experience";
 
 function LogoMark({ flipped, logo }: { flipped: boolean; logo?: string }) {
-	const className = `mr-1 inline-block size-4 rounded-[5px] align-[-0.1875em] ${flipped ? "-rotate-6" : "rotate-6"}`;
+	const className = cn(
+		"mr-1 inline-block size-4 rounded-[5px] align-[-0.1875em]",
+		flipped ? "-rotate-6" : "rotate-6"
+	);
 
 	if (logo) {
 		return (
 			<img
 				alt=""
-				className={`${className} object-cover`}
+				className={cn(className, "object-cover")}
 				height={16}
 				src={logo}
 				width={16}
@@ -16,7 +20,7 @@ function LogoMark({ flipped, logo }: { flipped: boolean; logo?: string }) {
 		);
 	}
 
-	return <span className={`${className} bg-blue-500`} />;
+	return <span className={cn(className, "bg-blue-500")} />;
 }
 
 export function ExperienceList({ items }: { items: ExperienceSummary[] }) {
@@ -28,7 +32,7 @@ export function ExperienceList({ items }: { items: ExperienceSummary[] }) {
 		<div className="-mx-4 flex flex-col gap-3">
 			{items.map((item, index) => (
 				<Anchor
-					className="group flex flex-col gap-0.5 rounded-xl bg-neutral-100 px-4 py-3 transition-colors hover:bg-neutral-200/70 focus-visible:bg-neutral-200/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 focus-visible:ring-inset dark:bg-neutral-900 dark:focus-visible:bg-neutral-800/70 dark:focus-visible:ring-white/30 dark:hover:bg-neutral-800/70"
+					className="group flex flex-col gap-0.5 rounded-xl bg-neutral-100 px-4 py-3 hover:bg-neutral-200/70 focus-visible:bg-neutral-200/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 focus-visible:ring-inset dark:bg-neutral-900 dark:focus-visible:bg-neutral-800/70 dark:focus-visible:ring-white/30 dark:hover:bg-neutral-800/70"
 					href={item.href}
 					key={item.slug}
 				>

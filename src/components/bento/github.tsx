@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { cn } from "cnfast";
 import { useEffect, useState } from "react";
 import type {
 	ContributionIntensity,
@@ -82,7 +82,7 @@ function ContributionDot({ day }: { day: GitHubActivityDay | null }) {
 	return (
 		<span
 			aria-hidden="true"
-			className={clsx(
+			className={cn(
 				"h-(--github-dot-size) w-(--github-dot-size) rounded-[2px] outline outline-neutral-950/5 -outline-offset-1 dark:outline-white/5",
 				LEVEL_CLASS_NAMES[day.level]
 			)}
@@ -224,7 +224,7 @@ export function BentoGithub({ className }: { className?: string }) {
 
 	return (
 		<CustomBentoBlock
-			className={clsx(
+			className={cn(
 				"@container-size col-span-full row-span-2 h-[calc((100cqw-5rem)/3+1rem)] justify-between overflow-hidden",
 				className
 			)}

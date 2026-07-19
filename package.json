@@ -9,6 +9,7 @@
     "@web-kits/audio": "^0.1.0",
     "astro": "^7.1.1",
     "clsx": "^2.1.1",
+    "cnfast": "^0.0.8",
     "hls-video-element": "^1.5.11",
     "img-fx": "^0.3.1",
     "lucide-react": "^0.545.0",

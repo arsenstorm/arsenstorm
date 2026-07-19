@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { cn } from "cnfast";
 import type { LucideProps } from "lucide-react";
 import { Loader2, Maximize2, Minimize2, Pause, Play } from "lucide-react";
 import type { SVGProps } from "react";
@@ -30,7 +30,7 @@ function VolumeIcon({ className, muted = false, waves = 2 }: VolumeIconProps) {
 	return (
 		<svg
 			aria-hidden="true"
-			className={clsx("lucide", "mdx-video-volume-icon", className)}
+			className={cn("lucide", "mdx-video-volume-icon", className)}
 			fill="none"
 			focusable="false"
 			viewBox="0 0 24 24"
@@ -85,7 +85,7 @@ function PipIcon({ className }: { className?: string }) {
 	return (
 		<svg
 			aria-hidden="true"
-			className={clsx("lucide", "mdx-video-pip-icon", className)}
+			className={cn("lucide", "mdx-video-pip-icon", className)}
 			fill="none"
 			focusable="false"
 			viewBox="0 0 24 24"
@@ -109,7 +109,7 @@ function VideoPlayButtonIcons() {
 		<span className={iconStackClass} slot="icon">
 			<Play
 				aria-hidden
-				className={clsx(
+				className={cn(
 					videoIconClass,
 					"mdx-video-filled-icon",
 					"mdx-video-play-icon"
@@ -118,7 +118,7 @@ function VideoPlayButtonIcons() {
 			/>
 			<Pause
 				aria-hidden
-				className={clsx(
+				className={cn(
 					videoIconClass,
 					"mdx-video-filled-icon",
 					"mdx-video-pause-icon"
@@ -132,20 +132,17 @@ function VideoPlayButtonIcons() {
 function VideoMuteButtonIcons() {
 	return (
 		<span className={iconStackClass} slot="icon">
+			<VolumeIcon className={cn(videoIconClass, "mdx-video-mute-off")} muted />
 			<VolumeIcon
-				className={clsx(videoIconClass, "mdx-video-mute-off")}
-				muted
-			/>
-			<VolumeIcon
-				className={clsx(videoIconClass, "mdx-video-mute-low")}
+				className={cn(videoIconClass, "mdx-video-mute-low")}
 				waves={1}
 			/>
 			<VolumeIcon
-				className={clsx(videoIconClass, "mdx-video-mute-medium")}
+				className={cn(videoIconClass, "mdx-video-mute-medium")}
 				waves={1}
 			/>
 			<VolumeIcon
-				className={clsx(videoIconClass, "mdx-video-mute-high")}
+				className={cn(videoIconClass, "mdx-video-mute-high")}
 				waves={2}
 			/>
 		</span>
@@ -155,8 +152,8 @@ function VideoMuteButtonIcons() {
 function VideoPipButtonIcons() {
 	return (
 		<span className={iconStackClass} slot="icon">
-			<PipIcon className={clsx(videoIconClass, "mdx-video-pip-enter")} />
-			<PipIcon className={clsx(videoIconClass, "mdx-video-pip-exit")} />
+			<PipIcon className={cn(videoIconClass, "mdx-video-pip-enter")} />
+			<PipIcon className={cn(videoIconClass, "mdx-video-pip-exit")} />
 		</span>
 	);
 }
@@ -166,7 +163,7 @@ function VideoFullscreenButtonIcons() {
 		<span className={iconStackClass} slot="icon">
 			<Maximize2
 				aria-hidden
-				className={clsx(
+				className={cn(
 					videoIconClass,
 					"size-4.5!",
 					"mdx-video-stroke-icon",
@@ -175,7 +172,7 @@ function VideoFullscreenButtonIcons() {
 			/>
 			<Minimize2
 				aria-hidden
-				className={clsx(
+				className={cn(
 					videoIconClass,
 					"size-4.5!",
 					"mdx-video-stroke-icon",
@@ -190,7 +187,7 @@ function VideoLoadingIcon() {
 	return (
 		<Loader2
 			aria-hidden
-			className={clsx(
+			className={cn(
 				"size-5 shrink-0 animate-spin",
 				"mdx-video-stroke-icon",
 				"mdx-video-loading-icon"

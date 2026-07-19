@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { cn } from "cnfast";
 import {
 	ImageGeneration,
 	type ImageGenerationCycleEvent,
@@ -102,7 +102,7 @@ export function BentoMap({ className }: { className?: string }) {
 
 	return (
 		<BentoBlock
-			className={clsx(
+			className={cn(
 				"col-span-2! row-span-2! md:col-span-4! md:row-span-4!",
 				className
 			)}
@@ -111,7 +111,7 @@ export function BentoMap({ className }: { className?: string }) {
 		>
 			<figure
 				aria-label="Apple Maps snapshot showing a location pin in London"
-				className={clsx(
+				className={cn(
 					"absolute inset-0 overflow-hidden rounded-3xl",
 					MAP_SURFACE_CLASS
 				)}
@@ -131,7 +131,7 @@ export function BentoMap({ className }: { className?: string }) {
 					theme="auto"
 				>
 					<div
-						className={clsx("size-full rounded-3xl", MAP_SURFACE_CLASS)}
+						className={cn("size-full rounded-3xl", MAP_SURFACE_CLASS)}
 						style={MAP_SURFACE_STYLE}
 					/>
 				</ImageGeneration>

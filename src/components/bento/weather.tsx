@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { cn } from "cnfast";
 import { AnimatePresence } from "motion/react";
 import { type CSSProperties, useEffect, useState } from "react";
 import { roundTemperature, type WeatherSnapshot } from "#/lib/weather";
@@ -281,7 +281,7 @@ export function BentoWeather({ className }: { className?: string }) {
 		<AnimatePresence initial={false} mode="wait">
 			{state.status === "ready" ? (
 				<BentoBlock
-					className={clsx(
+					className={cn(
 						"weather-card overflow-hidden",
 						className,
 						visual.surfaceClassName
@@ -290,15 +290,13 @@ export function BentoWeather({ className }: { className?: string }) {
 					style={weatherStyle}
 				>
 					<div className="flex h-full flex-col justify-between">
-						<p
-							className={clsx("font-medium text-xs", visual.secondaryClassName)}
-						>
+						<p className={cn("font-medium text-xs", visual.secondaryClassName)}>
 							London
 						</p>
 
 						<div>
 							<p
-								className={clsx(
+								className={cn(
 									"font-medium text-5xl tracking-normal",
 									visual.primaryClassName
 								)}
@@ -308,11 +306,11 @@ export function BentoWeather({ className }: { className?: string }) {
 										state?.weather?.current?.temperatureCelsius
 									)}
 							</p>
-							<p className={clsx("mt-2 text-sm", visual.secondaryClassName)}>
+							<p className={cn("mt-2 text-sm", visual.secondaryClassName)}>
 								{state?.weather?.current?.condition}
 							</p>
 							<p
-								className={clsx(
+								className={cn(
 									"mt-1 font-medium text-sm",
 									visual.primaryClassName
 								)}

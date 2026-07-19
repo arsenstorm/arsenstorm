@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { cn } from "cnfast";
 import type { ComponentPropsWithoutRef, ComponentType, SVGProps } from "react";
 import DangerIcon from "#/icons/danger";
 import InfoIcon from "#/icons/info";
@@ -103,7 +103,7 @@ function Callout({
 
 	return (
 		<aside
-			className={clsx(
+			className={cn(
 				"not-prose -mx-4 my-4 flex flex-col rounded-[14px] p-0.5",
 				visual.frameClassName,
 				className
@@ -111,7 +111,7 @@ function Callout({
 			{...props}
 		>
 			<div
-				className={clsx(
+				className={cn(
 					"my-2 flex items-center gap-1.5 px-3.5 font-medium text-xs tracking-tight",
 					visual.labelClassName
 				)}
@@ -123,7 +123,7 @@ function Callout({
 				/>
 				<p>{title ?? visual.label}</p>
 			</div>
-			<div className={clsx("rounded-xl p-4", visual.contentClassName)}>
+			<div className={cn("rounded-xl p-4", visual.contentClassName)}>
 				<div className={calloutContentClass}>{children}</div>
 			</div>
 		</aside>

@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { cn } from "cnfast";
 import { RotateCcw } from "lucide-react";
 
 export function Panel({
@@ -20,7 +20,7 @@ export function Panel({
 			data-demo={demo}
 		>
 			<div
-				className={clsx(
+				className={cn(
 					"flex items-center justify-between",
 					side === "top" ? "order-first" : "order-last"
 				)}

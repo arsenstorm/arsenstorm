@@ -1,3 +1,4 @@
+import { cn } from "cnfast";
 import {
 	createContext,
 	useContext,
@@ -139,11 +140,12 @@ export function Diagram({
 					</svg>
 					{import.meta.env.DEV && measured ? (
 						<span
-							className={`absolute top-1 right-1 rounded px-1.5 py-0.5 font-mono text-[10px] tabular-nums ${
+							className={cn(
+								"absolute top-1 right-1 rounded px-1.5 py-0.5 font-mono text-[10px] tabular-nums",
 								viewBoxesMatch(viewBox, measured)
 									? "bg-emerald-600/85 text-white"
 									: "bg-neutral-900/80 text-neutral-50"
-							}`}
+							)}
 						>
 							{measured}
 						</span>
@@ -202,7 +204,7 @@ export function Box({
 				y={y}
 			/>
 			<text
-				className={`font-mono ${labelClass}`}
+				className={cn("font-mono", labelClass)}
 				dominantBaseline="middle"
 				fontSize={12}
 				textAnchor="middle"

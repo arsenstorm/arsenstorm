@@ -1,4 +1,4 @@
-import { clsx } from "clsx";
+import { cn } from "cnfast";
 import { HomeIcon, Moon, Sun, Volume2, VolumeX } from "lucide-react";
 
 const ICON_BUTTON =
@@ -41,7 +41,7 @@ export function Controls({
 	className?: string;
 }) {
 	return (
-		<div className={clsx("flex items-center gap-4 pt-0.5", className)}>
+		<div className={cn("flex items-center gap-4 pt-0.5", className)}>
 			{noHomeLink ? null : (
 				<a aria-label="Home" className={ICON_BUTTON} href="/">
 					<HomeIcon className="size-4" />
