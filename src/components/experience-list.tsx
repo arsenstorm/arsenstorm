@@ -28,7 +28,7 @@ export function ExperienceList({ items }: { items: ExperienceSummary[] }) {
 		<div className="-mx-4 flex flex-col gap-3">
 			{items.map((item, index) => (
 				<Anchor
-					className="group flex flex-col gap-0.5 rounded-xl bg-neutral-100 px-4 py-3 transition-colors hover:bg-neutral-200/70 dark:bg-neutral-900 dark:hover:bg-neutral-800/70"
+					className="group flex flex-col gap-0.5 rounded-xl bg-neutral-100 px-4 py-3 transition-colors hover:bg-neutral-200/70 focus-visible:bg-neutral-200/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 focus-visible:ring-inset dark:bg-neutral-900 dark:focus-visible:bg-neutral-800/70 dark:focus-visible:ring-white/30 dark:hover:bg-neutral-800/70"
 					href={item.href}
 					key={item.slug}
 				>

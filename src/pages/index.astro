@@ -41,11 +41,9 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
     <PageHeading description={DESCRIPTION} noHomeLink title={TITLE} />
 
     <Section
-      cta={
-        experience.length > 2
-          ? { label: "View all", href: "/experience" }
-          : undefined
-      }
+      cta={experience.length > 2
+        ? { label: "View all", href: "/experience" }
+        : undefined}
       title="Experience"
     >
       <ExperienceList items={experience} />
@@ -65,7 +63,7 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
             return (
               <li class="flex items-center gap-0.5 text-sm">
                 <a
-                  class="text-neutral-500 underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50"
+                  class="-mx-1 -my-0.5 rounded-md px-1 py-0.5 text-neutral-500 underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 focus-visible:text-neutral-950 focus-visible:decoration-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50 dark:focus-visible:text-neutral-50 dark:focus-visible:decoration-neutral-50 dark:focus-visible:ring-white/30"
                   href={item.href}
                   rel={external ? "noopener noreferrer" : undefined}
                   target={external ? "_blank" : undefined}
@@ -79,8 +77,8 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
                     data-copy={item.copy}
                     type="button"
                   >
-                    <Clipboard className="size-3 group-data-[copied]/copy:hidden" />
-                    <ClipboardCheck className="hidden size-3 group-data-[copied]/copy:block" />
+                    <Clipboard className="size-3 group-data-copied/copy:hidden" />
+                    <ClipboardCheck className="hidden size-3 group-data-copied/copy:block" />
                   </button>
                 ) : null}
               </li>
@@ -96,7 +94,7 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
   const RESET_DELAY = 2000;
 
   for (const button of document.querySelectorAll<HTMLButtonElement>(
-    "[data-copy]"
+    "[data-copy]",
   )) {
     let timeout: ReturnType<typeof setTimeout> | undefined;
     button.addEventListener("click", async () => {

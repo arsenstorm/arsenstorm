@@ -66,7 +66,7 @@ export function ItemGroup({
 							{date}
 						</h3>
 					) : null}
-					<ul className="flex flex-col gap-3 rounded-xl bg-neutral-100 px-4 py-3 dark:bg-neutral-900">
+					<ul className="flex flex-col rounded-xl bg-neutral-100 dark:bg-neutral-900">
 						{groupedItems.map((item) => {
 							const title = (
 								<span className="flex items-center gap-2">
@@ -90,8 +90,11 @@ export function ItemGroup({
 									{item.statusNote}
 								</span>
 							) : null;
+							const itemClass =
+								"flex flex-col gap-0.5 px-4 py-1.5 group-first/item:rounded-t-xl group-first/item:pt-3 group-last/item:rounded-b-xl group-last/item:pb-3";
+
 							let content = (
-								<div className="flex flex-col gap-0.5">
+								<div className={itemClass}>
 									{title}
 									{description}
 									{statusNote}
@@ -101,7 +104,7 @@ export function ItemGroup({
 							if (item.href) {
 								content = (
 									<Anchor
-										className="group flex flex-col gap-0.5"
+										className={`group ${itemClass} transition-colors hover:bg-neutral-200/70 focus-visible:bg-neutral-200/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 focus-visible:ring-inset dark:focus-visible:bg-neutral-800/70 dark:focus-visible:ring-white/30 dark:hover:bg-neutral-800/70`}
 										href={item.href}
 									>
 										{title}
@@ -111,7 +114,11 @@ export function ItemGroup({
 								);
 							}
 
-							return <li key={item.title}>{content}</li>;
+							return (
+								<li className="group/item" key={item.title}>
+									{content}
+								</li>
+							);
 						})}
 					</ul>
 				</div>
