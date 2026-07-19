@@ -21,7 +21,7 @@ export const PROJECTS: Project[] = [
 		year: "2026",
 		title: "Automated Web",
 		description: "Reliable browser automation for real-world workflows.", // TODO: confirm copy + live link
-		href: "/technical-writeups/automating-browser-workflows",
+		href: "/writing/automating-browser-workflows",
 		featured: true,
 	},
 	{
@@ -29,7 +29,7 @@ export const PROJECTS: Project[] = [
 		title: "img-to-pdf",
 		description:
 			"An email-native service that merges emailed images into a single PDF.",
-		href: "/technical-writeups/using-email-as-an-interface",
+		href: "/writing/using-email-as-an-interface",
 		featured: true,
 	},
 	{

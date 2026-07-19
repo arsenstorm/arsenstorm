@@ -40,11 +40,11 @@ export function ExperienceList({ items }: { items: ExperienceSummary[] }) {
 								{item.company}
 							</span>
 						</span>
-						<span className="text-neutral-400 text-xs tabular-nums max-sm:hidden dark:text-neutral-600">
+						<span className="text-neutral-500 text-xs tabular-nums max-sm:hidden">
 							{item.period}
 						</span>
 					</span>
-					<span className="text-pretty text-neutral-500 text-sm dark:text-neutral-400">
+					<span className="max-w-sm text-pretty text-neutral-500 text-sm dark:text-neutral-400">
 						{item.summary}
 					</span>
 				</Anchor>

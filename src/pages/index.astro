@@ -5,7 +5,7 @@ import { ExperienceList } from "#/components/experience-list.tsx";
 import { ItemGroup } from "#/components/item-group.tsx";
 import { PageHeading } from "#/components/page-heading.tsx";
 import { Section } from "#/components/section.tsx";
-import { TechnicalWriteups } from "#/components/technical-writeups.tsx";
+import { Writing } from "#/components/writing.tsx";
 import BaseLayout from "#/layouts/base-layout.astro";
 import { getExperience } from "#/lib/experience";
 import { PROJECTS } from "#/lib/projects.ts";
@@ -42,7 +42,7 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
       <ItemGroup id="projects-list" items={featuredProjects} showAll={false} />
     </Section>
 
-    <TechnicalWriteups items={writeups} />
+    <Writing items={writeups} />
 
     <Section title="Elsewhere">
       <ul class="flex flex-col gap-2">
