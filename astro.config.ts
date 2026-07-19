@@ -9,7 +9,11 @@ import rehypePrettyCode, {
 	type Options as RehypePrettyCodeOptions,
 } from "rehype-pretty-code";
 import remarkGfm from "remark-gfm";
-import { markCodeBlockOptions } from "./vite/code-block-options";
+import {
+	markCodeBlockOptions,
+	preserveCodeMeta,
+	restoreCodeMeta,
+} from "./vite/code-block-options";
 import { contentHmr } from "./vite/content-hmr";
 import { addHeadingSectionIds } from "./vite/heading-ids";
 
@@ -66,8 +70,9 @@ export default defineConfig({
 	markdown: {
 		syntaxHighlight: false,
 		processor: unified({
-			remarkPlugins: [remarkGfm],
+			remarkPlugins: [remarkGfm, preserveCodeMeta],
 			rehypePlugins: [
+				restoreCodeMeta,
 				[rehypePrettyCode, prettyCodeOptions],
 				addHeadingSectionIds,
 				markCodeBlockOptions,

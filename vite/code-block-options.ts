@@ -90,6 +90,53 @@ function markCodeBlockOption(node: HastNode) {
 	}
 }
 
+interface MdastNode {
+	children?: MdastNode[];
+	data?: { hProperties?: Record<string, unknown> };
+	meta?: unknown;
+	type?: string;
+}
+
+// The MDX pipeline drops `code.data.meta` during mdast->hast conversion, so
+// smuggle the fence meta through as an hProperties attribute (which survives)
+// and restore it to `data.meta` before rehype-pretty-code runs.
+export function preserveCodeMeta() {
+	return (tree: MdastNode) => {
+		const visit = (node: MdastNode) => {
+			if (node.type === "code" && typeof node.meta === "string" && node.meta) {
+				node.data ??= {};
+				node.data.hProperties = {
+					...node.data.hProperties,
+					metastring: node.meta,
+				};
+			}
+			for (const child of node.children ?? []) {
+				visit(child);
+			}
+		};
+		visit(tree);
+	};
+}
+
+export function restoreCodeMeta() {
+	return (tree: HastNode) => {
+		const visit = (node: HastNode) => {
+			if (isHastElement(node, "code")) {
+				const metastring = node.properties?.metastring;
+				if (typeof metastring === "string") {
+					node.data ??= {};
+					node.data.meta ??= metastring;
+					delete node.properties?.metastring;
+				}
+			}
+			for (const child of node.children ?? []) {
+				visit(child);
+			}
+		};
+		visit(tree);
+	};
+}
+
 export function markCodeBlockOptions() {
 	return (tree: HastNode) => {
 		markCodeBlockOption(tree);

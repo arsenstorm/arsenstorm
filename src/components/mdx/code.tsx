@@ -98,18 +98,21 @@ function MdxCodeBlock({
 								aria-controls={codeBlockId}
 								aria-expanded="false"
 								aria-label="Expand code"
-								className={cn(codeBlockActionClass, "hidden")}
+								className={cn(
+									codeBlockActionClass,
+									"hidden group-data-can-expand/code:flex"
+								)}
 								data-code-action="toggle"
 								type="button"
 							>
 								<ChevronsUpDown
 									aria-hidden="true"
-									className="size-3.5 group-data-[open]/code:hidden"
+									className="size-3.5 group-data-open/code:hidden"
 									strokeWidth={2}
 								/>
 								<ChevronsDownUp
 									aria-hidden="true"
-									className="hidden size-3.5 group-data-[open]/code:block"
+									className="hidden size-3.5 group-data-open/code:block"
 									strokeWidth={2}
 								/>
 							</button>
@@ -120,15 +123,15 @@ function MdxCodeBlock({
 							data-code-action="copy"
 							type="button"
 						>
-							<Clipboard className="group-data-[copied]/code:hidden" />
-							<ClipboardCheck className="hidden group-data-[copied]/code:block" />
+							<Clipboard className="group-data-copied/code:hidden" />
+							<ClipboardCheck className="hidden group-data-copied/code:block" />
 						</button>
 					</div>
 				</div>
 			)}
 			<div className="relative">
 				<pre
-					className="overflow-x-auto rounded-xl bg-neutral-100 p-4 text-neutral-700 text-xs leading-6 dark:bg-neutral-900 dark:text-neutral-300"
+					className="overflow-x-auto rounded-xl bg-neutral-100 p-4 text-neutral-700 text-xs leading-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 focus-visible:ring-inset dark:bg-neutral-900 dark:text-neutral-300 dark:focus-visible:ring-white/30"
 					data-language={language}
 					id={codeBlockId}
 					style={
@@ -142,7 +145,7 @@ function MdxCodeBlock({
 				</pre>
 				{alwaysExpanded ? null : (
 					<div
-						className="pointer-events-none absolute inset-x-0 bottom-0 flex hidden h-20 items-end justify-center rounded-b-xl bg-linear-to-b from-neutral-100/0 via-neutral-100/90 to-neutral-100 pb-3 dark:via-neutral-900/90 dark:to-neutral-900"
+						className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-20 items-end justify-center rounded-b-xl bg-linear-to-b from-neutral-100/0 via-neutral-100/90 to-neutral-100 pb-3 group-data-can-expand/code:group-not-data-open/code:flex dark:via-neutral-900/90 dark:to-neutral-900"
 						data-code-overlay=""
 					>
 						<button

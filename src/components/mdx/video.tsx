@@ -103,16 +103,16 @@ const controlBarClass = cn(
 
 const scrubberClass = cn(
 	"flex min-w-0 flex-1 items-center gap-4",
-	"[&_media-time-display]:!tabular-nums",
-	"[&_media-duration-display]:!tabular-nums",
-	"[&_media-preview-time-display]:!tabular-nums"
+	"[&_media-time-display]:tabular-nums!",
+	"[&_media-duration-display]:tabular-nums!",
+	"[&_media-preview-time-display]:tabular-nums!"
 );
 
 const scrubTimeClass = "min-w-[3ch] shrink-0 tracking-wide";
 
 const scrubRangeClass = cn(
 	"min-w-0 flex-1",
-	"[&[dragging]]:[--media-range-track-height:6px]",
+	"[[dragging]]:[--media-range-track-height:6px]",
 	"active:[--media-range-track-height:6px]"
 );
 
@@ -121,14 +121,14 @@ const previewBoxClass =
 
 const previewTimeRowClass = cn(
 	"flex flex-row items-baseline gap-0 whitespace-nowrap",
-	"[&_media-preview-time-display]:!tabular-nums",
+	"[&_media-preview-time-display]:tabular-nums!",
 	"[&_media-preview-time-display]:font-semibold [&_media-preview-time-display]:text-[15px]"
 );
 
 const previewScrubLineClass =
 	"my-0.5 h-4 w-px shrink-0 bg-white/88 supports-[width:0.5px]:w-[0.5px]";
 
-const previewMutedClass = "text-[15px] font-medium opacity-55 !tabular-nums";
+const previewMutedClass = "text-[15px] font-medium opacity-55 tabular-nums!";
 
 function Video({ poster, src, title }: VideoProps) {
 	return (

@@ -25,7 +25,7 @@ function MdxAnchor({
 	return (
 		<Anchor
 			className={cn(
-				"text-neutral-950 underline decoration-neutral-300 underline-offset-4 transition-colors hover:decoration-neutral-950 dark:text-neutral-50 dark:decoration-neutral-700 dark:hover:decoration-neutral-50",
+				"rounded-sm text-neutral-950 underline decoration-neutral-300 underline-offset-4 outline-neutral-950/30 outline-offset-2 transition-colors hover:decoration-neutral-950 focus-visible:decoration-neutral-950 focus-visible:outline-[1.5px] dark:text-neutral-50 dark:decoration-neutral-700 dark:outline-white/30 dark:focus-visible:decoration-neutral-50 dark:hover:decoration-neutral-50",
 				className
 			)}
 			href={href}
