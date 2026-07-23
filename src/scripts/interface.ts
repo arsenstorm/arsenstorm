@@ -86,14 +86,43 @@ function primeEagerly() {
 	});
 }
 
+// Prerendered pages snapshot theme/sounds at prerender time, so a toggle made
+// before the user navigates here is stale on activation. BFCache restores have
+// the same problem. Re-read storage at both points.
+function syncStoredPreferences() {
+	const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+	const dark =
+		stored === "dark" ||
+		(stored !== "light" &&
+			window.matchMedia("(prefers-color-scheme: dark)").matches);
+	const next: Theme = dark ? "dark" : "light";
+	if (root.dataset.theme !== next) {
+		disableTransitionsDuring(() => applyTheme(next));
+	}
+	root.dataset.sounds =
+		window.localStorage.getItem(SOUND_STORAGE_KEY) === "false" ? "off" : "on";
+	syncAudioButtons();
+}
+
 const prerenderingDocument = document as Document & { prerendering?: boolean };
 if (prerenderingDocument.prerendering) {
-	document.addEventListener("prerenderingchange", primeEagerly, {
-		once: true,
-	});
+	document.addEventListener(
+		"prerenderingchange",
+		() => {
+			primeEagerly();
+			syncStoredPreferences();
+		},
+		{ once: true }
+	);
 } else {
 	primeEagerly();
 }
+
+window.addEventListener("pageshow", (event) => {
+	if (event.persisted) {
+		syncStoredPreferences();
+	}
+});
 
 type Theme = "light" | "dark";
 

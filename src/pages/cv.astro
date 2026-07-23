@@ -20,7 +20,7 @@ const CONTACT = [
 ];
 
 const PROFILE =
-	"Product and infrastructure engineer. I take early-stage systems from ambiguous requirements through implementation, deployment, monitoring, and iteration — most recently across identity verification, streaming infrastructure, and education products."; // TODO: confirm positioning copy
+	"Product and infrastructure engineer. I take early-stage systems from ambiguous requirements through implementation, deployment, monitoring, and iteration — most recently across identity verification, streaming infrastructure, and education products.";
 
 const experience = (await getExperience()).filter(
 	(item) => item.kind === "experience"
@@ -93,7 +93,8 @@ const PRINT_STYLES = `
 		html, body { background: #fff !important; }
 		.cv-no-print { display: none !important; }
 		.cv-backdrop { padding: 0 !important; background: #fff !important; }
-		.cv-sheet { box-shadow: none !important; width: auto !important; min-height: auto !important; margin: 0 !important; padding: 16mm !important; border-radius: 0 !important; outline: none !important; }
+		.cv-sheet { box-shadow: none !important; width: auto !important; min-height: auto !important; margin: 0 !important; padding: 11mm 16mm !important; border-radius: 0 !important; outline: none !important; }
+		.cv-sheet > * + * { margin-top: 1rem !important; }
 	}
 `;
 

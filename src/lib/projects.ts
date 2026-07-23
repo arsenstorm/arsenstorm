@@ -20,8 +20,8 @@ export const PROJECTS: Project[] = [
 	{
 		year: "2026",
 		title: "Automated Web",
-		description: "Reliable browser automation for real-world workflows.", // TODO: confirm copy + live link
-		href: "/writing/automating-browser-workflows",
+		description: "Reliable browser automation for real-world workflows.",
+		href: "https://github.com/arsenstorm/automated-web",
 		featured: true,
 	},
 	{
@@ -30,7 +30,6 @@ export const PROJECTS: Project[] = [
 		description:
 			"An email-native service that merges emailed images into a single PDF.",
 		href: "/writing/using-email-as-an-interface",
-		featured: true,
 	},
 	{
 		year: "2026",

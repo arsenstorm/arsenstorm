@@ -2,6 +2,7 @@
 export const prerender = true;
 
 import { render } from "astro:content";
+import { ExperienceList } from "#/components/experience-list.tsx";
 import { writeupComponents } from "#/components/mdx";
 import { PageHeading } from "#/components/page-heading.tsx";
 import BaseLayout from "#/layouts/base-layout.astro";
@@ -17,25 +18,56 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await render(entry.entry);
+const others = (await getExperience()).filter((e) => e.slug !== entry.slug);
 ---
 
 <BaseLayout
-	description={entry.summary}
-	path={entry.href}
-	title={entry.company}
-	type="article"
+  description={entry.summary}
+  path={entry.href}
+  title={entry.company}
+  type="article"
 >
-	<main class="mx-auto max-w-xl space-y-12 px-6 py-24">
-		<PageHeading
-			description={`${entry.role} · ${entry.period}`}
-			title={entry.company}
-		/>
+  <main class="mx-auto max-w-xl space-y-12 px-6 py-24">
+    <PageHeading
+      description={`${entry.role} · ${entry.period}`}
+      title={entry.company}
+    />
 
-		<article>
-			<Content components={writeupComponents} />
-		</article>
-	</main>
-	<script>
-		import "#/scripts/code-blocks";
-	</script>
+    {
+      entry.facts.length > 0 && (
+        <section aria-label="At a glance">
+          <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-sm">
+            {entry.facts.map((fact) => (
+              <>
+                <dt class="font-medium text-neutral-950 dark:text-neutral-50">
+                  {fact.label}
+                </dt>
+                <dd class="text-neutral-500 dark:text-neutral-400 text-pretty">
+                  {fact.value}
+                </dd>
+              </>
+            ))}
+          </dl>
+        </section>
+      )
+    }
+
+    <article>
+      <Content components={writeupComponents} />
+    </article>
+
+    {
+      others.length > 0 && (
+        <footer>
+          <h2 class="mb-3 font-medium text-base text-neutral-950 dark:text-neutral-50">
+            Keep reading
+          </h2>
+          <ExperienceList items={others} />
+        </footer>
+      )
+    }
+  </main>
+  <script>
+    import "#/scripts/code-blocks";
+  </script>
 </BaseLayout>

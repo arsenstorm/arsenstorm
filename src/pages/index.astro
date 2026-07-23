@@ -18,13 +18,13 @@ const TITLE = "Arsen Shkrumelyak";
 const DESCRIPTION = "I build software with care.";
 
 const ELSEWHERE: { label: string; href: string; copy?: string }[] = [
+	{ label: "LinkedIn", href: "https://www.linkedin.com/in/arsenstorm" },
+	{ label: "GitHub", href: "https://github.com/arsenstorm" },
 	{
 		label: "Email",
 		href: "mailto:arsen@shkrumelyak.com",
 		copy: "arsen@shkrumelyak.com",
 	},
-	{ label: "GitHub", href: "https://github.com/arsenstorm" },
-	{ label: "Twitter", href: "https://x.com/arsenstorm" },
 	{ label: "CV", href: "/cv" },
 ];
 
@@ -62,7 +62,7 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
           ELSEWHERE.map((item) => {
             const external = item.href.startsWith("http");
             return (
-              <li class="flex items-center gap-0.5 text-sm">
+              <li class="group flex items-center gap-0.5 text-sm">
                 <a
                   class={textLinkClass}
                   href={item.href}
@@ -74,7 +74,7 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
                 {item.copy ? (
                   <button
                     aria-label={`Copy ${item.copy}`}
-                    class="group/copy flex size-5 translate-y-px items-center justify-center rounded-md text-neutral-400 transition-colors hover:text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 dark:text-neutral-500 dark:focus-visible:ring-white/30 dark:hover:text-neutral-50"
+                    class="group/copy flex size-5 translate-y-px items-center justify-center rounded-md text-neutral-400 opacity-0 transition hover:text-neutral-950 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 group-hover:opacity-100 data-copied:opacity-100 dark:text-neutral-500 dark:focus-visible:ring-white/30 dark:hover:text-neutral-50"
                     data-copy={item.copy}
                     type="button"
                   >

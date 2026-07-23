@@ -3,52 +3,77 @@ company: "Anyverse"
 logo: "/icons/anyverse.png"
 role: "Founding Software Engineer"
 start: "2025-04"
-end: "2026-02"
-summary: "Built and operated university discovery and application journeys used by 4,000+ students."
+end: "2026-04"
+summary: "Built university discovery and a fine-tuned AI statement reviewer for international applicants, used by 4,400+ students in 104 countries."
 highlights:
-  - "Built and operated core university-discovery and application journeys used by more than 4,000 students."
-  - "Instrumented user flows with PostHog and monitored production errors with Sentry, using real usage and failure data to prioritise product and reliability improvements."
-  - "Adapted the product from direct-to-student admissions tools into a broader platform supporting both student and institutional workflows."
+  - "Founding engineer and sole technical owner: the product, the API, the data pipelines, the AI systems, the infrastructure and the internal tooling."
+  - "Shipped a personal statement reviewer powered by a model fine-tuned on our own expert reviewers' feedback — over 3,100 reviews delivered, with nearly 23,000 inline comments."
+  - "Built a personalised course search engine over aggregated UK admissions and rankings data, and migrated the platform from Next.js on Vercel to TanStack Start on Cloudflare Workers."
+facts:
+  - label: "Scale"
+    value: "4,400+ students across 104 countries"
+  - label: "Reviews"
+    value: "3,100+ delivered · nearly 23,000 inline comments"
+  - label: "Ownership"
+    value: "Sole engineer across product, infrastructure, data and AI"
+  - label: "Stack"
+    value: "TypeScript, Postgres, Cloudflare Workers, Durable Objects"
 ---
 
-{/* TODO: draft this case study. Each section below maps to the case-study template. */}
+import { NationalityChart } from "./nationality-chart.tsx";
+import { ReviewsChart } from "./reviews-chart.tsx";
 
 ## Overview
 
-TODO: company context — what the product is, stage, and market.
+Anyverse helped students get into university. It was the successor to [Afinity](/experience/afinity) — most of the same team, back for another go at the same problem, taking what we'd learnt from the first version. Its core was personalised course discovery across more than 50,000 UCAS courses and AI-assisted personal statement review, with a searchable bank of real statements and a mentorship programme on top.
+
+Where Afinity had served every applicant alike, Anyverse aimed squarely at international students — people applying to UK universities from abroad. It launched in mid-2025, ran through the 2025/26 admissions cycle, and stopped taking on new students in 2026.
 
 ## My role
 
-TODO: role, team size, and who I worked with.
-
-## What I owned
-
-TODO: the areas I personally owned end to end.
+I was again a co-founder and the company's only engineer, with everything technical mine. My two co-founders owned advising, content and growth; they were also our expert statement reviewers, and their feedback later became the training data for the reviewer model. What changed from Afinity was how I ran it: fewer moving parts from day one, and most of my effort going into the two genuinely new things — the personalised search and the fine-tuned reviewer.
 
 ## What I shipped
 
-TODO: concrete features and systems delivered.
+**Course search.** A personalised ranking engine implemented close to the data as a parameterised Postgres function, with around twenty-five filters and ranking signals — location radius, UK tariff-point matching against the student's qualification type, fee and salary ranges, and prestige rank — combined into a best-match sort tuned to each student's profile. It was fed by data pipelines I maintained across the product's life, and iterated through four versions in production.
+
+**Statement review.** Students submitted personal statement drafts and got inline, span-anchored comments back. The first version was a two-stage pipeline — one model pass identified passages that needed feedback, and a second wrote the comments — with an algorithm I’m still fond of: matching the model’s quoted excerpts to exact character offsets in messy, whitespace-mangled drafts so every comment anchored to the right text.
+
+**The fine-tuned reviewer.** My co-founders were reviewing statements by hand in Google Docs, so I built a pipeline that parsed their comments and suggestions out of the documents, turned them into training data, and fine-tuned a model on their actual judgement. The result ran as an iterative review loop — the model proposed comments, anchored them, scored the statement, and decided when it had nothing more to say — through five successive model versions, each trained on more of our reviewers' feedback.
+
+We judged improvement the simple way: whenever we switched to a new version, we told our paid reviewers and asked what they thought, and each time they liked the outputs more. It wasn't a blind test — but they were the people whose judgement the model was trying to learn, so their reaction was the measure I trusted.
+
+This is also where I reversed an [Afinity](/experience/afinity) decision: there, I'd insisted a human sign off on every review before it reached a student; at Anyverse, reviews went straight to students. That worked fine because the feedback now came from a model trained on our own experts' judgement rather than a general-purpose model behind a prompt. Anyone who wanted human eyes on their statement could still get an Oxbridge tutor review through our partner World Class Education.
+
+<ReviewsChart client:visible />
+
+**Around the core:** a statement bank and masterclass content with hosted video, a scholarships database, an admissions-chances estimator, mentorship booking with round-robin mentor assignment and auto-generated per-student strategy documents, and a referral programme.
 
 ## Deployment and operations
 
-TODO: how the product was deployed, hosted, and operated.
+The first platform was Next.js 15 and React 19 on Vercel, with Postgres on Supabase. In late 2025 I rebuilt it on TanStack Start and Cloudflare Workers — with Postgres behind Hyperdrive via Drizzle, R2 for storage, and a separate API worker with generated OpenAPI documentation. The AI reviewer ran as its own Workers service on Durable Objects with queue-based processing.
 
-## Analytics, monitoring and feedback
+Product analytics ran on PostHog, with ingestion reverse-proxied through our own domain for more reliable collection; support ran through Intercom, wired into our auth for verified identity. The admin dashboard tracked the full funnel from signup to booked session, segmented by nationality, subject and target university — for a product aimed at international applicants, that segmentation was central to how we understood usage and conversion.
 
-TODO: PostHog funnels, Sentry monitoring, user feedback loops.
+<NationalityChart client:visible />
 
 ## Key decisions
 
-TODO: important technical and product decisions, and their trade-offs.
+**Fine-tune on your own experts.** The scarce resource was our reviewers' judgement, not model capability — and they were producing training data every day just by doing their jobs. Capturing that instead of endlessly engineering prompts is the single best AI decision I made there, and it only worked because the pipeline collected their feedback in the tool they already used.
 
-## Outcomes
+**Rewrite for platform reasons, not for a fresh start.** In September 2025, I started a clean-slate rebuild, realised within three days it was a fresh-start impulse rather than a real need, and killed it. A month later I did rebuild — onto Cloudflare Workers and TanStack Start — because that one bought something concrete: lower cost, simpler operations, and an edge-native architecture. Having done the wrong rewrite before, I could tell the difference this time.
 
-TODO: metrics — users, workflows, releases, latency, reliability.
+**Own the data, buy the plumbing.** The datasets and the search engine were the product, so they were built and maintained in-house. Everything undifferentiated — auth, email, video hosting, translations — was a library or a service.
 
-## Why the work ended or changed
+## Why the work ended
 
-TODO: honest account of why this ended, pivoted, or was shut down.
+In early 2026 we stopped taking on new students, and the engineering side wound down with it: feature work stopped in January, and I closed out my part in April 2026 with one final simplification of the app. By then more than 4,400 students from 104 countries had used Anyverse, and the review service had delivered over 3,100 personal statement reviews with nearly 23,000 inline comments — about seven per review. For the students we'd already taken on, the team kept mentoring them through to their university places.
 
 ## What I learnt
 
-TODO: takeaways.
+- **Serving international students is an engineering problem in itself.** Qualification mapping across national systems, translations and nationality-aware analytics weren't add-ons — when your users apply from abroad, those are core features.
+- **The second time round is different.** The gain over Afinity wasn't speed — it was knowing which corners were safe to cut, and which ones always come back.
+- **Admissions products live by the calendar.** Almost four-fifths of a year's reviews landed in September and October; capacity, cost and launch timing all followed from two deadline windows, not from averages.
+- **Long-running AI jobs want a queue, not a request handler.** The reviewer ran as its own queue-backed service on Durable Objects, which is what let it absorb the deadline-season bursts.
+
+Maybe Anyverse comes back for another cycle, maybe it doesn't. Either way, I got to build and operate a real product used by thousands of students all over the world, and I'm proud of that.

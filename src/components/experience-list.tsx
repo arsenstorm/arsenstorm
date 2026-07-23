@@ -2,11 +2,8 @@ import { cn } from "cnfast";
 import { Anchor } from "#/components/link";
 import type { ExperienceSummary } from "#/lib/experience";
 
-function LogoMark({ flipped, logo }: { flipped: boolean; logo?: string }) {
-	const className = cn(
-		"mr-1 inline-block size-4 rounded-[5px] align-[-0.1875em]",
-		flipped ? "-rotate-6" : "rotate-6"
-	);
+function LogoMark({ logo }: { logo?: string }) {
+	const className = "mr-1 inline-block size-4 rounded-[5px] align-[-0.1875em]";
 
 	if (logo) {
 		return (
@@ -30,7 +27,7 @@ export function ExperienceList({ items }: { items: ExperienceSummary[] }) {
 
 	return (
 		<div className="-mx-4 flex flex-col gap-3">
-			{items.map((item, index) => (
+			{items.map((item) => (
 				<Anchor
 					className="group flex flex-col gap-0.5 rounded-xl bg-neutral-100 px-4 py-3 hover:bg-neutral-200/70 focus-visible:bg-neutral-200/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 focus-visible:ring-inset dark:bg-neutral-900 dark:focus-visible:bg-neutral-800/70 dark:focus-visible:ring-white/30 dark:hover:bg-neutral-800/70"
 					href={item.href}
@@ -40,7 +37,7 @@ export function ExperienceList({ items }: { items: ExperienceSummary[] }) {
 						<span className="text-neutral-950 text-sm dark:text-neutral-50">
 							{item.role} at{" "}
 							<span className="inline-block">
-								<LogoMark flipped={index % 2 === 1} logo={item.logo} />
+								<LogoMark logo={item.logo} />
 								{item.company}
 							</span>
 						</span>
@@ -48,7 +45,7 @@ export function ExperienceList({ items }: { items: ExperienceSummary[] }) {
 							{item.period}
 						</span>
 					</span>
-					<span className="max-w-sm text-pretty text-neutral-500 text-sm dark:text-neutral-400">
+					<span className="max-w-md text-pretty text-neutral-500 text-sm dark:text-neutral-400">
 						{item.summary}
 					</span>
 				</Anchor>

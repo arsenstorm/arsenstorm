@@ -30,6 +30,9 @@ const experience = defineCollection({
 		summary: z.string(),
 		kind: z.enum(["experience", "earlier"]).default("experience"),
 		highlights: z.array(z.string()).default([]),
+		facts: z
+			.array(z.object({ label: z.string(), value: z.string() }))
+			.default([]),
 	}),
 });
 
