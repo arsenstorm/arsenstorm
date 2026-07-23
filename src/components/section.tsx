@@ -1,4 +1,4 @@
-import { Anchor } from "./link";
+import { Anchor, textLinkClass } from "./link";
 
 export function Section({
 	children,
@@ -16,10 +16,7 @@ export function Section({
 					{title}
 				</h2>
 				{cta ? (
-					<Anchor
-						className="text-neutral-500 text-sm underline decoration-neutral-200 underline-offset-4 transition-colors hover:text-neutral-950 hover:decoration-neutral-950 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-50 dark:hover:decoration-neutral-50"
-						href={cta.href}
-					>
+					<Anchor className={textLinkClass} href={cta.href}>
 						{cta.label}
 					</Anchor>
 				) : null}

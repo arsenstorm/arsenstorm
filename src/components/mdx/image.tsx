@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { cn } from "cnfast";
 import type { ComponentPropsWithoutRef } from "react";
 
 type MdxImageProps = ComponentPropsWithoutRef<"img"> & {
@@ -22,7 +22,7 @@ function MdxImage({
 			<div className="overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-900">
 				<img
 					alt={alt ?? "Image"}
-					className={clsx(
+					className={cn(
 						"pointer-events-none select-none",
 						invertInDarkMode && "dark:invert",
 						className

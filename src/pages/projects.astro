@@ -1,0 +1,22 @@
+---
+export const prerender = true;
+
+import { ItemGroup } from "#/components/item-group.tsx";
+import { PageHeading } from "#/components/page-heading.tsx";
+import { Section } from "#/components/section.tsx";
+import BaseLayout from "#/layouts/base-layout.astro";
+import { PROJECTS } from "#/lib/projects.ts";
+
+const TITLE = "My Projects";
+const DESCRIPTION = "These are the things I've built.";
+---
+
+<BaseLayout description={DESCRIPTION} path="/projects" title={TITLE}>
+  <main class="mx-auto max-w-xl space-y-12 px-6 py-24">
+    <PageHeading description={DESCRIPTION} title={TITLE} />
+
+    <Section cta={{ label: "Go back", href: "/" }} title="Projects">
+      <ItemGroup id="projects-list" items={PROJECTS} />
+    </Section>
+  </main>
+</BaseLayout>

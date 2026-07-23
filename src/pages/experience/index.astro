@@ -1,0 +1,24 @@
+---
+export const prerender = true;
+
+import { ExperienceList } from "#/components/experience-list.tsx";
+import { PageHeading } from "#/components/page-heading.tsx";
+import { Section } from "#/components/section.tsx";
+import BaseLayout from "#/layouts/base-layout.astro";
+import { getExperience } from "#/lib/experience";
+
+const TITLE = "My Experience";
+const DESCRIPTION = "Where I've worked and what I did there.";
+
+const experience = await getExperience();
+---
+
+<BaseLayout description={DESCRIPTION} path="/experience" title={TITLE}>
+	<main class="mx-auto max-w-xl space-y-12 px-6 py-24">
+		<PageHeading description={DESCRIPTION} title={TITLE} />
+
+		<Section cta={{ label: "Go back", href: "/" }} title="Experience">
+			<ExperienceList items={experience} />
+		</Section>
+	</main>
+</BaseLayout>

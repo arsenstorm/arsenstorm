@@ -14,7 +14,6 @@ function setExpanded(block: Element, open: boolean) {
 			toggle.setAttribute("aria-label", open ? "Collapse code" : "Expand code");
 		}
 	}
-	block.querySelector("[data-code-overlay]")?.classList.toggle("hidden", open);
 }
 
 function markCopied(block: Element) {
@@ -40,6 +39,19 @@ function markCopied(block: Element) {
 	);
 }
 
+// Scroll containers are keyboard-focusable; only keep the tab stop when
+// there is actually something to scroll.
+const preTabStops = new ResizeObserver((entries) => {
+	for (const { target } of entries) {
+		if (target instanceof HTMLElement) {
+			target.tabIndex = target.scrollWidth > target.clientWidth + 1 ? 0 : -1;
+		}
+	}
+});
+for (const pre of document.querySelectorAll("[data-code-block] pre")) {
+	preTabStops.observe(pre);
+}
+
 for (const block of document.querySelectorAll(
 	"[data-code-block]:not([data-open])"
 )) {
@@ -49,11 +61,6 @@ for (const block of document.querySelectorAll(
 	}
 	if (pre.scrollHeight > pre.clientHeight + 1) {
 		block.setAttribute("data-can-expand", "");
-		for (const revealed of block.querySelectorAll(
-			'[data-code-action="toggle"], [data-code-overlay]'
-		)) {
-			revealed.classList.remove("hidden");
-		}
 	}
 }
 

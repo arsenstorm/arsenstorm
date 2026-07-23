@@ -9,7 +9,12 @@ import rehypePrettyCode, {
 	type Options as RehypePrettyCodeOptions,
 } from "rehype-pretty-code";
 import remarkGfm from "remark-gfm";
-import { markCodeBlockOptions } from "./vite/code-block-options";
+import {
+	markCodeBlockOptions,
+	preserveCodeMeta,
+	restoreCodeMeta,
+} from "./vite/code-block-options";
+import { contentHmr } from "./vite/content-hmr";
 import { addHeadingSectionIds } from "./vite/heading-ids";
 
 const prettyCodeOptions = {
@@ -35,7 +40,8 @@ export default defineConfig({
 	// subdirectories. outDir "./dist" therefore emits the static assets to
 	// ./dist/client, matching wrangler.jsonc `assets.directory`.
 	outDir: "./dist",
-	trailingSlash: "never",
+	trailingSlash: "ignore",
+	redirects: { "/work": "/projects" },
 	// Emit `work.html` instead of `work/index.html`: links are slashless, so
 	// directory output made every internal navigation pay a 307 redirect to the
 	// trailing-slash form before the page was served.
@@ -64,15 +70,16 @@ export default defineConfig({
 	markdown: {
 		syntaxHighlight: false,
 		processor: unified({
-			remarkPlugins: [remarkGfm],
+			remarkPlugins: [remarkGfm, preserveCodeMeta],
 			rehypePlugins: [
+				restoreCodeMeta,
 				[rehypePrettyCode, prettyCodeOptions],
 				addHeadingSectionIds,
 				markCodeBlockOptions,
 			],
 		}),
 	},
-	integrations: [react(), mdx(), sitemap()],
+	integrations: [react(), mdx(), sitemap(), contentHmr()],
 	vite: {
 		plugins: [tailwindcss()],
 	},

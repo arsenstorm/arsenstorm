@@ -1,5 +1,4 @@
-import clsx from "clsx";
-
+import { cn } from "cnfast";
 export function BentoBlock({
 	size,
 	className,
@@ -13,7 +12,7 @@ export function BentoBlock({
 }) {
 	return (
 		<div
-			className={clsx(
+			className={cn(
 				"relative isolate flex aspect-square flex-col rounded-3xl bg-neutral-100 p-4 dark:bg-neutral-900",
 				size === "small" && "col-span-1 row-span-1", // 0.5x0.5
 				size === "medium" && "col-span-2 row-span-2", // 1x1
@@ -38,7 +37,7 @@ export function CustomBentoBlock({
 }) {
 	return (
 		<div
-			className={clsx(
+			className={cn(
 				"relative isolate flex flex-col rounded-3xl bg-neutral-100 p-4 dark:bg-neutral-900",
 				className
 			)}
@@ -58,7 +57,7 @@ export function EmptyBentoBlock({
 }) {
 	return (
 		<div
-			className={clsx(
+			className={cn(
 				"relative isolate flex aspect-square flex-col rounded-3xl bg-transparent dark:bg-transparent",
 				size === "small" && "col-span-1 row-span-1", // 0.5x0.5
 				size === "medium" && "col-span-2 row-span-2", // 1x1
@@ -76,7 +75,7 @@ export function BentoBlockSkeleton({
 }) {
 	return (
 		<div
-			className={clsx(
+			className={cn(
 				"relative isolate flex aspect-square animate-pulse flex-col rounded-3xl bg-neutral-100 p-4 dark:bg-neutral-900",
 				size === "small" && "col-span-1 row-span-1", // 0.5x0.5
 				size === "medium" && "col-span-2 row-span-2", // 1x1
@@ -99,7 +98,7 @@ export function BentoAppBlock({
 }) {
 	return (
 		<BentoBlock
-			className={clsx(
+			className={cn(
 				"overflow-clip border border-neutral-200 dark:border-neutral-800",
 				className
 			)}
@@ -133,7 +132,7 @@ export function BentoGrid({
 }) {
 	return (
 		<div
-			className={clsx(
+			className={cn(
 				"@container grid grid-cols-4 gap-4 md:grid-cols-6",
 				className
 			)}

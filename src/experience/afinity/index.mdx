@@ -1,0 +1,90 @@
+---
+company: "Afinity"
+logo: "/icons/afinity.jpg"
+role: "Software Engineer"
+start: "2023-05"
+end: "2025-03"
+summary: "Built and ran course discovery and human-reviewed AI statement feedback for UK university applicants as the sole engineer."
+highlights:
+  - "Sole engineer across nearly two years: the product, the Python API, the data pipelines and the internal tooling — used by more than 2,300 students in the 2023/24 admissions cycle."
+  - "Shipped an AI-assisted personal statement review service — a multi-pass GPT-4 pipeline that generated inline feedback for human reviewers to refine in a purpose-built annotation dashboard."
+  - "Operated the platform in production from launch in 2023 through to early 2025, evolving it across three platform generations — AWS Lambda, Cloudflare Workers, and finally Supabase."
+facts:
+  - label: "Scale"
+    value: "2,300+ students in the 2023/24 admissions cycle"
+  - label: "Reviews"
+    value: "600+ statements sent for human review · 5,100+ comments"
+  - label: "Ownership"
+    value: "Sole engineer across product, backend, data and internal tools"
+  - label: "Stack"
+    value: "Python (Flask), Next.js, AWS Lambda, then Cloudflare Workers and Supabase"
+---
+
+import { ReviewsChart } from "./reviews-chart.tsx";
+import { SignupsChart } from "./signups-chart.tsx";
+
+## Overview
+
+Afinity helped students get into UK universities. The two core problems it worked on were course discovery — there are more than 50,000 undergraduate courses on UCAS and very little good guidance on choosing between them — and the personal statement, the 4,000-character essay every applicant submits.
+
+The product was free for students. The platform launched in August 2023, ran through the 2023/24 admissions cycle, and stayed in production until early 2025; the work eventually carried straight into [Anyverse](/experience/anyverse), its successor.
+
+## My role
+
+The company had been looking for someone technical to build the product, and that became me: I came on board as a co-founder and was the only engineer the whole time I was there. My two co-founders came from teaching and university advising and owned content, partnerships and marketing; everything technical — product, backend, data, infrastructure, internal tools — was mine.
+
+I decided what to build, built it, deployed it, watched it in production, and dealt with whatever broke.
+
+## What I owned
+
+At peak, I was running seven Next.js frontends backed by a single Python (Flask) API on AWS Lambda with bespoke auth, guest accounts and a bitmask permission system; a multithreaded pipeline aggregating UCAS course data into SQL Server, using row-locking as a work queue; the AI review pipeline and its reviewer tooling; and the internal operations stack — staff dashboard, transactional email, and the student-contributor onboarding portal. I made plenty of mistakes in how I designed it, and the clearest was just how much there was for one engineer to maintain.
+
+## What I shipped
+
+**Course Explorer.** Search-as-you-type over the aggregated UCAS dataset, with filters, shortlisting, and subject guides — around fifteen kinds of editorial content per subject (day-in-the-life pieces, honest interview accounts, admissions test guidance) managed in Airtable and cached into the database.
+
+**Statement Builder.** A drafting editor that rendered statements exactly as UCAS displays them — numbered lines, with the 47-line and 4,000-character limits enforced live. Early versions embedded Grammarly's editor SDK for grammar checking; when Grammarly deprecated the SDK, I replaced it with my own rule-based analyser that reproduced UCAS's line-wrapping behaviour.
+
+**Statement review service.** A student submitted their statement; a worker service ran it through three sequential GPT-4 passes — holistic feedback against a rubric, then inline suggestions tied to specific spans of text, then targeted improvements. The model emitted suggestions in a custom delimiter format that I parsed back into character offsets, merging overlapping spans.
+
+That output landed in a reviewer dashboard I built for our team of Oxbridge reviewers, with a from-scratch text-selection annotation engine for editing and adding inline comments before the review went back to the student. Reviewers could also flag problematic statements or AI output for a second look, which became the main quality loop on the service. AI did the first pass; a human always signed off. More than half the statements we reviewed came through a school my co-founders had partnered with; my end of it was the submission flow — getting a whole cohort's statements through the site and into the same review pipeline.
+
+**Smaller products around the core.** A Discord advisor bot on OpenAI's Assistants API that answered course questions from our dataset; RateMyDegree, a standalone site collecting degree reviews verified via `.ac.uk` email addresses; and the internal portal that ran our student-contributor programme end to end, from invite to countersigned NDA.
+
+I also killed things deliberately: an AI A-Level tutor prototype and an AI onboarding chatbot were early experiments that didn't work out, and the referral system got removed once it wasn't worth its complexity.
+
+## Deployment and operations
+
+The 2023 stack was a Flask API deployed to AWS Lambda through the Serverless Framework (with GitHub Actions doing the deploys), SQL Server for data, and Vercel for the frontends. Later iterations ran on Cloudflare Workers, Postgres via Prisma, and finally Supabase. Transactional email went from the Gmail API to a small Resend-based service with timing-safe API-key checks.
+
+Monitoring grew with the product: off-the-shelf analytics in the first year, then PostHog for product analytics, Sentry for errors, and rate limiting and bot protection in front of the AI endpoints on the 2024 platform — plus a self-hosted Counterscale instance so we owned our traffic data directly.
+
+Running everything alone meant I learnt incident response the hard way. The one I remember most: review-completion emails silently failed for a period, so students were waiting on feedback that had already been written. I found it, resent every affected review with an apology, and rebuilt the email path as its own minimal service so that failure couldn't hide again.
+
+## Key decisions
+
+**Keeping a human in the loop.** The review pipeline could have shipped raw GPT-4 output in 2023. I deliberately put a human reviewer between the model and the student: the AI made reviewers faster, but a person owned every review that went out. For advice that shapes a teenager's university application, I still think that was the right call.
+
+**Simplifying the architecture — eventually.** I built the 2023 product as eight separately deployed pieces across subdomains — seven Next.js frontends and the API — then rebuilt it as a Turborepo monorepo, then rebuilt that as a single Next.js app on Supabase. Each rewrite was smaller than the last, and the final version did the same job as the first with a fraction of the moving parts. Looking back, the architecture should have started where it ended — the rewrites cost months that a product this size didn't have.
+
+## Outcomes
+
+The product grew quickly once it launched: 117 users two weeks in, past a thousand by November, and 385 statements reviewed by the end of 2023 — 168 from individual students and 217 through the partner school — with the January deadline rush still ahead. That rush took review submissions past 600 within the first week of January, and by February 2024 more than 2,300 students had signed up and worked on over 1,600 statements in the builder. Over the cycle, reviewers put more than 5,100 inline comments on students' statements.
+
+<SignupsChart client:visible />
+
+The review service ran with a real promise attached — free, in-depth feedback from our reviewer team within five days. Most of the year we kept to it, but deadline season was another matter: in the January 2024 rush, set off by a viral TikTok, the backlog passed two hundred, and we had to email students an apology and a delay. Reviewing capacity, not software, was the bottleneck — a lesson that shaped how we built the reviewer at Anyverse.
+
+<ReviewsChart client:visible />
+
+The part I'm most proud of is simply that it all ran: one engineer keeping the apps, API, data pipelines, AI workers, email and admin tooling in production for nearly two years, including a full admissions cycle.
+
+## What I learnt
+
+- **Ship the boring version of AI.** The delimiter-based GPT-4 pipeline was unglamorous — plain API calls and string parsing, no framework in between — but it produced inline, span-anchored feedback in 2023 and just kept working.
+- **Third-party dependencies are product risk.** Grammarly deprecating its SDK removed a feature overnight; owning the replacement made the product more durable.
+- **Solo operation is a skill.** Monitoring, incident response and the discipline to write things down aren't extras when there's no one else to catch what you miss.
+
+## Where it led
+
+Through 2024, my co-founders' focus shifted, and the product got progressively simpler — we wound down the review service (the app itself stayed free) and pared it back to the course explorer and guides — but it stayed live, and I kept running it into 2025. In early 2025 I made one last attempt at a leaner rebuild before we archived the project and started again: most of the same team went on to build [Anyverse](/experience/anyverse), taking everything we'd learnt with us.

@@ -1,6 +1,9 @@
 export interface Project {
 	description: string;
+	featured?: boolean;
 	href?: string;
+	status?: "archived" | "decommissioned";
+	statusNote?: string;
 	title: string;
 	year: string;
 }
@@ -12,12 +15,21 @@ export const PROJECTS: Project[] = [
 		description:
 			"A protocol for low-latency live streaming on top of object storage.",
 		href: "https://github.com/arsenstorm/olos",
+		featured: true,
 	},
 	{
 		year: "2026",
-		title: "arsenstorm",
-		description: "This site. A small corner of the internet.",
-		href: "https://github.com/arsenstorm/arsenstorm",
+		title: "Automated Web",
+		description: "Reliable browser automation for real-world workflows.",
+		href: "https://github.com/arsenstorm/automated-web",
+		featured: true,
+	},
+	{
+		year: "2026",
+		title: "img-to-pdf",
+		description:
+			"An email-native service that merges emailed images into a single PDF.",
+		href: "/writing/using-email-as-an-interface",
 	},
 	{
 		year: "2026",
@@ -42,6 +54,7 @@ export const PROJECTS: Project[] = [
 		title: "iOS ID Reader",
 		description: "iOS app for reading identity documents over NFC.",
 		href: "https://apps.apple.com/us/app/id-reader/id6757679372",
+		featured: true,
 	},
 	{
 		year: "2026",
@@ -54,13 +67,24 @@ export const PROJECTS: Project[] = [
 		year: "2025",
 		title: "World Class Education",
 		description: "Expert tutoring for top students.",
-		href: "https://worldclass.education",
 	},
 	{
 		year: "2025",
-		title: "Anyverse",
-		description: "Helping students get into university for free.",
-		href: "https://anyverse.app",
+		title: "run-this",
+		description:
+			"A CLI that explains how to install missing command dependencies.",
+		href: "https://github.com/arsenstorm/run-this",
+	},
+	{
+		year: "2025",
+		title: "Request Directory",
+		description: "A curated directory for discovering useful APIs.",
+	},
+	{
+		year: "2025",
+		title: "Arsen Agents",
+		description:
+			"Parallel AI agents for processing every row of an uploaded CSV.",
 	},
 	{
 		year: "2025",
@@ -85,6 +109,51 @@ export const PROJECTS: Project[] = [
 		title: "Extra GitHub Tools",
 		description: "Useful tools that should be in GitHub, but aren't.",
 		href: "https://eght.arsenstorm.com",
+	},
+	{
+		year: "2024",
+		title: "PLAM",
+		description:
+			"An AI assistant that could take actions across external services.",
+	},
+	{
+		year: "2023",
+		title: "Kayle",
+		description:
+			"Developer infrastructure for moderating harmful user-generated content.",
+	},
+	{
+		year: "2023",
+		title: "Rosel",
+		description:
+			"A GPT-powered virtual assistant available through web, email, SMS and voice.",
+	},
+	{
+		year: "2023",
+		title: "Arsenal Insiders",
+		description:
+			"AI-curated Arsenal news aggregated and summarised from across the web.",
+	},
+	{
+		year: "2023",
+		title: "MentionGPT",
+		description: "An Instagram bot that replied to mentions using GPT-4.",
+	},
+	{
+		year: "2022",
+		title: "DevRIFT",
+		description:
+			"Security infrastructure and developer APIs for websites and applications.",
+	},
+	{
+		year: "2022",
+		title: "EduRIFT",
+		description: "AI-assisted marking software for teachers.",
+	},
+	{
+		year: "2022",
+		title: "ANPR",
+		description: "Computer vision for checking vehicles against DVLA records.",
 	},
 ];
 

@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { cn } from "cnfast";
 import type { ComponentPropsWithoutRef } from "react";
 
 export function MdxTable({
@@ -39,7 +39,7 @@ export function MdxTableHeader({
 }: ComponentPropsWithoutRef<"th">) {
 	return (
 		<th
-			className={clsx(
+			className={cn(
 				"whitespace-nowrap px-4 py-2.5 font-medium text-neutral-950 text-xs tracking-tight dark:text-neutral-50",
 				className
 			)}
@@ -54,7 +54,7 @@ export function MdxTableCell({
 }: ComponentPropsWithoutRef<"td">) {
 	return (
 		<td
-			className={clsx(
+			className={cn(
 				"whitespace-nowrap px-4 py-2.5 text-neutral-700 text-sm tabular-nums dark:text-neutral-300",
 				className
 			)}

@@ -4,7 +4,7 @@ import { isAbsolute, join, relative } from "node:path";
 import process, { stdout } from "node:process";
 import { fileURLToPath } from "node:url";
 import puppeteer, { type Browser, type Page } from "puppeteer";
-import { ogImagePath } from "../src/lib/seo";
+import { ogImagePath, SITE_URL } from "../src/lib/seo";
 
 const DIST_CLIENT = fileURLToPath(new URL("../dist/client/", import.meta.url));
 const OG_OUTPUT_DIRECTORY = join(DIST_CLIENT, "og");
@@ -229,8 +229,21 @@ async function renderCvPdf(page: Page, origin: string): Promise<void> {
 		timeout: PAGE_LOAD_TIMEOUT_MS,
 		waitUntil: "domcontentloaded",
 	});
+	// Apply print styles before waiting on fonts so the print-only static
+	// Inter faces are actually fetched before the PDF is rendered.
+	await page.emulateMediaType("print");
 	// Wait for web fonts (Inter) so the PDF doesn't fall back to a default face.
 	await page.evaluateHandle("document.fonts.ready");
+	// Root-relative hrefs would bake this local preview origin into the PDF's
+	// link annotations; resolve them against the production origin instead.
+	await page.evaluate((siteUrl) => {
+		for (const anchor of document.querySelectorAll("a[href]")) {
+			const href = anchor.getAttribute("href");
+			if (href?.startsWith("/")) {
+				anchor.setAttribute("href", new URL(href, siteUrl).toString());
+			}
+		}
+	}, SITE_URL);
 	const pdf = await page.pdf({
 		format: "A4",
 		preferCSSPageSize: true,

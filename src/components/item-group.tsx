@@ -1,9 +1,12 @@
+import { cn } from "cnfast";
 import { Anchor } from "#/components/link";
 
 interface ItemGroupItem {
 	description: string;
 	href?: string;
 	publishedAt?: string;
+	status?: "archived" | "decommissioned";
+	statusNote?: string;
 	title: string;
 	year?: string;
 }
@@ -12,6 +15,7 @@ interface ItemGroupProps {
 	groupBy?: "year" | "month" | "all";
 	id?: string;
 	items: ItemGroupItem[];
+	limit?: number;
 	showAll?: boolean;
 }
 
@@ -47,9 +51,10 @@ export function ItemGroup({
 	id,
 	items,
 	groupBy = "year",
+	limit,
 	showAll = true,
 }: ItemGroupProps) {
-	const visibleItems = showAll ? items : items.slice(0, 3);
+	const visibleItems = showAll ? items : items.slice(0, limit ?? 3);
 
 	const grouped = groupByDate(visibleItems, groupBy);
 
@@ -62,11 +67,18 @@ export function ItemGroup({
 							{date}
 						</h3>
 					) : null}
-					<ul className="flex flex-col gap-3 rounded-xl bg-neutral-100 px-4 py-3 dark:bg-neutral-900">
+					<ul className="flex flex-col rounded-xl bg-neutral-100 dark:bg-neutral-900">
 						{groupedItems.map((item) => {
 							const title = (
-								<span className="text-neutral-950 text-sm decoration-neutral-300 underline-offset-4 group-hover:underline dark:text-neutral-50 dark:decoration-neutral-700">
-									{item.title}
+								<span className="flex items-center gap-2">
+									<span className="text-neutral-950 text-sm decoration-neutral-300 underline-offset-4 group-hover:underline dark:text-neutral-50 dark:decoration-neutral-700">
+										{item.title}
+									</span>
+									{item.status ? (
+										<span className="rounded-full bg-neutral-200 px-1.5 py-0.5 text-[10px] text-neutral-500 uppercase tracking-wide dark:bg-neutral-800 dark:text-neutral-400">
+											{item.status}
+										</span>
+									) : null}
 								</span>
 							);
 							const description = (
@@ -74,26 +86,44 @@ export function ItemGroup({
 									{item.description}
 								</span>
 							);
+							const statusNote = item.statusNote ? (
+								<span className="text-pretty text-neutral-500 text-sm italic dark:text-neutral-400">
+									{item.statusNote}
+								</span>
+							) : null;
+							const itemClass =
+								"flex flex-col gap-0.5 px-4 py-1.5 group-first/item:rounded-t-xl group-first/item:pt-3 group-last/item:rounded-b-xl group-last/item:pb-3";
+
 							let content = (
-								<div className="flex flex-col gap-0.5">
+								<div className={itemClass}>
 									{title}
 									{description}
+									{statusNote}
 								</div>
 							);
 
 							if (item.href) {
 								content = (
 									<Anchor
-										className="group flex flex-col gap-0.5"
+										className={cn(
+											"group",
+											itemClass,
+											"hover:bg-neutral-200/70 focus-visible:bg-neutral-200/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 focus-visible:ring-inset dark:focus-visible:bg-neutral-800/70 dark:focus-visible:ring-white/30 dark:hover:bg-neutral-800/70"
+										)}
 										href={item.href}
 									>
 										{title}
 										{description}
+										{statusNote}
 									</Anchor>
 								);
 							}
 
-							return <li key={item.title}>{content}</li>;
+							return (
+								<li className="group/item" key={item.title}>
+									{content}
+								</li>
+							);
 						})}
 					</ul>
 				</div>

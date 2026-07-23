@@ -4,7 +4,7 @@ export const prerender = true;
 import { Download } from "lucide-react";
 import { Controls } from "#/components/controls.tsx";
 import BaseLayout from "#/layouts/base-layout.astro";
-import { getWriteups } from "#/lib/writeups";
+import { getExperience } from "#/lib/experience";
 
 const TITLE = "CV";
 const DESCRIPTION = "Arsen Shkrumelyak — Software Engineer.";
@@ -20,7 +20,11 @@ const CONTACT = [
 ];
 
 const PROFILE =
-	"Software engineer focused on TypeScript, Cloudflare infrastructure, protocol design, identity systems, and product engineering. I build end-to-end systems — including low-latency object-storage-backed streaming, email-native SaaS workflows, identity verification, and education platforms.";
+	"Product and infrastructure engineer. I take early-stage systems from ambiguous requirements through implementation, deployment, monitoring, and iteration — most recently across identity verification, streaming infrastructure, and education products.";
+
+const experience = (await getExperience()).filter(
+	(item) => item.kind === "experience"
+);
 
 const SELECTED_PROJECTS: {
 	title: string;
@@ -28,42 +32,28 @@ const SELECTED_PROJECTS: {
 	links?: { href: string; label: string }[];
 	year: string;
 	summary: string;
-	tech: string;
 	bullets: string[];
 }[] = [
 	{
 		title: "Open Live Object Streaming (OLOS)",
-		href: "/technical-writeups/open-live-object-streaming",
+		href: "/writing/open-live-object-streaming",
 		year: "2026",
 		summary:
 			"A draft protocol for low-latency live streaming on top of commodity object storage.",
-		tech: "TypeScript, Cloudflare Workers, R2, HLS/CMAF",
 		bullets: [
 			"Built a working prototype that streams live video through object storage to browser playback at roughly 4s end-to-end latency.",
 			"Designed a protocol that models a live stream as an ordered sequence of immutable objects, with a trusted coordinator — not the bucket — owning all live state.",
-			"Implemented a forward-only cursor with compare-and-set persistence and contiguous-prefix commits — enabling parallel part uploads and windowed retention.",
 		],
 	},
 	{
-		title: "img-to-pdf",
-		href: "/technical-writeups/using-email-as-an-interface",
+		title: "Automated Web",
+		href: "/writing/automating-browser-workflows",
 		year: "2026",
-		summary: "An email-native SaaS product where the address is the interface.",
-		tech: "Cloudflare Workers, Email Routing, MIME parsing, PDF generation",
+		summary:
+			"A system for reliable browser automation across real-world pages.",
 		bullets: [
-			"Built an email-native service on Cloudflare Email Routing and Workers: parses incoming MIME, extracts images, merges them into a single PDF, and replies with it attached.",
-			"Handled sender-to-user mapping, entitlement checks, and abuse prevention with no account, upload screen, or web app.",
-		],
-	},
-	{
-		title: "Kayle ID",
-		href: "https://github.com/kayleai/kayle-id-v1",
-		year: "2026",
-		summary: "Privacy-first identity verification and developer platform.",
-		tech: "TypeScript, Cloudflare Workers, webhooks, NFC document reading",
-		bullets: [
-			"Built an identity verification product and developer API designed to minimise retained identity data across verification and API workflows.",
-			"Integrated NFC document reading (see iOS ID Reader / MRTDReader) into end-to-end verification flows.",
+			"Explored reliable browser automation across dynamic pages, cross-origin iframes, Shadow DOM and authenticated workflows.",
+			"Documented the approach in an interactive technical writeup with live in-page demos.",
 		],
 	},
 	{
@@ -77,10 +67,9 @@ const SELECTED_PROJECTS: {
 		],
 		year: "2026",
 		summary: "Reading NFC-enabled passports and ID cards.",
-		tech: "Swift, iOS, Core NFC, ICAO 9303, PACE, CA-v2",
 		bullets: [
 			"Published an iOS app on the App Store for reading ICAO 9303 NFC travel documents.",
-			"Forked AndyQ/NFCPassportReader into MRTDReader, rebranding it for broader MRTD support and adding PACE IM/CAM, CAN-based PACE, and CA-v2 transcript export.",
+			"Extended NFCPassportReader into MRTDReader, adding broader MRTD support, PACE IM/CAM, CAN-based PACE and CA-v2 transcript export.",
 		],
 	},
 ];
@@ -95,171 +84,198 @@ const EDUCATION = [
 
 const PRINT_STYLES = `
 	@page { size: A4; margin: 0; }
+	@font-face { font-family: "Inter Print"; font-style: normal; font-weight: 400; src: url("/fonts/inter-print-400.woff2") format("woff2"); }
+	@font-face { font-family: "Inter Print"; font-style: normal; font-weight: 500; src: url("/fonts/inter-print-500.woff2") format("woff2"); }
+	@font-face { font-family: "Inter Print"; font-style: normal; font-weight: 600; src: url("/fonts/inter-print-600.woff2") format("woff2"); }
+	@font-face { font-family: "Inter Print"; font-style: italic; font-weight: 400; src: url("/fonts/inter-print-400-italic.woff2") format("woff2"); }
 	@media print {
+		.cv-sheet { font-family: "Inter Print", ui-sans-serif, system-ui, sans-serif; }
 		html, body { background: #fff !important; }
 		.cv-no-print { display: none !important; }
 		.cv-backdrop { padding: 0 !important; background: #fff !important; }
-		.cv-sheet { box-shadow: none !important; width: auto !important; min-height: auto !important; margin: 0 !important; padding: 16mm !important; border-radius: 0 !important; outline: none !important; }
+		.cv-sheet { box-shadow: none !important; width: auto !important; min-height: auto !important; margin: 0 !important; padding: 11mm 16mm !important; border-radius: 0 !important; outline: none !important; }
+		.cv-sheet > * + * { margin-top: 1rem !important; }
 	}
 `;
 
 const SHEET_HEADING_CLASS =
 	"mb-2 border-neutral-200 border-b pb-1 font-medium text-[11px] text-neutral-900 uppercase tracking-wider dark:border-neutral-800 dark:text-neutral-100";
-
-const writeups = (await getWriteups()).slice(0, 3);
 ---
 
 <BaseLayout description={DESCRIPTION} path="/cv" title={TITLE}>
-	<div class="cv-backdrop min-h-dvh px-4 pt-10 pb-24">
-		<Fragment set:html={`<style>${PRINT_STYLES}</style>`} />
+  <div class="cv-backdrop min-h-dvh px-4 pt-10 pb-24">
+    <Fragment set:html={`<style>${PRINT_STYLES}</style>`} />
 
-		<article class="cv-sheet mx-auto w-full max-w-[210mm] space-y-5 rounded-xl bg-white p-6 text-neutral-800 shadow-lg outline outline-neutral-100 sm:p-10 md:min-h-[297mm] md:p-[16mm] dark:bg-neutral-950 dark:text-neutral-200 dark:outline-neutral-900">
-			<header>
-				<h1 class="font-semibold text-2xl text-neutral-950 tracking-tight dark:text-neutral-50">
-					Arsen Shkrumelyak
-				</h1>
-				<p class="mt-0.5 text-neutral-600 text-sm dark:text-neutral-400">
-					Software Engineer · London, UK
-				</p>
-				<div class="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-neutral-600 text-xs dark:text-neutral-400">
-					{
-						CONTACT.map((item) => {
-							const external = item.href.startsWith("http");
-							return (
-								<a
-									class="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:decoration-neutral-700 dark:hover:text-neutral-50"
-									href={item.href}
-									rel={external ? "noopener noreferrer" : undefined}
-									target={external ? "_blank" : undefined}
-								>
-									{item.label}
-								</a>
-							);
-						})
-					}
-				</div>
-			</header>
+    <article
+      class="cv-sheet mx-auto w-full max-w-[210mm] space-y-5 rounded-xl bg-white p-6 text-neutral-800 shadow-lg outline outline-neutral-100 sm:p-10 md:min-h-[297mm] md:p-[16mm] dark:bg-neutral-950 dark:text-neutral-200 dark:outline-neutral-900"
+    >
+      <header>
+        <h1
+          class="font-semibold text-2xl text-neutral-950 tracking-tight dark:text-neutral-50"
+        >
+          Arsen Shkrumelyak
+        </h1>
+        <p class="mt-0.5 text-neutral-600 text-sm dark:text-neutral-400">
+          Software Engineer · London, UK
+        </p>
+        <div
+          class="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-neutral-600 text-xs dark:text-neutral-400"
+        >
+          {
+            CONTACT.map((item) => {
+              const external = item.href.startsWith("http");
+              return (
+                <a
+                  class="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:decoration-neutral-700 dark:hover:text-neutral-50"
+                  href={item.href}
+                  rel={external ? "noopener noreferrer" : undefined}
+                  target={external ? "_blank" : undefined}
+                >
+                  {item.label}
+                </a>
+              );
+            })
+          }
+        </div>
+      </header>
 
-			<section>
-				<h2 class={SHEET_HEADING_CLASS}>Profile</h2>
-				<p class="text-pretty text-[13px] text-neutral-700 leading-relaxed dark:text-neutral-300">
-					{PROFILE}
-				</p>
-			</section>
+      <section>
+        <h2 class={SHEET_HEADING_CLASS}>Profile</h2>
+        <p
+          class="text-pretty text-[13px] text-neutral-700 leading-relaxed dark:text-neutral-300"
+        >
+          {PROFILE}
+        </p>
+      </section>
 
-			<section>
-				<h2 class={SHEET_HEADING_CLASS}>Recent Engineering Work</h2>
-				<ul class="flex flex-col gap-3">
-					{
-						SELECTED_PROJECTS.map((project) => {
-							const external = project.href?.startsWith("http");
-							return (
-								<li>
-									<div class="flex items-baseline justify-between gap-4">
-										<p class="font-medium text-[13px] text-neutral-900 dark:text-neutral-100">
-											{project.href ? (
-												<a
-													class="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:decoration-neutral-700 dark:hover:text-neutral-50"
-													href={project.href}
-													rel={external ? "noopener noreferrer" : undefined}
-													target={external ? "_blank" : undefined}
-												>
-													{project.title}
-												</a>
-											) : (
-												project.title
-											)}
-										</p>
-										<span class="shrink-0 text-[12px] text-neutral-400 tabular-nums dark:text-neutral-600">
-											{project.year}
-										</span>
-									</div>
-									<p class="text-[12px] text-neutral-600 italic leading-snug dark:text-neutral-400">
-										{project.summary}
-										{project.links?.map((link) => (
-											<a
-												class="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:decoration-neutral-700 dark:hover:text-neutral-50"
-												href={link.href}
-												rel="noopener noreferrer"
-												target="_blank"
-											>
-												{" "}
-												{link.label}
-											</a>
-										))}
-									</p>
-									<ul class="mt-1 flex list-disc flex-col gap-0.5 pl-4 text-[12px] text-neutral-700 leading-snug marker:text-neutral-300 dark:text-neutral-300 dark:marker:text-neutral-700">
-										{project.bullets.map((bullet) => (
-											<li>{bullet}</li>
-										))}
-										<li class="text-neutral-500">Built with {project.tech}</li>
-									</ul>
-								</li>
-							);
-						})
-					}
-				</ul>
-			</section>
+      <section>
+        <h2 class={SHEET_HEADING_CLASS}>Experience</h2>
+        <ul class="flex flex-col gap-3">
+          {
+            experience.map((item) => (
+              <li>
+                <div class="flex items-baseline justify-between gap-4">
+                  <p class="font-medium text-[13px] text-neutral-900 dark:text-neutral-100">
+                    <a
+                      class="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:decoration-neutral-700 dark:hover:text-neutral-50"
+                      href={item.href}
+                    >
+                      {item.company}
+                    </a>
+                  </p>
+                  <span class="shrink-0 text-[12px] text-neutral-400 tabular-nums dark:text-neutral-600">
+                    {item.period}
+                  </span>
+                </div>
+                <p class="text-[12px] text-neutral-600 italic leading-snug dark:text-neutral-400">
+                  {item.role} — {item.summary}
+                </p>
+                {item.highlights.length > 0 && (
+                  <ul class="mt-1 flex list-disc flex-col gap-0.5 pl-4 text-[12px] text-neutral-700 leading-snug marker:text-neutral-300 dark:text-neutral-300 dark:marker:text-neutral-700">
+                    {item.highlights.map((highlight) => (
+                      <li>{highlight}</li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))
+          }
+        </ul>
+      </section>
 
-			<section>
-				<h2 class={SHEET_HEADING_CLASS}>Technical Writing</h2>
-				<ul class="flex flex-col gap-1">
-					{
-						writeups.map((writeup) => (
-							<li class="flex items-baseline justify-between gap-4">
-								<a
-									class="text-[13px] text-neutral-800 underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:text-neutral-200 dark:decoration-neutral-700 dark:hover:text-neutral-50"
-									href={writeup.href}
-								>
-									{writeup.title}
-								</a>
-								<span class="shrink-0 text-[12px] text-neutral-400 tabular-nums dark:text-neutral-600">
-									{writeup.publishedAt.slice(0, 4)}
-								</span>
-							</li>
-						))
-					}
-				</ul>
-			</section>
+      <section>
+        <h2 class={SHEET_HEADING_CLASS}>Selected Engineering Work</h2>
+        <ul class="flex flex-col gap-3">
+          {
+            SELECTED_PROJECTS.map((project) => {
+              const external = project.href?.startsWith("http");
+              return (
+                <li>
+                  <div class="flex items-baseline justify-between gap-4">
+                    <p class="font-medium text-[13px] text-neutral-900 dark:text-neutral-100">
+                      {project.href ? (
+                        <a
+                          class="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:decoration-neutral-700 dark:hover:text-neutral-50"
+                          href={project.href}
+                          rel={external ? "noopener noreferrer" : undefined}
+                          target={external ? "_blank" : undefined}
+                        >
+                          {project.title}
+                        </a>
+                      ) : (
+                        project.title
+                      )}
+                    </p>
+                    <span class="shrink-0 text-[12px] text-neutral-400 tabular-nums dark:text-neutral-600">
+                      {project.year}
+                    </span>
+                  </div>
+                  <p class="text-[12px] text-neutral-600 italic leading-snug dark:text-neutral-400">
+                    {project.summary}
+                    {project.links?.map((link) => (
+                      <a
+                        class="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:decoration-neutral-700 dark:hover:text-neutral-50"
+                        href={link.href}
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        {" "}
+                        {link.label}
+                      </a>
+                    ))}
+                  </p>
+                  <ul class="mt-1 flex list-disc flex-col gap-0.5 pl-4 text-[12px] text-neutral-700 leading-snug marker:text-neutral-300 dark:text-neutral-300 dark:marker:text-neutral-700">
+                    {project.bullets.map((bullet) => (
+                      <li>{bullet}</li>
+                    ))}
+                  </ul>
+                </li>
+              );
+            })
+          }
+        </ul>
+      </section>
 
-			<section>
-				<h2 class={SHEET_HEADING_CLASS}>Education</h2>
-				<ul class="flex flex-col gap-2">
-					{
-						EDUCATION.map((entry) => (
-							<li class="flex items-baseline justify-between gap-4">
-								<div>
-									<p class="font-medium text-[13px] text-neutral-900 dark:text-neutral-100">
-										{entry.institution}
-									</p>
-									<p class="text-[12px] text-neutral-600 dark:text-neutral-400">
-										{entry.detail}
-									</p>
-								</div>
-								<span class="shrink-0 text-[12px] text-neutral-400 tabular-nums dark:text-neutral-600">
-									{entry.period}
-								</span>
-							</li>
-						))
-					}
-				</ul>
-			</section>
-		</article>
+      <section>
+        <h2 class={SHEET_HEADING_CLASS}>Education</h2>
+        <ul class="flex flex-col gap-2">
+          {
+            EDUCATION.map((entry) => (
+              <li class="flex items-baseline justify-between gap-4">
+                <div>
+                  <p class="font-medium text-[13px] text-neutral-900 dark:text-neutral-100">
+                    {entry.institution}
+                  </p>
+                  <p class="text-[12px] text-neutral-600 dark:text-neutral-400">
+                    {entry.detail}
+                  </p>
+                </div>
+                <span class="shrink-0 text-[12px] text-neutral-400 tabular-nums dark:text-neutral-600">
+                  {entry.period}
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+    </article>
 
-		<div class="cv-no-print fixed right-0 bottom-0 left-0">
-			<div class="mx-auto mb-6 flex max-w-sm items-center justify-between rounded-xl bg-white p-2 shadow-lg outline outline-neutral-100 dark:bg-neutral-950 dark:outline-neutral-900">
-				<div class="ml-2">
-					<Controls />
-				</div>
-				<a
-					class="inline-flex items-center gap-2 rounded-lg bg-neutral-950 px-3 py-1.5 font-medium text-sm text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-50 dark:text-neutral-950 dark:hover:bg-neutral-200"
-					download
-					href="/cv.pdf"
-				>
-					<Download className="size-4" />
-					Download PDF
-				</a>
-			</div>
-		</div>
-	</div>
+    <div class="cv-no-print fixed right-0 bottom-0 left-0">
+      <div
+        class="mx-auto mb-6 flex max-w-sm items-center justify-between rounded-xl bg-white p-2 shadow-lg outline outline-neutral-100 dark:bg-neutral-950 dark:outline-neutral-900"
+      >
+        <div class="ml-2">
+          <Controls />
+        </div>
+        <a
+          class="inline-flex items-center gap-2 rounded-lg bg-neutral-950 px-3 py-1.5 font-medium text-sm text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-50 dark:text-neutral-950 dark:hover:bg-neutral-200"
+          download
+          href="/cv.pdf"
+        >
+          <Download className="size-4" />
+          Download PDF
+        </a>
+      </div>
+    </div>
+  </div>
 </BaseLayout>

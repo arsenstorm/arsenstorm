@@ -123,7 +123,7 @@ A slot is a promise about exactly one object: this key, this content type, these
 
 For an S3-compatible store, OLOS presigns a single `PutObjectCommand` bound to the exact key, the declared content type, and a create-if-absent condition:
 
-```ts
+```ts expanded
 const command = new PutObjectCommand({
   Bucket: options.bucket,
   ContentType: options.slot.contentType,
