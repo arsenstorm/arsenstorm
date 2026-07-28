@@ -17,6 +17,7 @@ const LANGUAGE_LABELS: Record<string, string> = {
 	jsx: "JSX",
 	md: "Markdown",
 	mdx: "MDX",
+	rb: "Ruby",
 	sh: "Shell",
 	sql: "SQL",
 	ts: "TypeScript",

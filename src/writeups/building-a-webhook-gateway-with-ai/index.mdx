@@ -1,0 +1,358 @@
+---
+title: "Building a Webhook Gateway with AI"
+description: "What if you let AI build the project you designed?"
+publishedAt: "2026-07-28"
+tags: ["Ruby on Rails", "Webhooks", "AI"]
+---
+
+import { ModelChoice } from "./diagrams/model-choice.tsx";
+
+I built [Hookrail](https://hookrail.dev), a Ruby on Rails webhook gateway, by delegating its implementation to AI agents.
+
+That moved the work rather than removing it. Writing code stopped being the expensive part; deciding what to build and checking what came back became almost all of it.
+
+I'll cover the technical details of the project itself, as well as:
+
+- Crafting PRDs to guide AI
+- Delegating the right kind of tasks
+- Ensuring the right changes were made
+
+<Tip>
+  The reusable `/prd`, `/delegate`, and `/what-changed` skills used throughout the project are available in [arsenstorm/skills](https://github.com/arsenstorm/skills).
+
+  The `/delegate` skill was created specifically for [Anthropic's Fable 5](https://www.anthropic.com/news/claude-fable-5-mythos-5) but can be adapted to work with other models.
+</Tip>
+
+## Inspiration
+
+Testing a webhook integration locally has always irritated me. You start a tunnel, get a temporary public URL, point the provider at it, and then do the whole thing again tomorrow when that URL has changed.
+
+An annoyance that small rarely justifies building anything _(unless it's a side project)_. What made it worth acting on was that I wanted to test something else at the same time: whether I could hand the *implementation* of a real product to AI agents and end up with something I'd be willing to run in production.
+
+To test that, I needed to know what "done" looked like, and "done" is the part most side projects never pin down. So I measured what I was building against [Hookdeck](https://hookdeck.com/).
+
+Hookdeck is really good, which is what made it a useful target. It already does everything a webhook gateway needs to do, so rather than inventing a feature list, I could work out what Hookrail still needed by comparing the two.
+
+Of course, I'm sure Hookdeck isn't finished, and the team have plenty they're working on. But for a side project, a mature product is about the clearest definition of "done" you can get.
+
+## The problem
+
+A webhook is just an HTTP request, which makes it easy to underestimate.
+
+The naive version is a controller action that reads a payload and does something with it. That works right up until any of the following happens:
+
+1. The provider signs the payload, and every provider signs it differently.
+2. Your endpoint is down, and the provider gives up after two attempts.
+3. The provider sends the same event twice, and you charge someone twice.
+4. Something fails at 3am, and there is no record of what the payload contained.
+5. You need to change the shape of the payload before your service can read it.
+
+Individually, none are hard problems, but together they're a piece of infrastructure, and it's the kind of infrastructure that every team rebuilds badly because it's never the thing they're actually working on.
+
+Hookrail sits between the provider and your service. **It receives the webhook, verifies the signature, filters and transforms the payload, and delivers it to your endpoint, retrying until it lands.**
+
+## Starting with a PRD
+
+Before any code was written, I wrote a product requirements document (PRD), which specifies the problem, who has it, what's explicitly out of scope, and what has to be true for the work to count as done.
+
+This matters more when a model is writing the code than when you are. When you implement your own design, the specification lives in your head, and you keep resolving ambiguity as you go, usually without noticing. A model resolves ambiguity too; it just doesn't tell you, and you find out at review.
+
+So I used a `/prd` skill that refuses to write anything until it has interviewed me:
+
+<Panel>
+  1. **Problem** — what goes wrong today, in the user's words?
+  2. **Who and how often** — who hits this, and how frequently?
+  3. **Solved state** — what is true after this ships that is not true now?
+  4. **Boundary** — what is explicitly out of scope this time?
+  5. **Measure** — how will anyone know it worked?
+</Panel>
+
+The most valuable of those turned out to be **Boundary**. Writing "not X, because Y" converts a silent guess into a decision I could veto up front.
+
+A requirement also has to be a statement that is true or false about the finished system. "Reliable delivery" is not a requirement. "A delivery that fails is retried on the connection's configured schedule until `max_attempts`, then marked dead" is.
+
+That's testable, and it's *arguable*. I can disagree with it before anything is built.
+
+## Slicing the build
+
+A PRD for the whole product would have been useless. It would have been forty requirements deep, and the model would have started at requirement one and drifted by requirement twelve.
+
+Instead, I broke it into slices, each with its own numbered requirements, each shippable on its own:
+
+1. Ingest and forward
+2. Event inspection
+3. Manual retry
+4. Source, destination, and connection management
+5. Retries, replays, and delivery state
+6. Filtering, search, and pagination
+
+...and so on, through signature verification, transformation, deduplication, alerting, metrics, teams, and the CLI.
+
+## Why the spec lived in a file
+
+I ran out of context roughly twenty times building this.
+
+Every time a session compacts or restarts, the model keeps a summary of what happened and loses the rest, and it can't tell you which parts of the rest mattered. If your specification exists only as things you said in the chat, some of it evaporates each time, and the first you hear about it is a diff that contradicts a decision you made an hour ago.
+
+I kept the PRDs in numbered scratchpads that persist outside the chat, though a folder of markdown files does the same job. Starting a slice meant pointing at a document rather than re-explaining it.
+
+That meant a compaction cost me the conversation, not the plan. A fresh session could read the same document the previous one had been working from and carry on. Because slices were small, "carry on" usually meant one self-contained piece of work rather than reconstructing the whole project's state.
+
+## Delegating
+
+The `/delegate` skill splits the work in two: one model plans, specifies, and reviews; other models write the code.
+
+The division is the whole point:
+
+- **Never delegated** — reading the codebase, the plan, the interface boundaries between work items, hard logic (concurrency, security, tricky invariants), and reviewing every diff.
+- **Delegated** — everything the spec fully determines.
+
+That last phrase does the real work. What decides the model is how tightly the work has been specified:
+
+<ModelChoice />
+
+A taste-sensitive task that I'd specced down to exact method signatures and error strings has no taste left to exercise. Someone just has to type it.
+
+The other rule that mattered was to **partition by file ownership**. No two work items touch the same file. Two agents writing the same file concurrently means last-write-wins, and the other agent's work disappears with no conflict marker to tell you it happened.
+
+Where two items genuinely depended on each other, I decided the interface myself and wrote the identical contract into both specs. Both agents then built against it in parallel, and neither waited for the other's code to exist.
+
+<Caution>
+  Agents must never negotiate a boundary between themselves. Two agents agreeing on an interface produces a design decision you never reviewed, and it'll look perfectly reasonable in both diffs.
+</Caution>
+
+## When not to use AI
+
+Three kinds of work never went to an agent.
+
+**Changes small enough to describe in one sentence.** A copy fix, a renamed variable, three edits in the same file. Writing the instruction, waiting for it, and reading the diff all cost more than making the change would have.
+
+**Anything tuned by feel, one nudge at a time.** Finding the cubic-bezier that makes an animation feel right, or the spacing that stops a row looking cramped, means trying a value, looking at it, and trying another. By hand, that loop takes a second. Through an agent, it's a minute, and I still have to look at the result myself.
+
+**Noticing that something is broken.** The bugs that got past review surfaced because I was running the thing and watching what happened, not because an agent found them. They all passed the test suite first. An agent can fix any of them once it's pointed at the failure, but it has no view of the running system, so it can't be the thing that notices.
+
+The first two are about cost. The third isn't, and it's the one I'd like to fix.
+
+Structured logs are the obvious bridge. [evlog](https://www.evlog.dev/) emits one wide event per operation, designed so agents can read it as easily as people can, and [Better Stack](https://betterstack.com/log-management) runs anomaly detection over ingested logs and proposes a root cause when something trips. Either would give an agent the one thing it lacks: a view of the system while it's running.
+
+## Reviewing every diff
+
+Every agent reports what it did when it finishes, and I learned not to treat that report as the review.
+
+The summary tells you what the agent *intended*. The diff tells you what it *did*, and those are different documents often enough that reading only the first one is how drift gets in.
+
+What I checked, in order:
+
+1. **Spec conformance** — did it build what was specified, exactly?
+2. **Correctness** — edge cases, error paths, and whether the hard logic I'd written was transcribed rather than reinterpreted.
+3. **Fit** — does it match the surrounding code, reuse existing helpers, avoid invented abstractions and unrequested dependencies?
+4. **Scope** — did anything change outside the spec?
+5. **Seams** — where one agent's code calls another's.
+
+The last one is what you can't skip on parallel work. Each agent verified its own files against its own spec and passed. Contract drift between two individually correct diffs only ever shows up at the boundary between them.
+
+For anything visual, I used a `/what-changed` skill that produces a before/after report with the reasoning for each change, so I wasn't trying to review a UI by reading a diff of Tailwind classes.
+
+<Note>
+  Fixes go back to the *same* agent, not a fresh one. The original agent still has the context; a new agent re-reads everything and reintroduces the drift you just removed.
+</Note>
+
+## Inside the gateway
+
+Hookrail is Rails 8.1 on Postgres, with Solid Queue for background jobs and Hotwire for the UI. Roughly 3,900 lines of Ruby, plus a 1,500-line Rust CLI, across 39 commits and 60 test files. It took four and a half days of elapsed time, spread over five calendar days.
+
+That covers everything from an empty repository to a marketing page. It's running in production, but production here means my own traffic. Nobody else's webhooks depend on it; it hasn't been load-tested, and the only security review it has had is what CodeQL, Brakeman, and `bundler-audit` catch in CI.
+
+The data model is four things:
+
+- A **source** is where webhooks come from. It has a token in its URL and, optionally, a signature configuration.
+- A **destination** is where they go. A URL, headers, auth, and a rate limit.
+- A **connection** joins a source to a destination, and owns the routing rule, the transformation, and the retry policy.
+- An **event** is one received webhook, and each delivery of it to a connection is an **attempt**.
+
+Everything else, including replays, quarantine, issues, and metrics, hangs off those.
+
+### Verifying inbound signatures
+
+Every provider signs webhooks differently, and this is the part I expected to become a pile of provider-specific branches.
+
+It didn't, because the PRD asked for a generic verifier and made the provider presets explicitly secondary. What a source stores is a set of generic fields: which header carries the signature, whether that header is a whole value or comma-separated `key=value` pairs, the algorithm, the encoding, what gets signed, and how much clock skew to tolerate.
+
+A preset is then just a set of values for those fields:
+
+```rb expanded
+"stripe" => {
+  "header" => "Stripe-Signature",
+  "header_format" => "kv",
+  "signature_key" => "v1",
+  "timestamp_key" => "t",
+  "payload_template" => "{timestamp}.{body}",
+  "algorithm" => "sha256",
+  "encoding" => "hex",
+  "tolerance_seconds" => 300
+}.freeze
+```
+
+Selecting Stripe fills in those fields, and from there the source behaves exactly like a hand-configured one. The verifier knows nothing about Stripe, so a provider I've never heard of only needs someone to fill in the fields by hand.
+
+Two details in that file are worth pulling out:
+
+```rb
+# Block form of gsub: the body may contain backslash sequences that the
+# string-replacement form would interpret as backreferences.
+def signed_payload(timestamp)
+  template = @source.verification_payload_template.presence || "{body}"
+  template.gsub("{timestamp}") { timestamp.to_s }.gsub("{body}") { @body }
+end
+```
+
+A JSON body containing `\1` would otherwise be silently mangled before hashing, and every signature from that provider would fail with no clue as to why. The comparison itself uses `ActiveSupport::SecurityUtils.secure_compare` rather than `==`, so verification time doesn't leak the expected signature.
+
+A request that fails verification is rejected with a `401` and written to a **quarantine** table with its headers, body, and the specific reason it failed. That last part matters: "signature mismatch" and "timestamp outside tolerance" send you to different places, and a plain 401 tells you neither.
+
+### Routing and filtering
+
+Not every event on a source should go to every destination, so a connection carries a routing rule evaluated against the event before anything is queued.
+
+Rules can match on the path, method, headers, or a dot-path into the JSON body, with operators for comparison, containment, and existence. An event that doesn't match is stored but never delivered. It's still visible in the UI, which is what you want when the question is "why didn't this fire?"
+
+A source can also deduplicate, which stops a provider's retry from charging someone twice. It derives an identity for each request, either from a named header, a dot-path into the body, or a hash of the whole body, and any repeat of that identity inside the configured window is stored and left undelivered in the same way.
+
+### Transforming payloads
+
+Providers rarely send a payload in the shape your service expects. A connection can hold a JavaScript `transform(request)` function that rewrites the headers and body before delivery.
+
+Running user-supplied JavaScript on your own infrastructure is the one genuinely dangerous feature in the product, so it runs inside an embedded V8 isolate via `mini_racer`:
+
+```rb
+# Runs a connection's `transform(request)` JavaScript in an embedded V8
+# isolate: no network, no filesystem, no require/import, and a hard
+# wall-clock timeout.
+class Runner
+  TIMEOUT_MS = 1_000
+```
+
+No network, no filesystem, no imports, one second of wall clock. The code is also compiled when the connection is saved. `check!` confirms it parses and defines a `transform` function, so a syntax error surfaces on the form rather than at 3am on a live delivery.
+
+If a transform throws during delivery, that counts as a failed delivery. Nothing is sent, and it runs through the same retry schedule, health tracking, and alerting as an HTTP 500 would.
+
+### Delivering and retrying
+
+Deliveries run through `DeliverEventJob`, and the interesting decision is that retries are scheduled by hand rather than with Rails' `retry_on`:
+
+```rb
+# Retries are scheduled by hand instead of retry_on so each connection's
+# retry_policy can shape its own schedule; retry_count rides along as a job
+# argument because a re-enqueue resets ActiveJob's executions counter.
+```
+
+`retry_on` bakes the schedule into the class, and the requirement was a schedule per connection. Once each connection can choose linear or exponential backoff, its own interval, and its own attempt cap, the framework's mechanism stops fitting.
+
+The default, when a connection hasn't configured one, is an immediate first attempt and then five retries, spread over roughly two and a half hours:
+
+```rb
+BACKOFF = [ 10.seconds, 1.minute, 5.minutes, 30.minutes, 2.hours ].freeze
+```
+
+A few things fall out of that job that I'd have got wrong writing it in one pass.
+
+**Rate limiting isn't failure.** When a destination's rate limit is hit, the job re-queues itself untouched: no attempt row, no failure counter, no retry budget consumed. A rate-limited delivery that ate its own retries would eventually be marked dead for being *too successful*.
+
+**Pausing and disabling do different things.** A paused connection converts each delivery into a `held` attempt that's released when you resume it. A disabled one drops it. Neither counts as a failure.
+
+**Marking a connection unhealthy is a claim.** After five consecutive failures, a connection is marked unhealthy, and the flip is a single guarded `UPDATE`, so whichever concurrent job's update matches the row claims the transition and sends the one alert:
+
+```rb
+claimed = self.class.where(id: id, unhealthy_since: nil)
+              .where(consecutive_failures: UNHEALTHY_THRESHOLD..)
+              .update_all(unhealthy_since: Time.current)
+```
+
+Without that, five deliveries failing simultaneously would send five identical "connection is unhealthy" emails.
+
+<Caution>
+  Never delegate this kind of logic. Concurrency bugs don't announce themselves in review: the naive version passes every test you'd think to write, then sends five emails on a bad afternoon in production.
+</Caution>
+
+Hookrail signs what it sends, too. Every delivery carries an `X-Hookrail-Signature` over `{timestamp}.{body}`, so your service can verify the gateway the same way the gateway verifies the provider.
+
+### The CLI tunnel
+
+The last slice was a Rust CLI, and it's the one that solves the problem I started with. With `hookrail listen`, the destination is the CLI session itself, so events land on my laptop with no tunnel and no public URL involved.
+
+A destination can be of kind `cli` rather than `http`. When a delivery targets one, the job checks whether a `hookrail listen` session is currently online, broadcasts the fully-signed payload over Action Cable, and returns without recording an outcome. The attempt stays open until the CLI posts its result back, or until a timeout job fails it.
+
+The important part is that the payload the CLI receives is built by the same `Delivery::Client.payload_for` the HTTP path uses. Local and production deliveries are filtered and signed identically, which is the entire point of testing locally.
+
+If no session is listening, it's an ordinary failure that re-enters the normal retry chain.
+
+## What the spec didn't know
+
+Three bugs made it past review and into main. All three share a shape: the code was correct against its specification, and the specification didn't know something about the real world.
+
+**Null bytes.** Postgres `text` columns reject null bytes (`\0`). A webhook body containing one would raise on insert, mid-ingest, after the request had already been accepted. Nothing in the PRD said "payloads are valid UTF-8 without null bytes", because it hadn't occurred to me that they might not be. The fix scrubs them on write, in the model, for every stored payload.
+
+**The proxy trail.** Hookrail forwarded the inbound request's headers to the destination, which is obviously right. Except the inbound request arrives through Cloudflare and Railway, which stamp `Cf-*` and `X-Forwarded-*` headers on it, and a destination behind a CDN sees those forwarded headers, reads them as spoofing, and answers `403`. The fix is a skip list:
+
+```rb
+SKIP_FORWARD_HEADERS = %w[host content-length connection transfer-encoding keep-alive
+                          accept-encoding x-real-ip x-request-start x-sendfile-type
+                          cdn-loop].freeze
+SKIP_FORWARD_PREFIXES = %w[cf- x-forwarded- x-railway-].freeze
+```
+
+`accept-encoding` is in there for an unrelated reason: forwarding it explicitly disables `Net::HTTP`'s transparent decompression, and compressed bytes end up in the stored response body where a human is going to try to read them.
+
+**Segfaulting workers.** Solid Queue's forked workers were dying on macOS, which turned out to be libpq probing for GSSAPI credentials after `fork` rather than anything in the application at all. The fix was one line in `config/database.yml`:
+
+```yml
+gssencmode: disable
+```
+
+## Where a different method works better
+
+Two days in, with the backend working, I turned to how the thing looked. I stopped writing PRDs almost immediately.
+
+I was still specific about what I wanted. Nearly everything I said about the interface was precise: a divider that wasn't centred between the two buttons it separated, text that needed optically aligning with the heading above it, a bevel that was too strong in dark mode, hover transitions that should have been instant rather than animated.
+
+Every one of those is a statement that's true or false about the finished system. Any of them could have been a requirement in a PRD.
+
+The problem is that I couldn't have written a single one of them *in advance*.
+
+A PRD is a document you write before you look at anything, and that suits a delivery engine. I can state the retry schedule up front and be right. It's the wrong instrument for a sidebar, because "the bevel is too strong" doesn't exist as a requirement until something has rendered a bevel and I've looked at it.
+
+So the loop inverts. Instead of specify → build → review, it becomes build → screenshot → react → rebuild. That's not a degraded version of the PRD process; it's a different one, and for anything visual it's the better of the two.
+
+<Note>
+  I also stopped choosing a model per task here, and sent all the UI work to the stronger one.
+
+  A UI task was rarely all one thing. Most were strict about some parts and open about others, and the open parts were where the visual decisions sat.
+</Note>
+
+## Limitations
+
+The reviewing never got faster. Agents produced diffs quicker than I could read them, and skipping a careful read isn't an option, since that's the only step where drift gets caught. Writing the code got cheaper, and judging it cost the same as it always did.
+
+Specifications are also work. A spec detailed enough that an agent can't make a design decision is close to the length of the code it produces. For genuinely novel logic, writing the spec and writing the code are nearly the same task, which is why the hard logic wasn't delegated at all.
+
+Small changes are a net loss. Any change small enough to describe in one sentence is faster done directly, and the floor below which delegation becomes pure overhead is higher than you'd guess.
+
+Boring code benefits most. The parts of Hookrail that came back best were the ones I've written before and didn't want to write again: CRUD, forms, the REST API, the pagination. The parts that needed the most intervention were the ones where being *approximately* right is the same as being wrong, such as concurrency, signature verification, and the retry state machine.
+
+Taste can't be front-loaded either. PRDs assume you can specify the work before it exists, and for anything visual you can't, so the document stops being the right tool and a build-and-react loop takes over. That's a change of method rather than a loss of rigour, but it does mean the up-front planning you'd expect to reuse doesn't transfer.
+
+And none of it is autonomous. I planned it, sliced it, specified it, reviewed every diff, and found all three bugs above myself. That isn't the same thing as AI building a webhook gateway.
+
+## Final thoughts
+
+I set out to find whether agents could produce something I'd actually run. They did, and it has been running since.
+
+When you implement your own idea, you resolve ambiguity continuously and invisibly. You make a hundred small decisions and never write any of them down _(well, I don't, and I don't imagine most do either)_.
+
+Handing the implementation over forces all of them onto the page first, where they can be argued with before any code exists.
+
+The part I like most is the CLI, which fixed the annoyance that inspired this project.
+
+---
+
+Hookrail is running at [hookrail.dev](https://hookrail.dev), and the source is [on GitHub](https://github.com/arsenstorm/hookrail).

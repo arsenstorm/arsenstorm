@@ -19,6 +19,14 @@ export const PROJECTS: Project[] = [
 	},
 	{
 		year: "2026",
+		title: "Hookrail",
+		description:
+			"A gateway that verifies, transforms, and reliably delivers webhooks.",
+		href: "https://hookrail.dev",
+		featured: true,
+	},
+	{
+		year: "2026",
 		title: "Automated Web",
 		description: "Reliable browser automation for real-world workflows.",
 		href: "https://github.com/arsenstorm/automated-web",
@@ -54,7 +62,6 @@ export const PROJECTS: Project[] = [
 		title: "iOS ID Reader",
 		description: "iOS app for reading identity documents over NFC.",
 		href: "https://apps.apple.com/us/app/id-reader/id6757679372",
-		featured: true,
 	},
 	{
 		year: "2026",
