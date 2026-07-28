@@ -11,14 +11,6 @@ export interface Project {
 export const PROJECTS: Project[] = [
 	{
 		year: "2026",
-		title: "Open Live Object Streaming (OLOS)",
-		description:
-			"A protocol for low-latency live streaming on top of object storage.",
-		href: "https://github.com/arsenstorm/olos",
-		featured: true,
-	},
-	{
-		year: "2026",
 		title: "Hookrail",
 		description:
 			"A gateway that verifies, transforms, and reliably delivers webhooks.",
@@ -30,6 +22,14 @@ export const PROJECTS: Project[] = [
 		title: "Automated Web",
 		description: "Reliable browser automation for real-world workflows.",
 		href: "https://github.com/arsenstorm/automated-web",
+		featured: true,
+	},
+	{
+		year: "2026",
+		title: "Open Live Object Streaming (OLOS)",
+		description:
+			"A protocol for low-latency live streaming on top of object storage.",
+		href: "https://github.com/arsenstorm/olos",
 		featured: true,
 	},
 	{
