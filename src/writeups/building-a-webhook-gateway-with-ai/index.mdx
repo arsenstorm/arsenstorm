@@ -3,6 +3,7 @@ title: "Building a Webhook Gateway with AI"
 description: "PRDs, agents and review loops for a production service."
 publishedAt: "2026-07-28"
 tags: ["Ruby on Rails", "Webhooks", "AI"]
+readingTime: 18
 ---
 
 import { ModelChoice } from "./diagrams/model-choice.tsx";
@@ -129,7 +130,7 @@ Three kinds of work never went to an agent.
 
 **Anything tuned by feel, one nudge at a time.** Finding the cubic-bezier that makes an animation feel right, or the spacing that stops a row looking cramped, means trying a value, looking at it, and trying another. By hand, that loop takes a second. Through an agent, it's a minute, and I still have to look at the result myself.
 
-**Noticing that something is broken.** The bugs that got past review surfaced because I was running the thing and watching what happened, not because an agent found them. They all passed the test suite first. An agent can fix any of them once it's pointed at the failure, but it has no view of the running system, so it can't be the thing that notices.
+**Noticing that something is broken.** The bugs that got past review surfaced because I was running the thing and watching what happened, not because an agent found them. They all passed the test suite first. An agent can fix any of them once it's pointed at the failure, but it has no view of the running system, so it can't be the thing that notices. That last claim needs narrowing, and I narrow it below.
 
 The first two are about cost. The third isn't, and it's the one I'd like to fix.
 
@@ -161,7 +162,7 @@ For anything visual, I used a `/what-changed` skill that produces a before/after
 
 Hookrail is Rails 8.1 on Postgres, with Solid Queue for background jobs and Hotwire for the UI. Roughly 3,900 lines of Ruby, plus a 1,500-line Rust CLI, across 39 commits and 60 test files. It took four and a half days of elapsed time, spread over five calendar days.
 
-That covers everything from an empty repository to a marketing page. It's running in production, but production here means my own traffic. Nobody else's webhooks depend on it; it hasn't been load-tested, and the only security review it has had is what CodeQL, Brakeman, and `bundler-audit` catch in CI.
+That covers everything from an empty repository to a marketing page. It's running in production, but production here means my own traffic. Nobody else's webhooks depend on it, and it hasn't been load-tested. CodeQL, Brakeman, and `bundler-audit` run in CI, and a later pass using AI found more security bugs, which I come back to below.
 
 The data model is four things:
 
@@ -309,6 +310,36 @@ SKIP_FORWARD_PREFIXES = %w[cf- x-forwarded- x-railway-].freeze
 gssencmode: disable
 ```
 
+## What review missed
+
+Once the build was done, I delegated a security review to an agent, and it spawned four reviewers of its own, one each for authentication, tenancy, output escaping, and the ingest path. Each had to trace every finding from the route to the vulnerable line and discard anything an earlier guard already blocked.
+
+They found things. The one I least enjoyed is a function that appears earlier in this article.
+
+```rb
+template.gsub("{timestamp}") { timestamp.to_s }.gsub("{body}") { @body }
+```
+
+The comment is right about backslashes. It misses that the two substitutions run in sequence, and the timestamp arrives from the request. With Stripe's template, `{timestamp}.{body}`, an attacker holding one captured request can send the timestamp as `1700000000.{"amount":10` and the body as everything after the body's first full stop. The signed string reconstructs byte-for-byte, so the HMAC verifies. `.to_i` stops at the first non-digit, so the freshness check sees `1700000000` and passes. Hookrail then stores and forwards a truncated body that the provider never signed.
+
+Any payload containing a decimal is enough. The fix is to require the timestamp to be digits and substitute both placeholders in a single pass.
+
+<Caution>
+  A signature that verifies proves the bytes you hashed were authentic. It does not prove those bytes were the ones you stored — the boundary between the fields has to be unforgeable too.
+</Caution>
+
+The second finding is an authorisation gap. Organisation-wide settings are gated in the web controllers behind `require_org_admin`. The JSON API reaches the same settings through a *project* role and never checks the organisation one. So a member with an editor grant on a single project could rewrite retention for the entire organisation, and the pruning job would then delete event history across every project in it, including the ones they can't see. A viewer could read the organisation's alert-signing secret outright.
+
+That is precisely the failure I described under **Seams**: two individually correct implementations of one rule, drifting at the boundary between them. I knew to look there — it's in this article — and I missed it anyway.
+
+Which forces me to narrow something I claimed earlier. An agent can't notice that a running system is broken, and the three bugs above bear that out. But reading code is not noticing, and reading is the part they do at a breadth I can't. Four reviewers across four areas found more in twenty minutes than I had in five days of building it.
+
+The failure modes are real, though. One reviewer claimed a finding was exploitable from an image tag on another site; it isn't, because the session cookie is `SameSite=Lax`, which withholds cookies on subresource requests. Two reviewers independently found the same authorisation gap — agreement between separate contexts is worth more than confidence within one. Every finding had to be traced back to the code before it counted, and that part doesn't delegate.
+
+Neither do the fixes. My first attempt at blocking internal addresses — a destination URL can point anywhere, including back at the host Hookrail runs on — covered private IPv4 and IPv6 ranges but not 6to4, where `2002:7f00:1::` is `127.0.0.1` in a costume. A backfill task I wrote reported rewriting three rows while writing nothing, because saving an unchanged record issues no `UPDATE` at all. And a guard I added to refuse booting without encryption keys did exactly that during the Docker build, where no keys exist yet and none are needed.
+
+Every one of those is the same mistake as the original bug: code that is correct about the case I was thinking about. What catches that is review by someone who didn't write the code. On a team, that's a colleague; here, it was another agent.
+
 ## Where a different method works better
 
 Two days in, with the backend working, I turned to how the thing looked. I stopped writing PRDs almost immediately.
@@ -341,7 +372,7 @@ Boring code benefits most. The parts of Hookrail that came back best were the on
 
 Taste can't be front-loaded either. PRDs assume you can specify the work before it exists, and for anything visual you can't, so the document stops being the right tool and a build-and-react loop takes over. That's a change of method rather than a loss of rigour, but it does mean the up-front planning you'd expect to reuse doesn't transfer.
 
-And none of it is autonomous. I planned it, sliced it, specified it, reviewed every diff, and found all three bugs above myself. That isn't the same thing as AI building a webhook gateway.
+And none of it is autonomous. I planned it, sliced it, specified it, reviewed every diff, and found the three runtime bugs myself. Agents found the security ones — after I decided where to point them, in what scope, and checked every finding against the code before believing it. That still isn't the same thing as AI building a webhook gateway.
 
 ## Final thoughts
 

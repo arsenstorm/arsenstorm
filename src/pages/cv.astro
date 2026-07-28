@@ -20,7 +20,7 @@ const CONTACT = [
 ];
 
 const PROFILE =
-	"Product and infrastructure engineer. I take early-stage systems from ambiguous requirements through implementation, deployment, monitoring, and iteration — most recently across identity verification, streaming infrastructure, and education products.";
+	"Full-stack product and infrastructure engineer. I take early-stage systems from ambiguous requirements through implementation, deployment, monitoring, and iteration — most recently across webhook infrastructure, browser automation, and low-latency streaming.";
 
 const experience = (await getExperience()).filter(
 	(item) => item.kind === "experience"
@@ -34,6 +34,17 @@ const SELECTED_PROJECTS: {
 	summary: string;
 	bullets: string[];
 }[] = [
+	{
+		title: "Hookrail",
+		href: "/writing/building-a-webhook-gateway-with-ai",
+		links: [{ href: "https://hookrail.dev", label: "hookrail.dev" }],
+		year: "2026",
+		summary: "A Ruby on Rails gateway for secure, reliable webhook delivery.",
+		bullets: [
+			"Built and deployed a Rails 8.1 + Postgres service — Solid Queue, Hotwire, and a Rust CLI — covering signature verification, routing, transformation, deduplication, and per-connection retries.",
+			"Specified the build as PRDs and delegated implementation to parallel AI agents while keeping architecture, concurrency, and security logic; reviewed every diff, with 60 test files and CodeQL, Brakeman, and bundler-audit in CI.",
+		],
+	},
 	{
 		title: "Open Live Object Streaming (OLOS)",
 		href: "/writing/open-live-object-streaming",
@@ -54,22 +65,6 @@ const SELECTED_PROJECTS: {
 		bullets: [
 			"Explored reliable browser automation across dynamic pages, cross-origin iframes, Shadow DOM and authenticated workflows.",
 			"Documented the approach in an interactive technical writeup with live in-page demos.",
-		],
-	},
-	{
-		title: "iOS ID Reader & MRTDReader",
-		href: "https://github.com/arsenstorm/MRTDReader",
-		links: [
-			{
-				href: "https://apps.apple.com/us/app/id-reader/id6757679372",
-				label: "App Store",
-			},
-		],
-		year: "2026",
-		summary: "Reading NFC-enabled passports and ID cards.",
-		bullets: [
-			"Published an iOS app on the App Store for reading ICAO 9303 NFC travel documents.",
-			"Extended NFCPassportReader into MRTDReader, adding broader MRTD support, PACE IM/CAM, CAN-based PACE and CA-v2 transcript export.",
 		],
 	},
 ];

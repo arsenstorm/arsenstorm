@@ -13,7 +13,7 @@ export const PROJECTS: Project[] = [
 		year: "2026",
 		title: "Hookrail",
 		description:
-			"A gateway that verifies, transforms, and reliably delivers webhooks.",
+			"A Rails gateway that verifies, transforms, and reliably delivers webhooks.",
 		href: "https://hookrail.dev",
 		featured: true,
 	},
