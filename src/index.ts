@@ -1,6 +1,11 @@
 import { handle } from "@astrojs/cloudflare/handler";
 import { ogImagePath } from "#/lib/seo";
 import { handleGitHubActivity, refreshGitHubStats } from "#/worker/github";
+import {
+	handleMarkdown,
+	isContentPath,
+	withVaryAccept,
+} from "#/worker/markdown";
 import { handleReadmePreview } from "#/worker/readme-preview";
 import { handleSvg } from "#/worker/readme-svg";
 import type { Env } from "#/worker/types";
@@ -49,6 +54,14 @@ export default {
 				return asset;
 			}
 			return new Response(asset.body, { headers: CV_PDF_HEADERS });
+		}
+
+		const markdown = await handleMarkdown(request, env);
+		if (markdown) {
+			return markdown;
+		}
+		if (isContentPath(url.pathname)) {
+			return withVaryAccept(await handle(request, env, ctx));
 		}
 
 		return await handle(request, env, ctx);

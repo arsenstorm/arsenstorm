@@ -10,7 +10,28 @@
     "directory": "./dist/client",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page",
-    "run_worker_first": ["/readme", "/readme/preview", "/api/weather", "/api/github", "/og", "/cv.pdf"]
+    "run_worker_first": [
+      "/readme",
+      "/readme/preview",
+      "/api/weather",
+      "/api/github",
+      "/og",
+      "/cv.pdf",
+      "/",
+      "/index.md",
+      "/writing",
+      "/writing.md",
+      "/writing/*",
+      "/projects",
+      "/projects.md",
+      "/experience",
+      "/experience.md",
+      "/experience/*",
+      "/cv",
+      "/cv.md",
+      "/work",
+      "/llms.txt"
+    ]
   },
   "migrations": [
     {
@@ -54,5 +75,8 @@
       "binding": "STATS",
       "id": "447b449e1b474bb89fb21f60906f1c18"
     }
+  ],
+  "analytics_engine_datasets": [
+    { "binding": "MARKDOWN_STATS", "dataset": "markdown_requests" }
   ]
 }

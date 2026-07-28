@@ -1,5 +1,7 @@
 # https://www.robotstxt.org/robotstxt.html
+# https://contentsignals.org/
 User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=no
 Disallow:
 
 Sitemap: https://arsenstorm.com/sitemap.xml

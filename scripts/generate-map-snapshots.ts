@@ -114,7 +114,9 @@ async function getMapSnapshotUrl(
 }
 
 function getMapSnapshotOutputPath(theme: MapSnapshotTheme): string {
-	return fileURLToPath(new URL(`../public/map/london-${theme}.png`, import.meta.url));
+	return fileURLToPath(
+		new URL(`../public/map/london-${theme}.png`, import.meta.url)
+	);
 }
 
 async function fetchMapSnapshot(

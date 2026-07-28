@@ -41,8 +41,12 @@
 		"puppeteer": "latest",
 		"rehype-pretty-code": "^0.14.3",
 		"remark-gfm": "^4.0.1",
+		"remark-mdx": "^3.1.1",
+		"remark-parse": "^11.0.0",
+		"remark-stringify": "^11.0.0",
 		"typescript": "^7.0.2",
 		"ultracite": "7.6.0",
+		"unified": "^11.0.5",
 		"vite": "^8.1.4",
 		"vitest": "^4.1.10",
 		"wrangler": "^4.111.0"
@@ -51,7 +55,8 @@
 	"scripts": {
 		"dev": "bun run generate:weather-snapshot && astro dev --port 3000",
 		"dev:worker": "wrangler dev --port 8787",
-		"build": "bun run generate:map-snapshots && astro build",
+		"build": "bun run generate:map-snapshots && astro build && bun scripts/generate-markdown-assets.ts",
+		"generate:markdown-assets": "bun scripts/generate-markdown-assets.ts",
 		"generate:og": "bun scripts/generate-og-assets.ts",
 		"generate:map-snapshots": "bun scripts/generate-map-snapshots.ts",
 		"generate:weather-snapshot": "bun scripts/generate-weather-snapshot.ts",
