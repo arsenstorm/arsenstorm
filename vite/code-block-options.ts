@@ -1,5 +1,6 @@
+import type { Root } from "hast";
 import type { HastNode } from "./mdx-types";
-import { isHastElement } from "./mdx-types";
+import { asHastNode, isHastElement } from "./mdx-types";
 
 const CODE_BLOCK_ALWAYS_EXPANDED_FLAGS = new Set([
 	"always-expanded",
@@ -119,7 +120,8 @@ export function preserveCodeMeta() {
 }
 
 export function restoreCodeMeta() {
-	return (tree: HastNode) => {
+	return (root: Root) => {
+		const tree = asHastNode(root);
 		const visit = (node: HastNode) => {
 			if (isHastElement(node, "code")) {
 				const metastring = node.properties?.metastring;
@@ -138,7 +140,7 @@ export function restoreCodeMeta() {
 }
 
 export function markCodeBlockOptions() {
-	return (tree: HastNode) => {
-		markCodeBlockOption(tree);
+	return (root: Root) => {
+		markCodeBlockOption(asHastNode(root));
 	};
 }

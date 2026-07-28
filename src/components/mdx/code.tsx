@@ -31,6 +31,9 @@ type CodeBlockProps = ComponentPropsWithoutRef<"pre"> & {
 	"data-expanded"?: string;
 	"data-hide-header"?: string;
 	"data-language"?: string;
+	// rehype-pretty-code emits the lowercase HTML attribute; remapped to
+	// React's tabIndex below to silence the invalid-DOM-property warning.
+	tabindex?: number | string;
 };
 
 type CodeProps = ComponentPropsWithoutRef<"code"> & {
@@ -76,6 +79,7 @@ function MdxCodeBlock({
 	"data-hide-header": hideHeaderAttribute,
 	"data-language": language,
 	style,
+	tabindex,
 	...props
 }: CodeBlockProps) {
 	const alwaysExpanded = expandedAttribute !== undefined;
@@ -140,6 +144,7 @@ function MdxCodeBlock({
 							? style
 							: { maxHeight: 192, overflow: "hidden", ...style }
 					}
+					tabIndex={tabindex === undefined ? undefined : Number(tabindex)}
 					{...props}
 				>
 					{children}

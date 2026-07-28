@@ -81,6 +81,48 @@ export default defineConfig({
 	},
 	integrations: [react(), mdx(), sitemap(), contentHmr()],
 	vite: {
-		plugins: [tailwindcss()],
+		plugins: [
+			tailwindcss(),
+			// The Cloudflare adapter's SSR environment discovers island deps
+			// lazily; each discovery re-runs the optimizer and reloads the
+			// program, and react/react-dom/server can land in different optimize
+			// passes — two React instances, null hook dispatcher, "Invalid hook
+			// call". Pre-bundle every SSR dep in one startup pass instead. Add
+			// new island packages here. Scoped to "ssr" only: extending it to
+			// other environments (prerender) hangs dev startup.
+			// See withastro/astro#16248.
+			{
+				name: "optimize-ssr-deps",
+				configEnvironment(name: string) {
+					if (name !== "ssr") {
+						return;
+					}
+					return {
+						optimizeDeps: {
+							include: [
+								"react",
+								"react/jsx-runtime",
+								"react/jsx-dev-runtime",
+								"react-dom",
+								"react-dom/server",
+								"astro/zod",
+								"astro/assets/services/noop",
+								"@web-kits/audio",
+								"cnfast",
+								"d3-scale",
+								"d3-shape",
+								"hls-video-element/react",
+								"img-fx",
+								"lucide-react",
+								"media-chrome/react",
+								"motion/react",
+							],
+						},
+					};
+				},
+			},
+		],
+		resolve: { dedupe: ["react", "react-dom"] },
+		ssr: { noExternal: ["react", "react-dom"] },
 	},
 });

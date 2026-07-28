@@ -1,4 +1,6 @@
+import type { Root } from "hast";
 import type { HastNode } from "./mdx-types";
+import { asHastNode } from "./mdx-types";
 
 const HEADING_TAGS = new Set(["h2", "h3", "h4", "h5", "h6"]);
 const EXPLICIT_HEADING_ID_PATTERN = /\s*\{#([A-Za-z0-9][A-Za-z0-9_-]*)\}\s*$/;
@@ -112,7 +114,7 @@ function addHeadingSectionId(
 }
 
 export function addHeadingSectionIds() {
-	return (tree: HastNode) => {
-		addHeadingSectionId(tree, new Map());
+	return (root: Root) => {
+		addHeadingSectionId(asHastNode(root), new Map());
 	};
 }
