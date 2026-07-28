@@ -83,7 +83,7 @@ function MdxCodeBlock({
 
 	return (
 		<div
-			className="group/code not-prose -mx-4 my-4 flex flex-col rounded-[14px] bg-neutral-200 p-0.5 dark:bg-neutral-800"
+			className="group/code not-prose -mx-4 my-4 flex flex-col rounded-xl bg-neutral-200 p-0.5 dark:bg-neutral-800"
 			data-code-block=""
 			{...(alwaysExpanded ? { "data-open": "" } : {})}
 		>
@@ -131,7 +131,7 @@ function MdxCodeBlock({
 			)}
 			<div className="relative">
 				<pre
-					className="overflow-x-auto rounded-xl bg-neutral-100 p-4 text-neutral-700 text-xs leading-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 focus-visible:ring-inset dark:bg-neutral-900 dark:text-neutral-300 dark:focus-visible:ring-white/30"
+					className="overflow-x-auto rounded-[12px] bg-neutral-100 p-4 text-neutral-700 text-xs leading-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 focus-visible:ring-inset dark:bg-neutral-900 dark:text-neutral-300 dark:focus-visible:ring-white/30"
 					data-language={language}
 					id={codeBlockId}
 					style={

@@ -104,7 +104,7 @@ function Callout({
 	return (
 		<aside
 			className={cn(
-				"not-prose -mx-4 my-4 flex flex-col rounded-[14px] p-0.5",
+				"not-prose -mx-4 my-4 flex flex-col rounded-xl p-0.5",
 				visual.frameClassName,
 				className
 			)}
@@ -123,7 +123,7 @@ function Callout({
 				/>
 				<p>{title ?? visual.label}</p>
 			</div>
-			<div className={cn("rounded-xl p-4", visual.contentClassName)}>
+			<div className={cn("rounded-[12px] p-4", visual.contentClassName)}>
 				<div className={calloutContentClass}>{children}</div>
 			</div>
 		</aside>
