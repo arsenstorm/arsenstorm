@@ -7,7 +7,7 @@ import SuccessIcon from "#/icons/success";
 import WarningIcon from "#/icons/warning";
 
 const calloutContentClass =
-	"flex flex-col gap-y-2 text-sm leading-6 [&>ol]:my-0 [&>p]:my-0 [&>ol]:pl-5 [&>ul]:my-0 [&>ul]:pl-5 [&_a]:decoration-current/30 [&_li::marker]:text-current! **:text-inherit!";
+	"flex flex-col gap-y-2 text-sm leading-6 [&>ol]:my-0 [&>p]:my-0 [&>ol]:pl-5 [&>ul]:my-0 [&>ul]:pl-5 [&_a]:decoration-current/30 [&_li::marker]:text-current! [&_:not(pre)>code]:bg-current/10 **:text-inherit!";
 
 type CalloutVariant =
 	| "caution"
