@@ -105,10 +105,10 @@ The `/delegate` skill splits the work in two: one model plans, specifies, and re
 
 The division is the whole point:
 
-- **Never delegated** — reading the codebase, the plan, the interface boundaries between work items, hard logic (concurrency, security, tricky invariants), and reviewing every diff.
-- **Delegated** — everything the spec fully determines.
+- **Never delegated** — reading the codebase, the plan, the interface boundaries between work items, and reviewing every diff.
+- **Delegated** — everything the spec fully determines. For hard logic (concurrency, security, tricky invariants), that meant the spec contained the code itself, verbatim, and the agent's only job was to type it.
 
-That last phrase does the real work. What decides the model is how tightly the work has been specified:
+What decides the model is how tightly the work has been specified:
 
 <ModelChoice />
 
@@ -154,9 +154,9 @@ The last one is what you can't skip on parallel work. Each agent verified its ow
 
 For anything visual, I used a `/what-changed` skill that produces a before/after report with the reasoning for each change, so I wasn't trying to review a UI by reading a diff of Tailwind classes.
 
-<Note>
-  Fixes go back to the *same* agent, not a fresh one. The original agent still has the context; a new agent re-reads everything and reintroduces the drift you just removed.
-</Note>
+<Tip>
+  Send fixes back to the *same* agent. The original agent has the original context, whereas a new agent has to re-read everything and reintroduces the drift you just removed.
+</Tip>
 
 ## Inside the gateway
 
