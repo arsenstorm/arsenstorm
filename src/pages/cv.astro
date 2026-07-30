@@ -5,6 +5,7 @@ import { Download } from "lucide-react";
 import { Controls } from "#/components/controls.tsx";
 import BaseLayout from "#/layouts/base-layout.astro";
 import { getExperience } from "#/lib/experience";
+import { getWriteups } from "#/lib/writeups";
 
 const TITLE = "CV";
 const DESCRIPTION = "Arsen Shkrumelyak — Software Engineer.";
@@ -19,52 +20,346 @@ const CONTACT = [
 	},
 ];
 
-const PROFILE =
-	"Full-stack product and infrastructure engineer. I take early-stage systems from ambiguous requirements through implementation, deployment, monitoring, and iteration — most recently across webhook infrastructure, browser automation, and low-latency streaming.";
+// Every selectable element carries a `show` list of preset names. `default`
+// is what renders with no URL params and what /cv.pdf is generated from;
+// other presets activate via ?v=<name>. Explicit section params
+// (?projects=a,b / all / none) override the preset for that section.
+interface Variant {
+	show: string[];
+	text: string;
+}
+
+const PROFILES: { id: string; show: string[]; text: string }[] = [
+	{
+		id: "general",
+		show: ["default"],
+		text: "Product and infrastructure engineer with three years of startup experience owning systems from architecture through production. Recent work spans AI products used by thousands, low-latency media over object storage, and reliable webhook infrastructure.",
+	},
+	{
+		id: "systems",
+		show: ["systems"],
+		text: "Software engineer with three years of startup experience building product infrastructure and performance-sensitive systems. Recent work spans distributed coordination, LL-HLS/CMAF media over object storage, reliable webhook delivery, and privacy-sensitive identity tooling.",
+	},
+	{
+		id: "product",
+		show: ["product"],
+		text: "Product and backend engineer with three years of startup experience owning TypeScript, Python, Ruby, and PostgreSQL systems from ambiguous requirements through production. Built and operated products used by 4,400+ students across 104 countries.",
+	},
+	{
+		id: "ai",
+		show: ["ai"],
+		text: "Product and infrastructure engineer with three years of startup experience building applied-AI products and agent-assisted development workflows. I design the architecture, specifications, and review loops behind systems spanning webhooks, browser automation, and distributed media.",
+	},
+	{
+		id: "ios",
+		show: ["ios"],
+		text: "Software engineer with experience across Swift/Core NFC, privacy-sensitive identity tooling, and backend infrastructure. Published an on-device ICAO 9303 document reader and extended an open-source Swift package for secure NFC travel-document access.",
+	},
+];
+
+const EXPERIENCE_BULLETS: Record<string, Variant[]> = {
+	anyverse: [
+		{
+			show: ["default", "product", "ios"],
+			text: "Owned the product end to end across TypeScript, PostgreSQL, Cloudflare Workers, Durable Objects, R2, data pipelines, AI services, analytics, and internal tools.",
+		},
+		{
+			show: ["default", "systems", "product", "ai", "ios"],
+			text: "Built an iterative personal-statement reviewer fine-tuned across five model versions on expert feedback; delivered 3,100+ reviews and nearly 23,000 span-anchored comments.",
+		},
+		{
+			show: ["default", "product"],
+			text: "Built a PostgreSQL ranking engine over 50,000+ UCAS courses using around 25 filters and signals, and migrated the platform from Next.js/Vercel to TanStack Start/Cloudflare Workers.",
+		},
+		{
+			show: ["systems"],
+			text: "Ran the reviewer as a queue-backed Workers and Durable Objects service to absorb deadline-driven bursts, with PostgreSQL behind Hyperdrive and R2 for storage.",
+		},
+		{
+			show: ["ai"],
+			text: "Turned reviewers' Google Docs comments into fine-tuning data and evaluated each model version directly with the experts whose judgement it was learning.",
+		},
+	],
+	afinity: [
+		{
+			show: ["default", "systems", "product", "ai", "ios"],
+			text: "Owned seven Next.js frontends, a Python/Flask API on AWS Lambda, SQL Server data pipelines, AI workers, transactional email, and internal operations tooling.",
+		},
+		{
+			show: ["default", "product", "ai", "ios"],
+			text: "Built a three-pass GPT-4 review pipeline and a from-scratch annotation dashboard, enabling human reviewers to refine span-anchored feedback across 600+ statements and 5,100+ inline comments.",
+		},
+		{
+			show: ["default", "product"],
+			text: "Operated the platform through a full admissions cycle and into 2025, adding Sentry and PostHog observability and simplifying eight deployments into a single Next.js/Supabase application.",
+		},
+		{
+			show: ["systems"],
+			text: "Diagnosed a silent review-notification failure, resent every affected result, and isolated transactional email behind a smaller service so the same failure could not remain hidden.",
+		},
+	],
+};
 
 const experience = (await getExperience()).filter(
 	(item) => item.kind === "experience"
 );
 
+const writeups = await getWriteups();
+
+// Only list writeups whose project isn't already on the page for that
+// preset — the shown projects link to their writeups anyway.
+const WRITEUP_SHOW: Record<string, string[]> = {
+	"building-a-webhook-gateway-with-ai": [],
+	"open-live-object-streaming": ["ai"],
+	"automating-browser-workflows": [],
+	"using-email-as-an-interface": [],
+};
+
 const SELECTED_PROJECTS: {
+	id: string;
+	show: string[];
 	title: string;
 	href?: string;
 	links?: { href: string; label: string }[];
 	year: string;
 	summary: string;
-	bullets: string[];
+	bullets: Variant[];
 }[] = [
 	{
+		id: "hookrail",
+		show: ["default", "systems", "product", "ai", "ios"],
 		title: "Hookrail",
 		href: "/writing/building-a-webhook-gateway-with-ai",
 		links: [{ href: "https://hookrail.dev", label: "hookrail.dev" }],
 		year: "2026",
-		summary: "A Ruby on Rails gateway for secure, reliable webhook delivery.",
+		summary:
+			"A Rails/PostgreSQL gateway for verifying, transforming, and reliably delivering webhooks.",
 		bullets: [
-			"Built and deployed a Rails 8.1 + Postgres service — Solid Queue, Hotwire, and a Rust CLI — covering signature verification, routing, transformation, deduplication, and per-connection retries.",
-			"Specified the build in PRDs and delegated implementation to parallel AI agents — never the architecture, concurrency, or security logic; reviewed every diff, backed by 60 test files and CodeQL, Brakeman, and bundler-audit in CI.",
+			{
+				show: ["default", "systems", "product", "ai", "ios"],
+				text: "Built and deployed a Rails 8.1/PostgreSQL gateway with Solid Queue, Hotwire, and a Rust CLI, covering signature verification, filtering, transformations, deduplication, configurable retries, and local delivery.",
+			},
+			{
+				show: ["default", "product"],
+				text: "Designed the architecture, retry and concurrency semantics, and security boundaries; specified bounded work in PRDs, reviewed every diff, and backed the service with 60 test files plus CodeQL, Brakeman, and bundler-audit.",
+			},
+			{
+				show: ["systems", "ios"],
+				text: "Implemented provider-configurable HMAC verification, idempotent deduplication, sandboxed JavaScript transforms, per-connection retry policies, guarded health transitions, signed outbound delivery, and a local Rust tunnel.",
+			},
+			{
+				show: ["ai"],
+				text: "Converted the product into testable PRD slices, delegated bounded implementation work to parallel AI agents, and reviewed every diff for specification conformance, correctness, scope, and interface-seam drift.",
+			},
 		],
 	},
 	{
+		id: "olos",
+		show: ["default", "systems"],
 		title: "Open Live Object Streaming (OLOS)",
 		href: "/writing/open-live-object-streaming",
 		year: "2026",
 		summary:
-			"A draft protocol for low-latency live streaming on top of commodity object storage.",
+			"A draft protocol and reference implementation for low-latency live media over object storage.",
 		bullets: [
-			"Built a working prototype that streams live video through object storage to browser playback at roughly 4s end-to-end latency.",
-			"Designed a protocol that models a live stream as an ordered sequence of immutable objects, with a trusted coordinator — not the bucket — owning all live state.",
+			{
+				show: ["default", "systems"],
+				text: "Built an OBS-to-browser LL-HLS reference deployment using RTMP/ffmpeg, CMAF, Cloudflare Workers, Durable Objects, and R2, reaching roughly 4–4.5 seconds end to end.",
+			},
+			{
+				show: ["default", "systems"],
+				text: "Designed media-agnostic commit semantics around immutable objects, idempotent commits, a compare-and-set forward-only cursor, contiguous-prefix ordering, recovery, and bounded retention.",
+			},
+			{
+				show: ["systems"],
+				text: "Benchmarked the isolated coordinator path over 1,000 real H.264 parts at roughly 1.2 ms median commit-and-wake overhead, with about 126 ms median end-to-end latency in the local harness.",
+			},
 		],
 	},
 	{
+		id: "automated-web",
+		show: ["ai"],
 		title: "Automated Web",
 		href: "/writing/automating-browser-workflows",
 		year: "2026",
 		summary:
-			"A system for reliable browser automation across real-world pages.",
+			"A local-first browser extension that learns repeated workflows and replays them without sending browsing data to a server.",
 		bullets: [
-			"Explored reliable browser automation across dynamic pages, cross-origin iframes, Shadow DOM and authenticated workflows.",
-			"Documented the approach in an interactive technical writeup with live in-page demos.",
+			{
+				show: ["default", "ai"],
+				text: "Built a TypeScript browser extension that records clicks, input changes, and submissions, mines repeated flows on-device, and AES-GCM encrypts saved activity before storage.",
+			},
+			{
+				show: ["default", "ai"],
+				text: "Persisted run state across service-worker restarts and designed replay to pause rather than guess when an element, secret, CAPTCHA, or page state prevents safe progress.",
+			},
+		],
+	},
+	{
+		id: "img-to-pdf",
+		show: ["product"],
+		title: "img-to-pdf",
+		href: "/writing/using-email-as-an-interface",
+		year: "2026",
+		summary:
+			"An email-native service that turns image attachments into a PDF and replies in the same thread.",
+		bullets: [
+			{
+				show: ["default", "product"],
+				text: "Built a Cloudflare Workers pipeline that parses MIME email, validates untrusted attachments by file contents, normalises EXIF orientation, strips metadata, generates mixed-orientation PDFs, and replies with the result.",
+			},
+			{
+				show: ["default", "product"],
+				text: "Added Stripe-backed billing without a dashboard, signature-verified webhooks, early rate limits, thread-level deduplication, and defences against mail loops, spoofing, and attachment bombs.",
+			},
+		],
+	},
+	{
+		id: "ios-id-reader",
+		show: ["ios"],
+		title: "iOS ID Reader & MRTDReader",
+		href: "https://apps.apple.com/us/app/id-reader/id6757679372",
+		links: [
+			{
+				href: "https://github.com/arsenstorm/MRTDReader",
+				label: "github.com/arsenstorm/MRTDReader",
+			},
+		],
+		year: "2026",
+		summary:
+			"On-device Swift tooling for reading ICAO 9303 passports and identity cards over Core NFC.",
+		bullets: [
+			{
+				show: ["default", "ios"],
+				text: "Published an App Store app that scans MRZ data and reads compatible NFC document chips entirely on device without storing or sharing document data.",
+			},
+			{
+				show: ["default", "ios"],
+				text: "Forked and extended NFCPassportReader into MRTDReader, a Swift package supporting multiple MRTD formats, BAC, secure messaging, passive and active authentication, chip authentication, and PACE.",
+			},
+		],
+	},
+	{
+		id: "ai-gateway",
+		show: [],
+		title: "AI Gateway",
+		href: "https://ai.arsenstorm.com",
+		year: "2026",
+		summary: "A multi-model workspace for comparing and evaluating AI outputs.",
+		bullets: [
+			{
+				show: ["default"],
+				text: "Built parallel streaming across multiple model providers, per-model parameter controls, stored prompt history, and judge-model evaluation in one comparison workspace.",
+			},
+		],
+	},
+	{
+		id: "run-this",
+		show: [],
+		title: "run-this",
+		href: "https://github.com/arsenstorm/run-this",
+		year: "2025",
+		summary:
+			"A Rust CLI that explains how to install a missing command instead of failing opaquely.",
+		bullets: [
+			{
+				show: ["default"],
+				text: "Published a cross-platform Rust CLI that detects missing dependencies, returns operating-system-specific installation guidance, and supports project-defined overrides.",
+			},
+		],
+	},
+	{
+		id: "amazonomics",
+		show: [],
+		title: "Amazonomics",
+		href: "https://amazonomics.com",
+		year: "2024",
+		summary:
+			"A search and trend platform indexing more than 50 million Amazon keywords.",
+		bullets: [
+			{
+				show: ["default"],
+				text: "Built keyword search, ranking history, ASIN tracking, category-trend detection, and API/MCP access over a large marketplace dataset.",
+			},
+		],
+	},
+];
+
+const SKILLS: {
+	id: string;
+	show: string[];
+	rows: { label: string; value: string }[];
+}[] = [
+	{
+		id: "general",
+		show: ["default", "product"],
+		rows: [
+			{
+				label: "Languages",
+				value: "TypeScript/JavaScript, Python, Ruby, Rust, Swift, SQL",
+			},
+			{
+				label: "Backend and data",
+				value:
+					"PostgreSQL, Rails, Flask, Cloudflare Workers, Durable Objects, R2, AWS Lambda, Supabase",
+			},
+			{
+				label: "Frontend",
+				value: "React, Next.js, TanStack Start, Hotwire, Tailwind CSS",
+			},
+		],
+	},
+	{
+		id: "systems",
+		show: ["systems"],
+		rows: [
+			{
+				label: "Languages",
+				value: "TypeScript, Rust, Python, Ruby, Swift, SQL",
+			},
+			{
+				label: "Systems",
+				value:
+					"Distributed coordination, object storage, HTTP/webhooks, LL-HLS/CMAF, RTMP/ffmpeg, Core NFC/ICAO 9303",
+			},
+			{
+				label: "Infrastructure",
+				value:
+					"Cloudflare Workers, Durable Objects, R2, PostgreSQL, AWS Lambda, GitHub Actions",
+			},
+		],
+	},
+	{
+		id: "applied-ai",
+		show: ["ai"],
+		rows: [
+			{ label: "Languages", value: "TypeScript, Python, Ruby, Rust, SQL" },
+			{
+				label: "AI",
+				value:
+					"Fine-tuning data pipelines, iterative model evaluation, multi-pass LLM systems, agent-assisted development",
+			},
+			{
+				label: "Backend",
+				value: "PostgreSQL, Cloudflare Workers, Durable Objects, Rails, Flask",
+			},
+		],
+	},
+	{
+		id: "ios-identity",
+		show: ["ios"],
+		rows: [
+			{ label: "Languages", value: "Swift, Rust, TypeScript, SQL" },
+			{
+				label: "iOS and identity",
+				value:
+					"Core NFC, ICAO 9303, BAC, PACE, secure messaging, document authentication",
+			},
+			{
+				label: "Backend and security",
+				value:
+					"Rails, webhooks, PostgreSQL, Cloudflare Workers, data minimisation",
+			},
 		],
 	},
 ];
@@ -72,8 +367,8 @@ const SELECTED_PROJECTS: {
 const EDUCATION = [
 	{
 		period: "2023—2026",
-		institution: "BSc Computer Science, University of Greenwich",
-		detail: "Graduated · First Class Honours · London, UK",
+		institution: "BSc (Hons) Computer Science (Artificial Intelligence)",
+		detail: "University of Greenwich · First Class Honours",
 	},
 ];
 
@@ -88,13 +383,21 @@ const PRINT_STYLES = `
 		html, body { background: #fff !important; }
 		.cv-no-print { display: none !important; }
 		.cv-backdrop { padding: 0 !important; background: #fff !important; }
-		.cv-sheet { box-shadow: none !important; width: auto !important; min-height: auto !important; margin: 0 !important; padding: 11mm 16mm !important; border-radius: 0 !important; outline: none !important; }
-		.cv-sheet > * + * { margin-top: 1rem !important; }
+		.cv-sheet { box-shadow: none !important; width: auto !important; min-height: auto !important; margin: 0 !important; padding: 9mm 16mm !important; border-radius: 0 !important; outline: none !important; }
+		.cv-sheet > * + * { margin-top: 0.625rem !important; }
 	}
 `;
 
 const SHEET_HEADING_CLASS =
 	"mb-2 border-neutral-200 border-b pb-1 font-medium text-[11px] text-neutral-900 uppercase tracking-wider dark:border-neutral-800 dark:text-neutral-100";
+
+const LINK_CLASS =
+	"underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:decoration-neutral-700 dark:hover:text-neutral-50";
+
+const BULLET_LIST_CLASS =
+	"mt-1 flex list-disc flex-col gap-0.5 pl-4 text-[12px] text-neutral-700 leading-snug marker:text-neutral-300 dark:text-neutral-300 dark:marker:text-neutral-700";
+
+const isDefault = (show: string[]) => show.includes("default");
 ---
 
 <BaseLayout description={DESCRIPTION} path="/cv" title={TITLE}>
@@ -121,7 +424,7 @@ const SHEET_HEADING_CLASS =
               const external = item.href.startsWith("http");
               return (
                 <a
-                  class="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:decoration-neutral-700 dark:hover:text-neutral-50"
+                  class={LINK_CLASS}
                   href={item.href}
                   rel={external ? "noopener noreferrer" : undefined}
                   target={external ? "_blank" : undefined}
@@ -134,27 +437,34 @@ const SHEET_HEADING_CLASS =
         </div>
       </header>
 
-      <section>
+      <section data-cv-section="profile">
         <h2 class={SHEET_HEADING_CLASS}>Profile</h2>
-        <p
-          class="text-pretty text-[13px] text-neutral-700 leading-relaxed dark:text-neutral-300"
-        >
-          {PROFILE}
-        </p>
+        {
+          PROFILES.map((profile) => (
+            <p
+              class="text-pretty text-[13px] text-neutral-700 leading-relaxed dark:text-neutral-300"
+              data-cv-item={profile.id}
+              data-cv-show={profile.show.join(" ")}
+              hidden={!isDefault(profile.show)}
+            >
+              {profile.text}
+            </p>
+          ))
+        }
       </section>
 
-      <section>
+      <section data-cv-section="experience">
         <h2 class={SHEET_HEADING_CLASS}>Experience</h2>
         <ul class="flex flex-col gap-3">
           {
             experience.map((item) => (
-              <li>
+              <li
+                data-cv-item={item.slug}
+                data-cv-show="default systems product ai ios"
+              >
                 <div class="flex items-baseline justify-between gap-4">
                   <p class="font-medium text-[13px] text-neutral-900 dark:text-neutral-100">
-                    <a
-                      class="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:decoration-neutral-700 dark:hover:text-neutral-50"
-                      href={item.href}
-                    >
+                    <a class={LINK_CLASS} href={item.href}>
                       {item.company}
                     </a>
                   </p>
@@ -165,32 +475,39 @@ const SHEET_HEADING_CLASS =
                 <p class="text-[12px] text-neutral-600 italic leading-snug dark:text-neutral-400">
                   {item.role} — {item.summary}
                 </p>
-                {item.highlights.length > 0 && (
-                  <ul class="mt-1 flex list-disc flex-col gap-0.5 pl-4 text-[12px] text-neutral-700 leading-snug marker:text-neutral-300 dark:text-neutral-300 dark:marker:text-neutral-700">
-                    {item.highlights.map((highlight) => (
-                      <li>{highlight}</li>
-                    ))}
-                  </ul>
-                )}
+                <ul class={BULLET_LIST_CLASS}>
+                  {(EXPERIENCE_BULLETS[item.slug] ?? []).map((bullet) => (
+                    <li
+                      data-cv-bullet={bullet.show.join(" ")}
+                      hidden={!isDefault(bullet.show)}
+                    >
+                      {bullet.text}
+                    </li>
+                  ))}
+                </ul>
               </li>
             ))
           }
         </ul>
       </section>
 
-      <section>
+      <section data-cv-section="projects">
         <h2 class={SHEET_HEADING_CLASS}>Selected Engineering Work</h2>
         <ul class="flex flex-col gap-3">
           {
             SELECTED_PROJECTS.map((project) => {
               const external = project.href?.startsWith("http");
               return (
-                <li>
+                <li
+                  data-cv-item={project.id}
+                  data-cv-show={project.show.join(" ")}
+                  hidden={!isDefault(project.show)}
+                >
                   <div class="flex items-baseline justify-between gap-4">
                     <p class="font-medium text-[13px] text-neutral-900 dark:text-neutral-100">
                       {project.href ? (
                         <a
-                          class="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:decoration-neutral-700 dark:hover:text-neutral-50"
+                          class={LINK_CLASS}
                           href={project.href}
                           rel={external ? "noopener noreferrer" : undefined}
                           target={external ? "_blank" : undefined}
@@ -209,7 +526,7 @@ const SHEET_HEADING_CLASS =
                     {project.summary}
                     {project.links?.map((link) => (
                       <a
-                        class="underline decoration-neutral-300 underline-offset-2 hover:text-neutral-950 dark:decoration-neutral-700 dark:hover:text-neutral-50"
+                        class={LINK_CLASS}
                         href={link.href}
                         rel="noopener noreferrer"
                         target="_blank"
@@ -219,9 +536,14 @@ const SHEET_HEADING_CLASS =
                       </a>
                     ))}
                   </p>
-                  <ul class="mt-1 flex list-disc flex-col gap-0.5 pl-4 text-[12px] text-neutral-700 leading-snug marker:text-neutral-300 dark:text-neutral-300 dark:marker:text-neutral-700">
+                  <ul class={BULLET_LIST_CLASS}>
                     {project.bullets.map((bullet) => (
-                      <li>{bullet}</li>
+                      <li
+                        data-cv-bullet={bullet.show.join(" ")}
+                        hidden={!isDefault(bullet.show)}
+                      >
+                        {bullet.text}
+                      </li>
                     ))}
                   </ul>
                 </li>
@@ -231,12 +553,68 @@ const SHEET_HEADING_CLASS =
         </ul>
       </section>
 
-      <section>
+      <section data-cv-section="writing" hidden>
+        <h2 class={SHEET_HEADING_CLASS}>Technical Writing</h2>
+        <ul class="flex flex-col gap-2">
+          {
+            writeups.map((writeup) => (
+              <li
+                data-cv-item={writeup.slug}
+                data-cv-show={(WRITEUP_SHOW[writeup.slug] ?? []).join(" ")}
+                hidden
+              >
+                <div class="flex items-baseline justify-between gap-4">
+                  <p class="font-medium text-[13px] text-neutral-900 dark:text-neutral-100">
+                    <a class={LINK_CLASS} href={writeup.href}>
+                      {writeup.title}
+                    </a>
+                  </p>
+                  <span class="shrink-0 text-[12px] text-neutral-400 tabular-nums dark:text-neutral-600">
+                    {writeup.publishedAt.slice(0, 4)}
+                  </span>
+                </div>
+                <p class="text-[12px] text-neutral-600 italic leading-snug dark:text-neutral-400">
+                  {writeup.description}
+                </p>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section data-cv-section="skills">
+        <h2 class={SHEET_HEADING_CLASS}>Skills</h2>
+        {
+          SKILLS.map((module) => (
+            <ul
+              class="flex flex-col gap-0.5"
+              data-cv-item={module.id}
+              data-cv-show={module.show.join(" ")}
+              hidden={!isDefault(module.show)}
+            >
+              {module.rows.map((row) => (
+                <li class="text-[12px] text-neutral-700 leading-snug dark:text-neutral-300">
+                  <span class="font-medium text-neutral-900 dark:text-neutral-100">
+                    {row.label}:
+                  </span>{" "}
+                  {row.value}
+                </li>
+              ))}
+            </ul>
+          ))
+        }
+      </section>
+
+      <section data-cv-section="education">
         <h2 class={SHEET_HEADING_CLASS}>Education</h2>
         <ul class="flex flex-col gap-2">
           {
             EDUCATION.map((entry) => (
-              <li class="flex items-baseline justify-between gap-4">
+              <li
+                class="flex items-baseline justify-between gap-4"
+                data-cv-item="greenwich"
+                data-cv-show="default systems product ai ios"
+              >
                 <div>
                   <p class="font-medium text-[13px] text-neutral-900 dark:text-neutral-100">
                     {entry.institution}
@@ -264,6 +642,7 @@ const SHEET_HEADING_CLASS =
         </div>
         <a
           class="inline-flex items-center gap-2 rounded-lg bg-neutral-950 px-3 py-1.5 font-medium text-sm text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-50 dark:text-neutral-950 dark:hover:bg-neutral-200"
+          data-cv-download
           download
           href="/cv.pdf"
         >
@@ -273,4 +652,74 @@ const SHEET_HEADING_CLASS =
       </div>
     </div>
   </div>
+
+  <script>
+    // No params = default = the pre-generated /cv.pdf. ?v=<preset> activates
+    // the elements tagged with that preset in data-cv-show; ?<section>=a,b
+    // (or all/none) overrides item selection for that section. Variant PDFs
+    // aren't pre-generated — the download button prints the page instead.
+    const params = new URLSearchParams(window.location.search);
+    if ([...params.keys()].length > 0) {
+      const knownPresets = new Set<string>();
+      for (const el of document.querySelectorAll<HTMLElement>(
+        "[data-cv-show]"
+      )) {
+        for (const token of (el.dataset.cvShow ?? "").split(" ")) {
+          if (token) {
+            knownPresets.add(token);
+          }
+        }
+      }
+      const requested = params.get("v") ?? "default";
+      const preset = knownPresets.has(requested) ? requested : "default";
+
+      for (const section of document.querySelectorAll<HTMLElement>(
+        "[data-cv-section]"
+      )) {
+        const raw = params.get(section.dataset.cvSection ?? "");
+        const selected = raw?.split(",").filter(Boolean);
+        let visible = 0;
+
+        for (const item of section.querySelectorAll<HTMLElement>(
+          "[data-cv-item]"
+        )) {
+          const tokens = (item.dataset.cvShow ?? "").split(" ");
+          const show = selected
+            ? selected.includes("all") ||
+              selected.includes(item.dataset.cvItem ?? "")
+            : tokens.includes(preset);
+          item.hidden = !show;
+          if (show) {
+            visible += 1;
+          }
+
+          const bullets = [
+            ...item.querySelectorAll<HTMLElement>("[data-cv-bullet]"),
+          ];
+          if (bullets.length > 0) {
+            const forPreset = (name: string) =>
+              bullets.filter((bullet) =>
+                (bullet.dataset.cvBullet ?? "").split(" ").includes(name)
+              );
+            const matched = forPreset(preset);
+            // An item pulled in via params under a preset it isn't tagged
+            // for still needs bullets — fall back to its default set.
+            const active = matched.length > 0 ? matched : forPreset("default");
+            for (const bullet of bullets) {
+              bullet.hidden = !active.includes(bullet);
+            }
+          }
+        }
+        section.hidden = visible === 0;
+      }
+
+      const download = document.querySelector<HTMLAnchorElement>(
+        "[data-cv-download]"
+      );
+      download?.addEventListener("click", (event) => {
+        event.preventDefault();
+        window.print();
+      });
+    }
+  </script>
 </BaseLayout>
