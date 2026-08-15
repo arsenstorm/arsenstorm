@@ -11,6 +11,12 @@ const TXT_HEADERS = {
 	"content-type": "text/plain; charset=utf-8",
 };
 const CONTENT_BASES = ["/writing", "/projects", "/experience", "/cv"];
+/** Paths whose markdown lives under a different asset name (aliases + root). */
+const MARKDOWN_ALIASES: Record<string, string> = {
+	"/": "/index.md",
+	"/work": "/projects.md",
+	"/work.md": "/projects.md",
+};
 const TRAILING_SLASH_REGEX = /\/$/;
 
 /** True only for an explicit text/markdown entry with q > 0 — never for `*​/*` or `text/*`. */
@@ -30,7 +36,7 @@ export function acceptsMarkdown(accept: string | null): boolean {
 }
 
 export function isContentPath(pathname: string): boolean {
-	if (pathname === "/" || pathname === "/work" || pathname === "/index.md") {
+	if (pathname === "/index.md" || pathname in MARKDOWN_ALIASES) {
 		return true;
 	}
 	return CONTENT_BASES.some(
@@ -41,9 +47,13 @@ export function isContentPath(pathname: string): boolean {
 	);
 }
 
-function markdownAssetPath(pathname: string): string {
-	if (pathname === "/") {
-		return "/index.md";
+export function markdownAssetPath(pathname: string): string {
+	const alias = MARKDOWN_ALIASES[pathname];
+	if (alias) {
+		return alias;
+	}
+	if (pathname.endsWith(".md")) {
+		return pathname;
 	}
 	return `${pathname.replace(TRAILING_SLASH_REGEX, "")}.md`;
 }
@@ -88,7 +98,7 @@ export async function handleMarkdown(
 		return null;
 	}
 
-	const assetPath = direct ? pathname : markdownAssetPath(pathname);
+	const assetPath = markdownAssetPath(pathname);
 	const asset = await env.ASSETS.fetch(new URL(assetPath, url.origin));
 	if (!asset.ok) {
 		return null;
