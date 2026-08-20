@@ -9,9 +9,11 @@ import { PROJECTS } from "#/lib/projects.ts";
 
 const TITLE = "My Projects";
 const DESCRIPTION = "These are the things I've built.";
+const META_DESCRIPTION =
+	"Projects by Arsen Shkrumelyak: Hookrail (a Rails webhook gateway), Automated Web (self-recording browser automation), OLOS (live streaming on object storage) and more.";
 ---
 
-<BaseLayout description={DESCRIPTION} path="/projects" title={TITLE}>
+<BaseLayout description={META_DESCRIPTION} path="/projects" title={TITLE}>
   <main class="mx-auto max-w-xl space-y-12 px-6 py-24">
     <PageHeading description={DESCRIPTION} title={TITLE} />
 

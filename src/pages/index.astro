@@ -16,6 +16,25 @@ import { getWriteups } from "#/lib/writeups";
 
 const TITLE = "Arsen Shkrumelyak";
 const DESCRIPTION = "I build software with care.";
+const META_DESCRIPTION =
+	"Arsen Shkrumelyak builds software with care in London. Freelance software engineer, previously founding engineer at Anyverse. Projects, write-ups and CV.";
+const PERSON_JSON_LD = JSON.stringify({
+	"@context": "https://schema.org",
+	"@type": "Person",
+	name: TITLE,
+	url: "https://arsenstorm.com",
+	jobTitle: "Freelance Software Engineer",
+	address: {
+		"@type": "PostalAddress",
+		addressLocality: "London",
+		addressCountry: "GB",
+	},
+	email: "mailto:arsen@shkrumelyak.com",
+	sameAs: [
+		"https://www.linkedin.com/in/arsenstorm",
+		"https://github.com/arsenstorm",
+	],
+});
 
 const ELSEWHERE: { label: string; href: string; copy?: string }[] = [
 	{ label: "LinkedIn", href: "https://www.linkedin.com/in/arsenstorm" },
@@ -37,7 +56,7 @@ const experience = (await getExperience()).filter(
 const featuredProjects = PROJECTS.filter((project) => project.featured);
 ---
 
-<BaseLayout description={DESCRIPTION} title={TITLE}>
+<BaseLayout description={META_DESCRIPTION} jsonLd={PERSON_JSON_LD} title={TITLE}>
   <main class="mx-auto max-w-xl space-y-12 px-6 py-24">
     <PageHeading description={DESCRIPTION} noHomeLink title={TITLE} />
 

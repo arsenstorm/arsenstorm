@@ -9,11 +9,13 @@ import { getExperience } from "#/lib/experience";
 
 const TITLE = "My Experience";
 const DESCRIPTION = "Where I've worked and what I did there.";
+const META_DESCRIPTION =
+	"Work experience of Arsen Shkrumelyak, freelance software engineer: previously founding engineer at Anyverse and sole engineer at Afinity, building AI-assisted admissions products.";
 
 const experience = await getExperience();
 ---
 
-<BaseLayout description={DESCRIPTION} path="/experience" title={TITLE}>
+<BaseLayout description={META_DESCRIPTION} path="/experience" title={TITLE}>
 	<main class="mx-auto max-w-xl space-y-12 px-6 py-24">
 		<PageHeading description={DESCRIPTION} title={TITLE} />
 

@@ -74,7 +74,7 @@ export function technicalWriteupJsonLd(writeup: WriteupSummary): string {
 			name: SITE_NAME,
 		},
 		datePublished: writeup.publishedAt,
-		description: writeup.description,
+		description: writeup.metaDescription ?? writeup.description,
 		headline: writeup.title,
 		image: getOgImageUrl(writeup.href),
 		mainEntityOfPage: getAbsoluteUrl(writeup.href),

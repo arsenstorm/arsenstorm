@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 export interface WriteupSummary {
 	description: string;
 	href: string;
+	metaDescription?: string;
 	publishedAt: string;
 	slug: string;
 	tags: string[];

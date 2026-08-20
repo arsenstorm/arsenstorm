@@ -10,6 +10,7 @@ const writeups = defineCollection({
 	schema: z.object({
 		title: z.string(),
 		description: z.string(),
+		metaDescription: z.string().optional(),
 		publishedAt: z.string(),
 		tags: z.array(z.string()),
 	}),

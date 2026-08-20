@@ -23,7 +23,7 @@ const others = (await getWriteups()).filter((w) => w.slug !== writeup.slug);
 ---
 
 <BaseLayout
-	description={writeup.description}
+	description={writeup.metaDescription ?? writeup.description}
 	jsonLd={technicalWriteupJsonLd(writeup)}
 	path={writeup.href}
 	title={writeup.title}

@@ -19,10 +19,11 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await render(entry.entry);
 const others = (await getExperience()).filter((e) => e.slug !== entry.slug);
+const metaDescription = `Arsen Shkrumelyak was a ${entry.role} at ${entry.company} (${entry.period}). ${entry.summary}`;
 ---
 
 <BaseLayout
-  description={entry.summary}
+  description={metaDescription}
   path={entry.href}
   title={entry.company}
   type="article"

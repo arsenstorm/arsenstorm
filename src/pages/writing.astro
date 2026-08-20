@@ -8,9 +8,11 @@ import { getWriteups } from "#/lib/writeups";
 
 const TITLE = "Technical Writing";
 const DESCRIPTION = "Writing about interesting technical topics.";
+const META_DESCRIPTION =
+	"Technical writing by Arsen Shkrumelyak on browser automation, live streaming over object storage, email-native products, Apple Wallet passes and building with AI agents.";
 ---
 
-<BaseLayout description={DESCRIPTION} path="/writing" title={TITLE}>
+<BaseLayout description={META_DESCRIPTION} path="/writing" title={TITLE}>
   <main class="mx-auto max-w-xl space-y-12 px-6 py-24">
     <PageHeading description={DESCRIPTION} title={TITLE} />
 
