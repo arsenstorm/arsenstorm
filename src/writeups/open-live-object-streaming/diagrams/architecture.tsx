@@ -9,9 +9,9 @@ export function OlosArchitecture() {
 			viewBox="8 32 544 249"
 		>
 			{/* control plane (dashed) */}
-			<Arrow dashed x1={130} x2={223} y1={128} y2={78} />
-			<Arrow dashed x1={290} x2={290} y1={96} y2={184} />
-			<Arrow dashed x1={357} x2={448} y1={78} y2={128} />
+			<Arrow variant="dashed" x1={130} x2={223} y1={128} y2={78} />
+			<Arrow variant="dashed" x1={290} x2={290} y1={96} y2={184} />
+			<Arrow variant="dashed" x1={357} x2={448} y1={78} y2={128} />
 
 			{/* data plane (solid) — enter/exit storage's sides, mirroring the coordinator */}
 			<Arrow x1={130} x2={223} y1={152} y2={202} />

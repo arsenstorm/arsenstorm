@@ -56,7 +56,7 @@ export function CommitSequence() {
 			<Label anchor="start" x={PUB + 6} y={110}>
 				2. grant · issued
 			</Label>
-			<Arrow dashed x1={COORD} x2={PUB} y1={118} y2={118} />
+			<Arrow variant="dashed" x1={COORD} x2={PUB} y1={118} y2={118} />
 
 			{/* 3. PUT bytes */}
 			<Label anchor="start" x={PUB + 6} y={148}>
@@ -80,7 +80,7 @@ export function CommitSequence() {
 			<Label anchor="start" x={COORD + 6} y={256}>
 				6. size · type · etag
 			</Label>
-			<Arrow dashed x1={STORE} x2={COORD} y1={264} y2={264} />
+			<Arrow variant="dashed" x1={STORE} x2={COORD} y1={264} y2={264} />
 
 			{/* 7. commit (self) — end 6px (ARROW_LEN) short so the tip lands on the lifeline */}
 			<MarkedPath d={`M${COORD},288 h28 v16 h-22`} />
