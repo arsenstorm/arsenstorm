@@ -2,8 +2,8 @@ import { cn } from "cnfast";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
 const INSET = {
-	sm: { frame: "rounded-[14px] p-0.5", surface: "rounded-xl" },
-	lg: { frame: "rounded-[20px] p-2", surface: "rounded-xl" },
+	sm: { frame: "rounded-xl p-0.5", surface: "rounded-[12px]" },
+	lg: { frame: "rounded-[20px] p-2", surface: "rounded-[12px]" },
 } as const;
 
 export function Frame({
