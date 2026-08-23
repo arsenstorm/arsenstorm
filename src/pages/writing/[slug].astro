@@ -2,6 +2,8 @@
 export const prerender = true;
 
 import { render } from "astro:content";
+import KeepReading from "#/components/keep-reading.astro";
+import Main from "#/components/main.astro";
 import { writeupComponents } from "#/components/mdx";
 import { PageHeading } from "#/components/page-heading.tsx";
 import { WriteupList } from "#/components/writing.tsx";
@@ -29,7 +31,7 @@ const others = (await getWriteups()).filter((w) => w.slug !== writeup.slug);
 	title={writeup.title}
 	type="article"
 >
-	<main class="mx-auto max-w-xl space-y-12 px-6 py-24">
+	<Main>
 		<PageHeading description={writeup.description} title={writeup.title} />
 
 		<article>
@@ -38,15 +40,12 @@ const others = (await getWriteups()).filter((w) => w.slug !== writeup.slug);
 
 		{
 			others.length > 0 && (
-				<footer>
-					<h2 class="mb-3 font-medium text-base text-neutral-950 dark:text-neutral-50">
-						Keep reading
-					</h2>
+				<KeepReading>
 					<WriteupList items={others} />
-				</footer>
+				</KeepReading>
 			)
 		}
-	</main>
+	</Main>
 	<script>
 		import "#/scripts/code-blocks";
 	</script>

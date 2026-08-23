@@ -3,7 +3,8 @@ export const prerender = true;
 
 import { ExperienceList } from "#/components/experience-list.tsx";
 import { ItemGroup } from "#/components/item-group.tsx";
-import { textLinkClass } from "#/components/link.tsx";
+import { Anchor, textLinkClass } from "#/components/link.tsx";
+import Main from "#/components/main.astro";
 import { PageHeading } from "#/components/page-heading.tsx";
 import { Section } from "#/components/section.tsx";
 import { Writing } from "#/components/writing.tsx";
@@ -57,7 +58,7 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
 ---
 
 <BaseLayout description={META_DESCRIPTION} jsonLd={PERSON_JSON_LD} title={TITLE}>
-  <main class="mx-auto max-w-xl space-y-12 px-6 py-24">
+  <Main>
     <PageHeading description={DESCRIPTION} noHomeLink title={TITLE} />
 
     <Section
@@ -79,17 +80,11 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
       <ul class="flex flex-col gap-2">
         {
           ELSEWHERE.map((item) => {
-            const external = item.href.startsWith("http");
             return (
               <li class="group flex items-center gap-0.5 text-sm">
-                <a
-                  class={textLinkClass}
-                  href={item.href}
-                  rel={external ? "noopener noreferrer" : undefined}
-                  target={external ? "_blank" : undefined}
-                >
+                <Anchor className={textLinkClass} href={item.href}>
                   {item.label}
-                </a>
+                </Anchor>
                 {item.copy ? (
                   <button
                     aria-label={`Copy ${item.copy}`}
@@ -107,7 +102,7 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
         }
       </ul>
     </Section>
-  </main>
+  </Main>
 </BaseLayout>
 
 <script>

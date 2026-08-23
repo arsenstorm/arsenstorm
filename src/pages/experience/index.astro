@@ -2,6 +2,7 @@
 export const prerender = true;
 
 import { ExperienceList } from "#/components/experience-list.tsx";
+import Main from "#/components/main.astro";
 import { PageHeading } from "#/components/page-heading.tsx";
 import { Section } from "#/components/section.tsx";
 import BaseLayout from "#/layouts/base-layout.astro";
@@ -16,11 +17,11 @@ const experience = await getExperience();
 ---
 
 <BaseLayout description={META_DESCRIPTION} path="/experience" title={TITLE}>
-	<main class="mx-auto max-w-xl space-y-12 px-6 py-24">
+	<Main>
 		<PageHeading description={DESCRIPTION} title={TITLE} />
 
 		<Section cta={{ label: "Go back", href: "/" }} title="Experience">
 			<ExperienceList items={experience} />
 		</Section>
-	</main>
+	</Main>
 </BaseLayout>

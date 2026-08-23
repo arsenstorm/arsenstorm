@@ -2,6 +2,7 @@
 export const prerender = true;
 
 import { ItemGroup } from "#/components/item-group.tsx";
+import Main from "#/components/main.astro";
 import { PageHeading } from "#/components/page-heading.tsx";
 import BaseLayout from "#/layouts/base-layout.astro";
 import { getWriteups } from "#/lib/writeups";
@@ -13,11 +14,11 @@ const META_DESCRIPTION =
 ---
 
 <BaseLayout description={META_DESCRIPTION} path="/writing" title={TITLE}>
-  <main class="mx-auto max-w-xl space-y-12 px-6 py-24">
+  <Main>
     <PageHeading description={DESCRIPTION} title={TITLE} />
 
     <section>
       <ItemGroup groupBy="month" items={await getWriteups()} />
     </section>
-  </main>
+  </Main>
 </BaseLayout>
