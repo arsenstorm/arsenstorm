@@ -1,10 +1,10 @@
 import { cn } from "cnfast";
-import { useEffect, useState } from "react";
 import type {
 	ContributionIntensity,
 	GitHubActivityDay,
 	GitHubActivitySnapshot,
 } from "#/lib/types";
+import { useJsonResource } from "#/lib/use-json-resource";
 import { BentoBlock } from ".";
 
 const GITHUB_ACTIVITY_ENDPOINT = "/api/github";
@@ -26,11 +26,6 @@ const LEVEL_CLASS_NAMES: Record<ContributionIntensity, string> = {
 	3: "bg-[#fe9600] dark:bg-[#fa7a18]",
 	4: "bg-[#03001c] dark:bg-[#fddf68]",
 };
-
-type GitHubActivityState =
-	| { activity: null; status: "loading" }
-	| { activity: GitHubActivitySnapshot; status: "ready" }
-	| { activity: null; status: "unavailable" };
 
 interface GitHubActivityColumn {
 	days: (GitHubActivityDay | null)[];
@@ -91,18 +86,9 @@ function ContributionDot({ day }: { day: GitHubActivityDay | null }) {
 	);
 }
 
-function ContributionColumn({
-	column,
-	isDuplicate = false,
-}: {
-	column: GitHubActivityColumn;
-	isDuplicate?: boolean;
-}) {
+function ContributionColumn({ column }: { column: GitHubActivityColumn }) {
 	return (
-		<div
-			aria-hidden={isDuplicate || undefined}
-			className="grid grid-rows-5 gap-1"
-		>
+		<div className="grid grid-rows-5 gap-1">
 			{column.days.map((day, index) => (
 				<ContributionDot
 					day={day}
@@ -137,7 +123,6 @@ function GitHubActivityGraph({
 							{columns.map((column) => (
 								<ContributionColumn
 									column={column}
-									isDuplicate={copy === "duplicate"}
 									key={`${copy}-${column.key}`}
 								/>
 							))}
@@ -180,44 +165,13 @@ function GitHubActivitySkeleton() {
 }
 
 export function BentoGithub({ className }: { className?: string }) {
-	const [state, setState] = useState<GitHubActivityState>({
-		activity: null,
-		status: "loading",
-	});
-
-	useEffect(() => {
-		const controller = new AbortController();
-
-		async function loadActivity() {
-			const response = await fetch(GITHUB_ACTIVITY_ENDPOINT, {
-				signal: controller.signal,
-			});
-
-			if (!response.ok) {
-				setState({ activity: null, status: "unavailable" });
-				return;
-			}
-
-			const activity = (await response.json()) as GitHubActivitySnapshot;
-			setState({ activity, status: "ready" });
-		}
-
-		loadActivity().catch(() => {
-			if (controller.signal.aborted) {
-				return;
-			}
-
-			setState({ activity: null, status: "unavailable" });
-		});
-
-		return () => {
-			controller.abort();
-		};
-	}, []);
+	const activity = useJsonResource<GitHubActivitySnapshot>(
+		GITHUB_ACTIVITY_ENDPOINT
+	);
 
 	let activityContent: React.ReactNode;
-	if (state.status === "ready") {
-		activityContent = <GitHubActivityGraph activity={state.activity} />;
+	if (activity.status === "ready") {
+		activityContent = <GitHubActivityGraph activity={activity.data} />;
 	} else {
 		activityContent = <GitHubActivitySkeleton />;
 	}
