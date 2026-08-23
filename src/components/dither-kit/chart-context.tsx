@@ -78,7 +78,6 @@ export type ChartContextValue = {
   setFocusDataKey: (key: string | null) => void
   hoverIndex: number | null
   setHoverIndex: (index: number | null) => void
-  markerIndex: number | null // controlled crosshair override (e.g. committed point)
   cursorX: number
   setCursorX: (px: number) => void
   isMouseInChart: boolean
@@ -187,7 +186,6 @@ export function useChartController({
   animate = true,
   animationDuration = 900,
   replayToken = 0,
-  markerIndex = null,
   hovered = false,
   bloom = "off",
   bloomOnHover = false,
@@ -203,7 +201,6 @@ export function useChartController({
   animate?: boolean
   animationDuration?: number
   replayToken?: number
-  markerIndex?: number | null
   hovered?: boolean
   bloom?: BloomInput
   bloomOnHover?: boolean
@@ -444,7 +441,6 @@ export function useChartController({
       setFocusDataKey,
       hoverIndex,
       setHoverIndex,
-      markerIndex,
       cursorX,
       setCursorX,
       isMouseInChart,
@@ -487,7 +483,6 @@ export function useChartController({
       setFocusDataKey,
       hoverIndex,
       setHoverIndex,
-      markerIndex,
       cursorX,
       setCursorX,
       isMouseInChart,

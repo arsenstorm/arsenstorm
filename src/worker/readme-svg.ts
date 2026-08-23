@@ -39,13 +39,11 @@ function getContributionLength(sizes: number[][], yearGap: number) {
 
 function renderReadmeSection({
 	data,
-	request,
 	section,
 	theme,
 	url,
 }: {
 	data: Stats;
-	request: Request;
 	section: string;
 	theme: "light" | "dark";
 	url: URL;
@@ -86,8 +84,6 @@ function renderReadmeSection({
 	}
 
 	const years = data.years.slice(0, MAX_YEARS);
-	const cf = (request as Request & { cf?: IncomingRequestCfProperties }).cf;
-	const location = { city: cf?.city ?? "", country: cf?.country ?? "" };
 	const options = { dots: { gap: 5, rows: 6, size: 24 }, year: { gap: 5 } };
 	const sizes = getContributionSizes(years, options);
 	const length = getContributionLength(sizes, options.year.gap);
@@ -96,7 +92,6 @@ function renderReadmeSection({
 		...options,
 		height: 230,
 		length,
-		location,
 		sizes,
 		theme,
 		years,
@@ -120,6 +115,6 @@ export async function handleSvg(request: Request, env: Env): Promise<Response> {
 		return noData(theme);
 	}
 
-	const content = renderReadmeSection({ data, request, section, theme, url });
+	const content = renderReadmeSection({ data, section, theme, url });
 	return new Response(content, { headers: SVG_HEADERS });
 }

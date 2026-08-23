@@ -41,7 +41,7 @@ const svg = (styles: string, html: string, attributes: SvgAttributes) => {
 	</svg>`;
 };
 
-export const shared = `
+const shared = `
 	:root {
 		--color-text-light: ${LIGHT_COLORS.text};
 		--color-dot-bg-0-light: ${LIGHT_COLORS.bg0};
@@ -174,7 +174,6 @@ export interface Main {
 		gap: number;
 	};
 	length: number;
-	location: { city: string; country: string };
 	sizes: number[][];
 	year: {
 		gap: number;
@@ -194,7 +193,6 @@ export const main = (props: Props & Main) => {
 			--size-dot: ${props.dots.size};
 			--size-year-gap: ${props.year.gap};
 			--size-label-height: 0;
-			--duration: 360;
 		}
 
 		.wrapper {
@@ -356,18 +354,15 @@ export const top = (props: Props & { contributions: number }) => {
 		}
 
 		.menu {
-			--delay: var(--animate-in-menu-delay);
 			contain: content;
 			text-align: left;
 			grid-area: 1 / 1 / span 1 / span 2;
 		}
 		.contributions {
-			--delay: var(--animate-in-contributions-delay);
 			contain: strict;
 			grid-area: 1 / 3 / span 1 / span 2;
 		}
 		.readme {
-			--delay: var(--animate-in-readme-delay);
 			contain: content;
 			text-align: right;
 			grid-area: 1 / 5 / span 1 / span 2;
@@ -428,9 +423,6 @@ export const link = (props: Props & { index: number }) => (label: string) => {
 			--i: ${props.index};
 		}
 
-		.wrapper {
-			--delay: calc(var(--animate-in-links-delay) + var(--i) * 1.2s);
-		}
 		@-moz-document url-prefix() {
 			.wrapper {
 				display: block;
@@ -505,12 +497,10 @@ export const fallback = (props: Props & { width: number }) => {
 		.intro span {
 			contain: content;
 			--duration: 980ms;
-			--delay: calc(var(--animate-in-contributions-delay) + var(--i) * 10ms);
 		}
 
 		.hint {
 			--duration: 1.2s;
-			--delay: calc(var(--animate-in-contributions-delay) + 2.5s);
 			margin-block-start: 10px;
 			font-size: 10px;
 			font-style: italic;

@@ -26,7 +26,6 @@ export type PaintOpts = {
   intensity: number // 0–1 hover lift
   dim: number // selection dim multiplier (0.3 dimmed, 1 normal)
   stacked: boolean // denser + solid floor when layers stack
-  sparse?: number // raise the dither threshold (thin out) — front layers
 }
 
 // Colour vs opacity — the guiding rule for the whole engine:
@@ -53,7 +52,7 @@ export function paintColumn(
   top: number,
   floor: number,
   seed: Seed,
-  { variant, intensity, dim, stacked, sparse = 0 }: PaintOpts
+  { variant, intensity, dim, stacked }: PaintOpts
 ) {
   const t = Math.round(top)
   const f = Math.round(floor)
@@ -63,7 +62,7 @@ export function paintColumn(
     octx.fillRect(x, t, 1, 1)
     return
   }
-  const bias = (variant === "dotted" ? 0.12 : 0) + (stacked ? 0.2 : 0) - sparse
+  const bias = (variant === "dotted" ? 0.12 : 0) + (stacked ? 0.2 : 0)
   for (let y = t; y < f; y++) {
     // Inverted falloff: 0 at the top line, 1 at the floor — dense at the
     // bottom, thinning as it rises toward the outline.
@@ -92,21 +91,6 @@ export function paintColumn(
     octx.fillStyle = rgb(seed.fill, 1, BORDER_ALPHA * 0.5 * dim)
     octx.fillRect(x, t + 1, 1, 1)
   }
-}
-
-/** Linear-resample a per-index fraction array to `cols` columns. */
-export function resample(src: number[], cols: number): number[] {
-  const out = new Array<number>(cols)
-  const last = Math.max(src.length - 1, 1)
-  for (let c = 0; c < cols; c++) {
-    const t = (c / Math.max(cols - 1, 1)) * last
-    const i = Math.floor(t)
-    const f = t - i
-    const a = src[i] ?? 0
-    const b = src[Math.min(i + 1, src.length - 1)] ?? a
-    out[c] = a + (b - a) * f
-  }
-  return out
 }
 
 /** Backing-canvas resolution for a plot rect — low-res, scaled up `pixelated`. */
@@ -164,8 +148,6 @@ export function bloomLayerStyle(
 }
 
 // Easing — gentle start + soft settle so entrances don't feel linear.
-export const easeInOutCubic = (t: number) =>
-  t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2
 export const easeOutCubic = (t: number) => 1 - (1 - t) ** 3
 export const clamp01 = (t: number) => (t < 0 ? 0 : t > 1 ? 1 : t)
 

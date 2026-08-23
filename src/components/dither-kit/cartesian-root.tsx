@@ -42,9 +42,6 @@ export type CartesianChartProps<TData extends Row> = {
   /** Set false for a decorative sparkline: keeps the hover lift but no scrub
    * crosshair / tooltip. */
   interactive?: boolean
-  /** Controlled crosshair position (e.g. a committed point) — overrides the
-   * internal hover when set. */
-  markerIndex?: number | null
   /** Parent-driven hover (e.g. the whole card/row) — lifts the fill. */
   hovered?: boolean
   /** Glow on the dither fill. */
@@ -85,7 +82,6 @@ export function CartesianRoot<TData extends Row>({
   animationDuration = 900,
   replayToken = 0,
   interactive = true,
-  markerIndex = null,
   hovered = false,
   bloom = "off",
   bloomOnHover = false,
@@ -110,7 +106,6 @@ export function CartesianRoot<TData extends Row>({
     animate,
     animationDuration,
     replayToken,
-    markerIndex,
     hovered,
     bloom,
     bloomOnHover,
@@ -186,5 +181,3 @@ export function CartesianRoot<TData extends Row>({
     </ChartContext>
   )
 }
-
-export type AreaChartProps<TData extends Row> = CartesianChartProps<TData>

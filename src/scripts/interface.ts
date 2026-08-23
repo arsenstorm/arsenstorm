@@ -126,10 +126,6 @@ window.addEventListener("pageshow", (event) => {
 
 type Theme = "light" | "dark";
 
-// applyTheme and disableTransitionsDuring: ported VERBATIM from src/lib/theme.ts,
-// dropping only the `typeof document === "undefined"` guards (this module is
-// browser-only).
-
 function applyTheme(theme: Theme) {
 	const root = document.documentElement;
 	root.dataset.theme = theme;

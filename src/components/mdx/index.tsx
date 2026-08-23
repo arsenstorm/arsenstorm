@@ -1,5 +1,4 @@
 import type { MDXComponents } from "mdx/types.js";
-import type { ComponentPropsWithoutRef } from "react";
 import {
 	Caution,
 	Danger,
@@ -31,20 +30,12 @@ import {
 	MdxListItem,
 	MdxOrderedList,
 	MdxParagraph,
+	MdxSeparator,
 	MdxStrikethrough,
 	MdxStrong,
 	MdxUnorderedList,
 } from "./text";
 import { Video } from "./video";
-
-function MdxSeparator(props: ComponentPropsWithoutRef<"hr">) {
-	return (
-		<hr
-			className="my-6 border-neutral-200 dark:border-neutral-800"
-			{...props}
-		/>
-	);
-}
 
 export const writeupComponents: MDXComponents = {
 	Caution,
