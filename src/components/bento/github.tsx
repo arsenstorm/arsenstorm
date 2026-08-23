@@ -5,7 +5,7 @@ import type {
 	GitHubActivityDay,
 	GitHubActivitySnapshot,
 } from "#/lib/types";
-import { CustomBentoBlock } from ".";
+import { BentoBlock } from ".";
 
 const GITHUB_ACTIVITY_ENDPOINT = "/api/github";
 const ACTIVITY_ROW_COUNT = 6;
@@ -223,7 +223,7 @@ export function BentoGithub({ className }: { className?: string }) {
 	}
 
 	return (
-		<CustomBentoBlock
+		<BentoBlock
 			className={cn(
 				"@container-size col-span-full row-span-2 h-[calc((100cqw-5rem)/3+1rem)] justify-between overflow-hidden",
 				className
@@ -244,6 +244,6 @@ export function BentoGithub({ className }: { className?: string }) {
 				</p>
 			</div>
 			{activityContent}
-		</CustomBentoBlock>
+		</BentoBlock>
 	);
 }

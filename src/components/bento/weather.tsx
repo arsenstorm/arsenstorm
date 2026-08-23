@@ -2,7 +2,7 @@ import { cn } from "cnfast";
 import { AnimatePresence } from "motion/react";
 import { type CSSProperties, useEffect, useState } from "react";
 import { roundTemperature, type WeatherSnapshot } from "#/lib/weather";
-import { BentoBlock, BentoBlockSkeleton } from ".";
+import { BentoBlock } from ".";
 
 const WEATHER_ENDPOINT = "/api/weather";
 const MINUTE_MS = 60_000;
@@ -326,7 +326,7 @@ export function BentoWeather({ className }: { className?: string }) {
 					</div>
 				</BentoBlock>
 			) : (
-				<BentoBlockSkeleton size="medium" />
+				<BentoBlock className="animate-pulse" size="medium" />
 			)}
 		</AnimatePresence>
 	);

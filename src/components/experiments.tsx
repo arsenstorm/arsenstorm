@@ -1,20 +1,22 @@
-import { BentoAppBlock, BentoGrid, EmptyBentoBlock } from "#/components/bento";
+import { BentoAppBlock, BentoBlock, BentoGrid } from "#/components/bento";
 import { BentoGithub } from "#/components/bento/github.tsx";
 import { BentoMap } from "#/components/bento/map";
 import { BentoWeather } from "#/components/bento/weather";
+import { Section } from "#/components/section.tsx";
 
 export function Experiments() {
 	return (
-		<section>
-			<div className="mb-4 flex flex-row items-center justify-between">
-				<h2 className="font-medium text-neutral-950 text-sm dark:text-neutral-50">
-					Experiments
-				</h2>
-			</div>
+		<Section title="Experiments">
 			<BentoGrid className="relative -mx-4">
 				<BentoMap className="order-1" />
-				<EmptyBentoBlock className="order-2 hidden md:block" size="small" />
-				<EmptyBentoBlock className="order-2 hidden md:block" size="small" />
+				<BentoBlock
+					className="order-2 hidden bg-transparent md:block dark:bg-transparent"
+					size="small"
+				/>
+				<BentoBlock
+					className="order-2 hidden bg-transparent md:block dark:bg-transparent"
+					size="small"
+				/>
 				<BentoAppBlock
 					app={{
 						name: "ID Reader",
@@ -26,6 +28,6 @@ export function Experiments() {
 				<BentoWeather className="order-2" />
 				<BentoGithub className="order-3" />
 			</BentoGrid>
-		</section>
+		</Section>
 	);
 }
