@@ -17,9 +17,9 @@ export function SlotStateMachine() {
 			<Box h={48} label="committed" variant="solid" w={150} x={390} y={32} />
 
 			{/* drops to terminal states */}
-			<Arrow dashed x1={90} x2={112} y1={80} y2={138} />
-			<Arrow dashed x1={281} x2={281} y1={80} y2={138} />
-			<Arrow dashed x1={465} x2={447} y1={80} y2={138} />
+			<Arrow variant="dashed" x1={90} x2={112} y1={80} y2={138} />
+			<Arrow variant="dashed" x1={281} x2={281} y1={80} y2={138} />
+			<Arrow variant="dashed" x1={465} x2={447} y1={80} y2={138} />
 
 			<Box h={36} label="expired" variant="dashed" w={110} x={58} y={140} />
 			<Box h={36} label="rejected" variant="dashed" w={110} x={226} y={140} />

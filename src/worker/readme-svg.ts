@@ -5,6 +5,12 @@ import { type Env, SVG_HEADERS } from "./types";
 
 const MAX_YEARS = 3;
 
+const LINK_LABELS: Record<string, string> = {
+	"link-website": "Website",
+	"link-twitter": "Twitter",
+	"link-instagram": "Instagram",
+};
+
 function noData(theme: "light" | "dark"): Response {
 	const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="420" height="60" fill="none">
 		<rect width="420" height="60" rx="6" fill="${theme === "dark" ? "#161b22" : "#ebedf0"}"/>
@@ -39,13 +45,11 @@ function getContributionLength(sizes: number[][], yearGap: number) {
 
 function renderReadmeSection({
 	data,
-	request,
 	section,
 	theme,
 	url,
 }: {
 	data: Stats;
-	request: Request;
 	section: string;
 	theme: "light" | "dark";
 	url: URL;
@@ -54,31 +58,14 @@ function renderReadmeSection({
 		return top({ contributions: data.contributions, height: 20, theme });
 	}
 
-	if (section === "link-website") {
+	const linkLabel = LINK_LABELS[section];
+	if (linkLabel) {
 		return link({
 			height: 18,
 			theme,
 			width: 100,
 			index: Number(url.searchParams.get("i")),
-		})("Website");
-	}
-
-	if (section === "link-twitter") {
-		return link({
-			height: 18,
-			theme,
-			width: 100,
-			index: Number(url.searchParams.get("i")),
-		})("Twitter");
-	}
-
-	if (section === "link-instagram") {
-		return link({
-			height: 18,
-			theme,
-			width: 100,
-			index: Number(url.searchParams.get("i")),
-		})("Instagram");
+		})(linkLabel);
 	}
 
 	if (section === "fallback") {
@@ -86,8 +73,6 @@ function renderReadmeSection({
 	}
 
 	const years = data.years.slice(0, MAX_YEARS);
-	const cf = (request as Request & { cf?: IncomingRequestCfProperties }).cf;
-	const location = { city: cf?.city ?? "", country: cf?.country ?? "" };
 	const options = { dots: { gap: 5, rows: 6, size: 24 }, year: { gap: 5 } };
 	const sizes = getContributionSizes(years, options);
 	const length = getContributionLength(sizes, options.year.gap);
@@ -96,7 +81,6 @@ function renderReadmeSection({
 		...options,
 		height: 230,
 		length,
-		location,
 		sizes,
 		theme,
 		years,
@@ -120,6 +104,6 @@ export async function handleSvg(request: Request, env: Env): Promise<Response> {
 		return noData(theme);
 	}
 
-	const content = renderReadmeSection({ data, request, section, theme, url });
+	const content = renderReadmeSection({ data, section, theme, url });
 	return new Response(content, { headers: SVG_HEADERS });
 }

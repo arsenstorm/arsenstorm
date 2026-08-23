@@ -126,10 +126,6 @@ window.addEventListener("pageshow", (event) => {
 
 type Theme = "light" | "dark";
 
-// applyTheme and disableTransitionsDuring: ported VERBATIM from src/lib/theme.ts,
-// dropping only the `typeof document === "undefined"` guards (this module is
-// browser-only).
-
 function applyTheme(theme: Theme) {
 	const root = document.documentElement;
 	root.dataset.theme = theme;
@@ -180,7 +176,8 @@ function syncAudioButtons() {
 	}
 }
 
-function setSoundsEnabled(next: boolean) {
+function toggleSounds() {
+	const next = root.dataset.sounds === "off";
 	root.dataset.sounds = next ? "on" : "off";
 	window.localStorage.setItem(SOUND_STORAGE_KEY, String(next));
 	if (next) {
@@ -202,7 +199,7 @@ document.addEventListener("click", (event) => {
 			setTheme(root.classList.contains("dark") ? "light" : "dark");
 			break;
 		case "toggle-audio":
-			setSoundsEnabled(root.dataset.sounds === "off");
+			toggleSounds();
 			break;
 		default:
 	}

@@ -1,37 +1,21 @@
 import { cn } from "cnfast";
+
+type BentoSize = "small" | "medium" | "large";
+
+const SIZE_CLASS: Record<BentoSize, string> = {
+	small: "col-span-1 row-span-1 aspect-square", // 0.5x0.5
+	medium: "col-span-2 row-span-2 aspect-square", // 1x1
+	large: "col-span-4 row-span-4 aspect-square", // 2x2
+};
+
 export function BentoBlock({
 	size,
 	className,
 	style,
 	children,
 }: {
-	size: "small" | "medium" | "large";
-	children: React.ReactNode;
-	className?: string;
-	style?: React.CSSProperties;
-}) {
-	return (
-		<div
-			className={cn(
-				"relative isolate flex aspect-square flex-col rounded-3xl bg-neutral-100 p-4 dark:bg-neutral-900",
-				size === "small" && "col-span-1 row-span-1", // 0.5x0.5
-				size === "medium" && "col-span-2 row-span-2", // 1x1
-				size === "large" && "col-span-4 row-span-4", // 2x2
-				className
-			)}
-			style={style}
-		>
-			{children}
-		</div>
-	);
-}
-
-export function CustomBentoBlock({
-	className,
-	style,
-	children,
-}: {
-	children: React.ReactNode;
+	size?: BentoSize;
+	children?: React.ReactNode;
 	className?: string;
 	style?: React.CSSProperties;
 }) {
@@ -39,49 +23,13 @@ export function CustomBentoBlock({
 		<div
 			className={cn(
 				"relative isolate flex flex-col rounded-3xl bg-neutral-100 p-4 dark:bg-neutral-900",
+				size && SIZE_CLASS[size],
 				className
 			)}
 			style={style}
 		>
 			{children}
 		</div>
-	);
-}
-
-export function EmptyBentoBlock({
-	size,
-	className,
-}: {
-	size: "small" | "medium" | "large";
-	className?: string;
-}) {
-	return (
-		<div
-			className={cn(
-				"relative isolate flex aspect-square flex-col rounded-3xl bg-transparent dark:bg-transparent",
-				size === "small" && "col-span-1 row-span-1", // 0.5x0.5
-				size === "medium" && "col-span-2 row-span-2", // 1x1
-				size === "large" && "col-span-4 row-span-4", // 2x2
-				className
-			)}
-		/>
-	);
-}
-
-export function BentoBlockSkeleton({
-	size,
-}: {
-	size: "small" | "medium" | "large";
-}) {
-	return (
-		<div
-			className={cn(
-				"relative isolate flex aspect-square animate-pulse flex-col rounded-3xl bg-neutral-100 p-4 dark:bg-neutral-900",
-				size === "small" && "col-span-1 row-span-1", // 0.5x0.5
-				size === "medium" && "col-span-2 row-span-2", // 1x1
-				size === "large" && "col-span-4 row-span-4" // 2x2
-			)}
-		/>
 	);
 }
 

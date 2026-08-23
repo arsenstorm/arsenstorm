@@ -3,6 +3,8 @@ export const prerender = true;
 
 import { render } from "astro:content";
 import { ExperienceList } from "#/components/experience-list.tsx";
+import KeepReading from "#/components/keep-reading.astro";
+import Main from "#/components/main.astro";
 import { writeupComponents } from "#/components/mdx";
 import { PageHeading } from "#/components/page-heading.tsx";
 import BaseLayout from "#/layouts/base-layout.astro";
@@ -28,7 +30,7 @@ const metaDescription = `Arsen Shkrumelyak was a ${entry.role} at ${entry.compan
   title={entry.company}
   type="article"
 >
-  <main class="mx-auto max-w-xl space-y-12 px-6 py-24">
+  <Main>
     <PageHeading
       description={`${entry.role} · ${entry.period}`}
       title={entry.company}
@@ -59,15 +61,12 @@ const metaDescription = `Arsen Shkrumelyak was a ${entry.role} at ${entry.compan
 
     {
       others.length > 0 && (
-        <footer>
-          <h2 class="mb-3 font-medium text-base text-neutral-950 dark:text-neutral-50">
-            Keep reading
-          </h2>
+        <KeepReading>
           <ExperienceList items={others} />
-        </footer>
+        </KeepReading>
       )
     }
-  </main>
+  </Main>
   <script>
     import "#/scripts/code-blocks";
   </script>

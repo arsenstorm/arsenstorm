@@ -37,7 +37,7 @@ export function MailLoop() {
 			</Label>
 
 			{/* the break: automated mail is dropped, ending the cycle */}
-			<Arrow dashed x1={275} x2={275} y1={164} y2={196} />
+			<Arrow variant="dashed" x1={275} x2={275} y1={164} y2={196} />
 			<Label anchor="start" x={283} y={184}>
 				automated
 			</Label>

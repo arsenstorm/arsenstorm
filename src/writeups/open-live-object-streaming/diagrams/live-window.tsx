@@ -120,7 +120,7 @@ export function LiveWindow() {
 				y1={SLOT_Y - 10}
 				y2={SLOT_Y + SLOT_H + 10}
 			/>
-			<Label muted={false} x={cursorX} y={SLOT_Y + SLOT_H + 26}>
+			<Label tone="fg" x={cursorX} y={SLOT_Y + SLOT_H + 26}>
 				cursor — live edge
 			</Label>
 		</Diagram>

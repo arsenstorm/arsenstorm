@@ -11,17 +11,11 @@ type SectionHeadingProps = ComponentPropsWithoutRef<"h2"> & {
 	levelClassName: string;
 };
 
-function shouldOpenInNewTab(href: string | undefined) {
-	return href?.startsWith("http://") || href?.startsWith("https://");
-}
-
 function MdxAnchor({
 	className,
 	href,
 	...props
 }: ComponentPropsWithoutRef<"a">) {
-	const opensInNewTab = shouldOpenInNewTab(href);
-
 	return (
 		<Anchor
 			className={cn(
@@ -29,8 +23,6 @@ function MdxAnchor({
 				className
 			)}
 			href={href}
-			rel={opensInNewTab ? "noopener noreferrer" : undefined}
-			target={opensInNewTab ? "_blank" : undefined}
 			{...props}
 		/>
 	);

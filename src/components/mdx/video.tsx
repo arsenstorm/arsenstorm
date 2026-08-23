@@ -20,6 +20,7 @@ import {
 	VideoPipButtonIcons,
 	VideoPlayButtonIcons,
 } from "@/icons/video";
+import { Frame } from "./frame.tsx";
 
 interface VideoProps {
 	poster?: string;
@@ -132,61 +133,59 @@ const previewMutedClass = "text-[15px] font-medium opacity-55 tabular-nums!";
 
 function Video({ poster, src, title }: VideoProps) {
 	return (
-		<div className="not-prose relative -mx-4 my-4 flex flex-col rounded-[20px] bg-neutral-200/50 p-2 dark:bg-neutral-800/50">
-			{title ? (
-				<p className="order-last mt-2 ml-4 font-medium text-neutral-600 text-xs tracking-tight dark:text-neutral-400">
-					{title}
-				</p>
-			) : null}
-			<div className="overflow-hidden rounded-xl bg-neutral-950">
-				<MediaController className={mediaControllerClass}>
-					<HlsVideo
-						className="h-full w-full bg-neutral-950 object-contain"
-						crossOrigin=""
-						playsInline
-						poster={poster}
-						preload="metadata"
-						slot="media"
-						src={src}
-					/>
-					<MediaLoadingIndicator slot="centered-chrome">
-						<VideoLoadingIcon />
-					</MediaLoadingIndicator>
-					<MediaControlBar className={controlBarClass}>
-						<MediaPlayButton>
-							<VideoPlayButtonIcons />
-						</MediaPlayButton>
-						<MediaMuteButton>
-							<VideoMuteButtonIcons />
-						</MediaMuteButton>
-						<div className={scrubberClass}>
-							<MediaTimeDisplay className={scrubTimeClass} />
-							<MediaTimeRange className={scrubRangeClass}>
-								<div
-									className={previewBoxClass}
-									part="box preview-box"
-									slot="preview"
-								>
-									<div className={previewTimeRowClass}>
-										{createElement("media-preview-time-display")}
-										<span className={previewMutedClass}> / </span>
-										<MediaDurationDisplay className={previewMutedClass} />
-									</div>
-									<div aria-hidden className={previewScrubLineClass} />
+		<Frame
+			caption={title}
+			className="relative my-4 bg-neutral-200/50 dark:bg-neutral-800/50"
+			inset="lg"
+			surfaceClassName="overflow-hidden bg-neutral-950 dark:bg-neutral-950"
+		>
+			<MediaController className={mediaControllerClass}>
+				<HlsVideo
+					className="h-full w-full bg-neutral-950 object-contain"
+					crossOrigin=""
+					playsInline
+					poster={poster}
+					preload="metadata"
+					slot="media"
+					src={src}
+				/>
+				<MediaLoadingIndicator slot="centered-chrome">
+					<VideoLoadingIcon />
+				</MediaLoadingIndicator>
+				<MediaControlBar className={controlBarClass}>
+					<MediaPlayButton>
+						<VideoPlayButtonIcons />
+					</MediaPlayButton>
+					<MediaMuteButton>
+						<VideoMuteButtonIcons />
+					</MediaMuteButton>
+					<div className={scrubberClass}>
+						<MediaTimeDisplay className={scrubTimeClass} />
+						<MediaTimeRange className={scrubRangeClass}>
+							<div
+								className={previewBoxClass}
+								part="box preview-box"
+								slot="preview"
+							>
+								<div className={previewTimeRowClass}>
+									{createElement("media-preview-time-display")}
+									<span className={previewMutedClass}> / </span>
+									<MediaDurationDisplay className={previewMutedClass} />
 								</div>
-							</MediaTimeRange>
-							<MediaDurationDisplay className={scrubTimeClass} />
-						</div>
-						<MediaPipButton>
-							<VideoPipButtonIcons />
-						</MediaPipButton>
-						<MediaFullscreenButton>
-							<VideoFullscreenButtonIcons />
-						</MediaFullscreenButton>
-					</MediaControlBar>
-				</MediaController>
-			</div>
-		</div>
+								<div aria-hidden className={previewScrubLineClass} />
+							</div>
+						</MediaTimeRange>
+						<MediaDurationDisplay className={scrubTimeClass} />
+					</div>
+					<MediaPipButton>
+						<VideoPipButtonIcons />
+					</MediaPipButton>
+					<MediaFullscreenButton>
+						<VideoFullscreenButtonIcons />
+					</MediaFullscreenButton>
+				</MediaControlBar>
+			</MediaController>
+		</Frame>
 	);
 }
 

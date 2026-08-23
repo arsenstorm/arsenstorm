@@ -11,6 +11,12 @@ type GitHubResponsePayload = Partial<GitHubResponse> & {
 	errors?: { message?: string }[];
 };
 
+const joinErrorMessages = (errors: { message?: string }[]) =>
+	errors
+		.map((error) => error.message)
+		.filter(Boolean)
+		.join("; ");
+
 function levelToInt(
 	level: Contribution["contributionLevel"]
 ): ContributionIntensity {
@@ -62,19 +68,13 @@ async function readGitHubJson(
 
 	if (!response.ok) {
 		const message =
-			json.errors
-				?.map((error) => error.message)
-				.filter(Boolean)
-				.join("; ") || responseBody.slice(0, 200);
+			(json.errors && joinErrorMessages(json.errors)) ||
+			responseBody.slice(0, 200);
 		throw new Error(`GitHub returned ${response.status}: ${message}`);
 	}
 
 	if (json.errors?.length) {
-		const message = json.errors
-			.map((error) => error.message)
-			.filter(Boolean)
-			.join("; ");
-		throw new Error(`GitHub GraphQL error: ${message}`);
+		throw new Error(`GitHub GraphQL error: ${joinErrorMessages(json.errors)}`);
 	}
 
 	return json;

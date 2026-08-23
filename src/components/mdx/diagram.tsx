@@ -63,6 +63,55 @@ export function useArrowMarker() {
 	return useDiagram().marker;
 }
 
+/**
+ * Dev-only overlay: the viewBox that would tightly fit `contentRef`'s content,
+ * so the authored one can be compared against it.
+ */
+function FitBadge({
+	contentRef,
+	viewBox,
+	fitPadding,
+}: {
+	contentRef: React.RefObject<SVGGElement | null>;
+	viewBox: string;
+	fitPadding: number;
+}) {
+	const [measured, setMeasured] = useState<string>();
+
+	useIsomorphicLayoutEffect(() => {
+		if (!import.meta.env.DEV) {
+			return;
+		}
+		const content = contentRef.current;
+		if (!content) {
+			return;
+		}
+		const b = content.getBBox();
+		const p = fitPadding;
+		const round = (n: number) => Math.round(n);
+		setMeasured(
+			`${round(b.x - p)} ${round(b.y - p)} ${round(b.width + p * 2)} ${round(b.height + p * 2)}`
+		);
+	}, [fitPadding, contentRef]);
+
+	if (!(import.meta.env.DEV && measured)) {
+		return null;
+	}
+
+	return (
+		<span
+			className={cn(
+				"absolute top-1 right-1 rounded px-1.5 py-0.5 font-mono text-[10px] tabular-nums",
+				viewBoxesMatch(viewBox, measured)
+					? "bg-emerald-600/85 text-white"
+					: "bg-neutral-900/80 text-neutral-50"
+			)}
+		>
+			{measured}
+		</span>
+	);
+}
+
 export function Diagram({
 	title,
 	label,
@@ -85,24 +134,6 @@ export function Diagram({
 }) {
 	const markerId = `diagram-arrow-${useId().replace(/:/g, "")}`;
 	const contentRef = useRef<SVGGElement>(null);
-	// Dev-only: the viewBox that would tightly fit the content, for comparison.
-	const [measured, setMeasured] = useState<string>();
-
-	useIsomorphicLayoutEffect(() => {
-		if (!import.meta.env.DEV) {
-			return;
-		}
-		const content = contentRef.current;
-		if (!content) {
-			return;
-		}
-		const b = content.getBBox();
-		const p = fitPadding;
-		const round = (n: number) => Math.round(n);
-		setMeasured(
-			`${round(b.x - p)} ${round(b.y - p)} ${round(b.width + p * 2)} ${round(b.height + p * 2)}`
-		);
-	}, [fitPadding]);
 
 	return (
 		<Panel title={title}>
@@ -138,18 +169,11 @@ export function Diagram({
 						</defs>
 						<g ref={contentRef}>{children}</g>
 					</svg>
-					{import.meta.env.DEV && measured ? (
-						<span
-							className={cn(
-								"absolute top-1 right-1 rounded px-1.5 py-0.5 font-mono text-[10px] tabular-nums",
-								viewBoxesMatch(viewBox, measured)
-									? "bg-emerald-600/85 text-white"
-									: "bg-neutral-900/80 text-neutral-50"
-							)}
-						>
-							{measured}
-						</span>
-					) : null}
+					<FitBadge
+						contentRef={contentRef}
+						fitPadding={fitPadding}
+						viewBox={viewBox}
+					/>
 				</div>
 			</DiagramContext.Provider>
 		</Panel>
@@ -157,6 +181,27 @@ export function Diagram({
 }
 
 type BoxVariant = "solid" | "outline" | "dashed";
+
+const OUTLINE_RECT =
+	"fill-neutral-100 stroke-neutral-300 dark:fill-neutral-900 dark:stroke-neutral-700";
+
+const BOX_VARIANTS: Record<
+	BoxVariant,
+	{ rect: string; label: string; sub: string; dashArray?: string }
+> = {
+	solid: {
+		rect: "fill-neutral-900 dark:fill-neutral-100",
+		label: "fill-neutral-50 dark:fill-neutral-900",
+		sub: "fill-neutral-400 dark:fill-neutral-500",
+	},
+	outline: { rect: OUTLINE_RECT, label: FG, sub: MUTED },
+	dashed: {
+		rect: OUTLINE_RECT,
+		label: MUTED,
+		sub: MUTED,
+		dashArray: "4 3",
+	},
+};
 
 export function Box({
 	x,
@@ -175,36 +220,22 @@ export function Box({
 	sub?: string;
 	variant?: BoxVariant;
 }) {
-	const solid = variant === "solid";
-	const dashed = variant === "dashed";
-
-	const rectClass = solid
-		? "fill-neutral-900 dark:fill-neutral-100"
-		: "fill-neutral-100 stroke-neutral-300 dark:fill-neutral-900 dark:stroke-neutral-700";
-
-	let labelClass = FG;
-	if (solid) {
-		labelClass = "fill-neutral-50 dark:fill-neutral-900";
-	} else if (dashed) {
-		labelClass = MUTED;
-	}
-
-	const subClass = solid ? "fill-neutral-400 dark:fill-neutral-500" : MUTED;
+	const styles = BOX_VARIANTS[variant];
 
 	return (
 		<g>
 			<rect
-				className={rectClass}
+				className={styles.rect}
 				height={h}
 				rx={9}
-				strokeDasharray={dashed ? "4 3" : undefined}
+				strokeDasharray={styles.dashArray}
 				strokeWidth={1.25}
 				width={w}
 				x={x}
 				y={y}
 			/>
 			<text
-				className={cn("font-mono", labelClass)}
+				className={cn("font-mono", styles.label)}
 				dominantBaseline="middle"
 				fontSize={12}
 				textAnchor="middle"
@@ -215,7 +246,7 @@ export function Box({
 			</text>
 			{sub ? (
 				<text
-					className={subClass}
+					className={styles.sub}
 					dominantBaseline="middle"
 					fontSize={9.5}
 					textAnchor="middle"
@@ -229,19 +260,26 @@ export function Box({
 	);
 }
 
+type LineVariant = "solid" | "dashed";
+
+const DASH_ARRAY: Record<LineVariant, string | undefined> = {
+	solid: undefined,
+	dashed: "4 3",
+};
+
 export function Arrow({
 	x1,
 	y1,
 	x2,
 	y2,
-	dashed,
+	variant = "solid",
 	pad,
 }: {
 	x1: number;
 	y1: number;
 	x2: number;
 	y2: number;
-	dashed?: boolean;
+	variant?: LineVariant;
 	/** Gap left at each end. Defaults to the diagram's `arrowPad`. */
 	pad?: number;
 }) {
@@ -257,7 +295,7 @@ export function Arrow({
 		<line
 			className={STROKE}
 			markerEnd={marker}
-			strokeDasharray={dashed ? "4 3" : undefined}
+			strokeDasharray={DASH_ARRAY[variant]}
 			strokeWidth={1.5}
 			x1={x1 + ux * startOff}
 			x2={x2 - ux * endOff}
@@ -268,7 +306,13 @@ export function Arrow({
 }
 
 /** An arrowed path with a custom `d` — for self-loops and curved flows. */
-export function MarkedPath({ d, dashed }: { d: string; dashed?: boolean }) {
+export function MarkedPath({
+	d,
+	variant = "solid",
+}: {
+	d: string;
+	variant?: LineVariant;
+}) {
 	const marker = useArrowMarker();
 	return (
 		<path
@@ -276,49 +320,50 @@ export function MarkedPath({ d, dashed }: { d: string; dashed?: boolean }) {
 			d={d}
 			fill="none"
 			markerEnd={marker}
-			strokeDasharray={dashed ? "4 3" : undefined}
+			strokeDasharray={DASH_ARRAY[variant]}
 			strokeWidth={1.5}
 		/>
 	);
 }
+
+type LabelAnchor = "start" | "middle" | "end";
+
+/** Left edge of the knockout rect, per text anchor. */
+const LABEL_RECT_X: Record<LabelAnchor, (x: number, w: number) => number> = {
+	start: (x) => x - 4,
+	middle: (x, w) => x - w / 2,
+	end: (x, w) => x - w + 4,
+};
+
+const LABEL_TONES = { muted: MUTED, fg: FG } as const;
 
 export function Label({
 	x,
 	y,
 	children,
 	anchor = "middle",
-	muted = true,
-	bg = true,
+	tone = "muted",
 }: {
 	x: number;
 	y: number;
 	children: string;
-	anchor?: "start" | "middle" | "end";
-	muted?: boolean;
-	/** Knock out a background behind the text so arrows pass behind it. */
-	bg?: boolean;
+	anchor?: LabelAnchor;
+	tone?: keyof typeof LABEL_TONES;
 }) {
 	const w = children.length * 5.6 + 10;
-	let rectX = x - w / 2;
-	if (anchor === "start") {
-		rectX = x - 4;
-	} else if (anchor === "end") {
-		rectX = x - w + 4;
-	}
 	return (
 		<g>
-			{bg ? (
-				<rect
-					className="fill-neutral-100 dark:fill-neutral-900"
-					height={15}
-					rx={3}
-					width={w}
-					x={rectX}
-					y={y - 11}
-				/>
-			) : null}
+			{/* Knock out a background behind the text so arrows pass behind it. */}
+			<rect
+				className="fill-neutral-100 dark:fill-neutral-900"
+				height={15}
+				rx={3}
+				width={w}
+				x={LABEL_RECT_X[anchor](x, w)}
+				y={y - 11}
+			/>
 			<text
-				className={muted ? MUTED : FG}
+				className={LABEL_TONES[tone]}
 				fontSize={10}
 				textAnchor={anchor}
 				x={x}

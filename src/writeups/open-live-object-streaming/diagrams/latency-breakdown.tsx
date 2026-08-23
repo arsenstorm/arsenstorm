@@ -46,7 +46,7 @@ export function LatencyBreakdown() {
 				const cy = rowCenter(i);
 				return (
 					<g key={stage.label}>
-						<Label anchor="end" muted={false} x={AX_X - 10} y={cy + 3}>
+						<Label anchor="end" tone="fg" x={AX_X - 10} y={cy + 3}>
 							{stage.label}
 						</Label>
 						{stage.ms > 0 ? (

@@ -69,7 +69,7 @@ export function ConfirmationHandshake() {
 			<Label anchor="start" x={SERVICE + 6} y={182}>
 				4. reply · In-Reply-To
 			</Label>
-			<Arrow dashed x1={VICTIM} x2={SERVICE} y1={190} y2={190} />
+			<Arrow variant="dashed" x1={VICTIM} x2={SERVICE} y1={190} y2={190} />
 
 			{/* 5. verify + execute (self) */}
 			<MarkedPath d={`M${SERVICE},214 h28 v16 h-22`} />

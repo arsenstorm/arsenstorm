@@ -1,0 +1,14 @@
+---
+interface Props {
+	bullets: { text: string; show: string[] }[];
+}
+const { bullets } = Astro.props;
+---
+
+<ul class="mt-1 flex list-disc flex-col gap-0.5 pl-4 text-[12px] text-neutral-700 leading-snug marker:text-neutral-300 dark:text-neutral-300 dark:marker:text-neutral-700">
+	{bullets.map((bullet) => (
+		<li data-cv-bullet={bullet.show.join(" ")} hidden={!bullet.show.includes("default")}>
+			{bullet.text}
+		</li>
+	))}
+</ul>

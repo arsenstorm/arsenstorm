@@ -1,18 +1,17 @@
 import { cn } from "cnfast";
 import type { ComponentPropsWithoutRef } from "react";
+import { Frame } from "./frame.tsx";
 
 export function MdxTable({
 	children,
 	...props
 }: ComponentPropsWithoutRef<"table">) {
 	return (
-		<div className="not-prose -mx-4 my-4 rounded-[14px] bg-neutral-200 p-0.5 dark:bg-neutral-800">
-			<div className="overflow-x-auto rounded-xl bg-neutral-100 dark:bg-neutral-900">
-				<table className="w-full border-collapse text-left text-sm" {...props}>
-					{children}
-				</table>
-			</div>
-		</div>
+		<Frame className="my-4" surfaceClassName="overflow-x-auto">
+			<table className="w-full border-collapse text-left text-sm" {...props}>
+				{children}
+			</table>
+		</Frame>
 	);
 }
 

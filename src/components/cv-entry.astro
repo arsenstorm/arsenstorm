@@ -1,0 +1,19 @@
+---
+interface Props {
+	meta: string;
+}
+const { meta } = Astro.props;
+---
+
+<div class="flex items-baseline justify-between gap-4">
+	<p class="font-medium text-[13px] text-neutral-900 dark:text-neutral-100">
+		<slot name="title" />
+	</p>
+	<span class="shrink-0 text-[12px] text-neutral-400 tabular-nums dark:text-neutral-600">
+		{meta}
+	</span>
+</div>
+<p class="text-[12px] text-neutral-600 italic leading-snug dark:text-neutral-400">
+	<slot name="summary" />
+</p>
+<slot />
