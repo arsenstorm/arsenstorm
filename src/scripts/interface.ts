@@ -176,7 +176,8 @@ function syncAudioButtons() {
 	}
 }
 
-function setSoundsEnabled(next: boolean) {
+function toggleSounds() {
+	const next = root.dataset.sounds === "off";
 	root.dataset.sounds = next ? "on" : "off";
 	window.localStorage.setItem(SOUND_STORAGE_KEY, String(next));
 	if (next) {
@@ -198,7 +199,7 @@ document.addEventListener("click", (event) => {
 			setTheme(root.classList.contains("dark") ? "light" : "dark");
 			break;
 		case "toggle-audio":
-			setSoundsEnabled(root.dataset.sounds === "off");
+			toggleSounds();
 			break;
 		default:
 	}
