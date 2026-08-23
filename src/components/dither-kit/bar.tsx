@@ -43,7 +43,14 @@ export function Bar({
 	useEffect(() => {
 		registerSeries({ dataKey, kind: "bar", variant, strokeVariant, colors });
 		return () => unregisterSeries(dataKey);
-	}, [dataKey, variant, strokeVariant, colors, registerSeries, unregisterSeries]);
+	}, [
+		dataKey,
+		variant,
+		strokeVariant,
+		colors,
+		registerSeries,
+		unregisterSeries,
+	]);
 
 	const band = ctx.bands[dataKey];
 	if (!(ctx.ready && band)) {

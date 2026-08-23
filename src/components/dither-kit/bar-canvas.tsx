@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { useChart } from "./chart-context";
-import { seedOfColor } from "./palette";
 import {
 	backingSize,
 	bloomLayerStyle,
@@ -11,6 +10,7 @@ import {
 	paintColumn,
 	prefersReducedMotion,
 } from "./dither-paint";
+import { seedOfColor } from "./palette";
 
 type Bars = { top: number[]; base: number[] }; // per data index, in backing rows
 
