@@ -1,6 +1,9 @@
 import { useLayoutEffect, useRef, useState } from "react";
 
-export type Dimensions = { width: number; height: number };
+export interface Dimensions {
+	height: number;
+	width: number;
+}
 
 /**
  * Tracks an element's CSS pixel size via {@link ResizeObserver}. Uses

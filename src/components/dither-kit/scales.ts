@@ -55,7 +55,7 @@ export function computeBands(
 	const bands: Record<string, [number, number][]> = {};
 	let max = 0;
 	let min = 0;
-	series.forEach((layer) => {
+	for (const layer of series) {
 		bands[layer.key] = layer.map((point) => {
 			if (point[1] > max) {
 				max = point[1];
@@ -65,7 +65,7 @@ export function computeBands(
 			}
 			return [point[0], point[1]];
 		});
-	});
+	}
 	const flat = max === 0 && min === 0;
 	return { bands, max: flat ? 1 : max, min };
 }

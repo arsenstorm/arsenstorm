@@ -9,7 +9,11 @@ export type DitherColor =
 	| "red"
 	| "grey";
 
-export type Seed = { fill: Rgb; line: Rgb; star: Rgb };
+export interface Seed {
+	fill: Rgb;
+	line: Rgb;
+	star: Rgb;
+}
 
 // Each seed: the area-fill hue, the bright series line, and the star sparkle.
 export const PALETTE: Record<DitherColor, Seed> = {

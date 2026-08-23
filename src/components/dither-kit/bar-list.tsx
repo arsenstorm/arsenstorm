@@ -1,37 +1,87 @@
 "use client";
 
+import { cn } from "cnfast";
 import { useEffect, useRef, useState } from "react";
 import {
 	CELL,
-	clamp01,
-	easeOutCubic,
 	paintColumn,
 	prefersReducedMotion,
+	staggeredProgress,
 } from "./dither-paint";
-import { cn } from "./lib";
 import { type DitherColor, seedOfColor } from "./palette";
 import { useChartDimensions } from "./use-chart-dimensions";
 
-export type BarListItem = {
-	label: string;
-	value: number;
+export interface BarListItem {
 	/** Per-item hue override — e.g. `grey` for an "everything else" bucket. */
 	color?: DitherColor;
-};
+	label: string;
+	value: number;
+}
 
-type BarListProps = {
-	items: BarListItem[];
+interface BarListProps {
+	className?: string;
 	/** Series hue for items without their own `color`. */
 	color?: DitherColor;
 	/** Set false for a static list: no hover lift/dim. */
 	interactive?: boolean;
-	className?: string;
-};
+	items: BarListItem[];
+}
 
-// Fraction of the entrance spent staggering row starts (mirrors BarCanvas).
-const STAGGER = 0.55;
 const ENTRANCE_MS = 900;
 const TRACK_HEIGHT = 16; // css px — 8 dither cells tall
+
+/** The offscreen bar canvas and the row-independent geometry it is painted with. */
+interface RowPaint {
+	color: DitherColor;
+	hoverIndex: number | null;
+	lenCells: number;
+	max: number;
+	octx: CanvasRenderingContext2D;
+	off: HTMLCanvasElement;
+	thickCells: number;
+}
+
+/** Paints one row's bar vertically offscreen, then blits it rotated into place. */
+function paintRow(
+	p: RowPaint,
+	canvas: HTMLCanvasElement | null,
+	item: BarListItem,
+	i: number,
+	count: number,
+	prog: number
+) {
+	const dctx = canvas?.getContext("2d");
+	if (!(canvas && dctx)) {
+		return;
+	}
+	// Setting the size also clears the canvas for this repaint.
+	canvas.width = p.lenCells;
+	canvas.height = p.thickCells;
+	const grown = (item.value / p.max) * staggeredProgress(i, count, prog);
+	if (grown <= 0) {
+		return;
+	}
+	const active = p.hoverIndex === i;
+	const dim = p.hoverIndex !== null && !active ? 0.5 : 1;
+	p.octx.clearRect(0, 0, p.thickCells, p.lenCells);
+	const top = (1 - grown) * p.lenCells;
+	const seed = seedOfColor(item.color ?? p.color);
+	for (let x = 0; x < p.thickCells; x++) {
+		paintColumn(p.octx, x, top, p.lenCells, seed, {
+			variant: "gradient",
+			intensity: active ? 1 : 0,
+			dim,
+			stacked: false,
+		});
+	}
+	// Rotate the vertically-painted bar 90° clockwise: offscreen (x, y) lands at
+	// (lenCells − y, x), so the baseline maps to the left edge.
+	dctx.save();
+	dctx.translate(p.lenCells, 0);
+	dctx.rotate(Math.PI / 2);
+	dctx.drawImage(p.off, 0, 0);
+	dctx.restore();
+}
 
 /**
  * Horizontal dither **bar list** — one labelled row per item, values always
@@ -73,43 +123,18 @@ export function BarList({
 		}
 
 		const paintAll = (prog: number) => {
-			items.forEach((item, i) => {
-				const canvas = canvasRefs.current[i];
-				const dctx = canvas?.getContext("2d");
-				if (!(canvas && dctx)) {
-					return;
-				}
-				// Setting the size also clears the canvas for this repaint.
-				canvas.width = lenCells;
-				canvas.height = thickCells;
-				const start = items.length > 1 ? (i / (items.length - 1)) * STAGGER : 0;
-				const grown =
-					(item.value / max) *
-					easeOutCubic(clamp01((prog - start) / (1 - STAGGER)));
-				if (grown <= 0) {
-					return;
-				}
-				const active = hoverRef.current === i;
-				const dim = hoverRef.current !== null && !active ? 0.5 : 1;
-				octx.clearRect(0, 0, thickCells, lenCells);
-				const top = (1 - grown) * lenCells;
-				const seed = seedOfColor(item.color ?? color);
-				for (let x = 0; x < thickCells; x++) {
-					paintColumn(octx, x, top, lenCells, seed, {
-						variant: "gradient",
-						intensity: active ? 1 : 0,
-						dim,
-						stacked: false,
-					});
-				}
-				// Rotate the vertically-painted bar 90° clockwise: offscreen (x, y)
-				// lands at (lenCells − y, x), so the baseline maps to the left edge.
-				dctx.save();
-				dctx.translate(lenCells, 0);
-				dctx.rotate(Math.PI / 2);
-				dctx.drawImage(off, 0, 0);
-				dctx.restore();
-			});
+			const p: RowPaint = {
+				color,
+				hoverIndex: hoverRef.current,
+				lenCells,
+				max,
+				octx,
+				off,
+				thickCells,
+			};
+			for (const [i, item] of items.entries()) {
+				paintRow(p, canvasRefs.current[i], item, i, items.length, prog);
+			}
 		};
 		paintRef.current = paintAll;
 
@@ -142,8 +167,10 @@ export function BarList({
 	}, [hoverIndex]);
 
 	return (
+		// biome-ignore lint/a11y/useSemanticElements: <ul> would need list-style:none, which drops the list role in Safari VoiceOver
 		<div className={cn("flex flex-col gap-2", className)} role="list">
 			{items.map((item, i) => (
+				// biome-ignore lint/a11y/useSemanticElements: matches the role="list" container above
 				<div
 					className="grid grid-cols-[8.5rem_1fr_auto] items-center gap-x-3"
 					key={item.label}

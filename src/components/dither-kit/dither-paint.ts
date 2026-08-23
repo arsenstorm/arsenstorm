@@ -21,12 +21,12 @@ export const BORDER_ALPHA = 0.72;
 // background never shows through as stark white on a light theme.
 export const OFF_TIER = 0.4;
 
-export type PaintOpts = {
-	variant: AreaVariant;
-	intensity: number; // 0–1 hover lift
+export interface PaintOpts {
 	dim: number; // selection dim multiplier (0.3 dimmed, 1 normal)
+	intensity: number; // 0–1 hover lift
 	stacked: boolean; // denser + solid floor when layers stack
-};
+	variant: AreaVariant;
+}
 
 // Colour vs opacity — the guiding rule for the whole engine:
 //
@@ -70,11 +70,13 @@ export function paintColumn(
 		if (stacked) {
 			density = 0.5 + 0.5 * density;
 		}
+		// biome-ignore lint/suspicious/noBitwiseOperators: integer hash
 		if (variant === "hatched" && ((x + y) & 3) >= 2) {
 			continue;
 		}
 		const lit =
 			variant === "solid" ||
+			// biome-ignore lint/suspicious/noBitwiseOperators: integer hash
 			density > BAYER[y & 3][x & 3] - 0.1 * intensity - bias;
 		// "dotted" keeps real gaps for its open look; every other variant covers
 		// the cell and lets the dither ride the alpha (on = full tier, off = a
@@ -113,15 +115,15 @@ export function backingSize(width: number, height: number) {
 // layered over the crisp one (which stays sharp/pixelated).
 export type BloomLevel = "off" | "low" | "high" | "aura";
 export type BloomBlend = "plus-lighter" | "screen" | "lighten";
-export type BloomConfig = {
+export interface BloomConfig {
+	blend?: BloomBlend; // additive by default
 	blur: number; // px
 	brightness: number; // 1 = none
 	opacity: number; // 0–1
 	/** Saturation of the glow — >1 keeps it vividly in the dither's colour
 	 * instead of washing toward white. */
 	saturate?: number;
-	blend?: BloomBlend; // additive by default
-};
+}
 /** A preset name, a full config, or "off". */
 export type BloomInput = BloomLevel | BloomConfig;
 
@@ -131,12 +133,12 @@ const PRESET: Record<Exclude<BloomLevel, "off">, BloomConfig> = {
 	aura: { blur: 15, brightness: 2.9, opacity: 0.1, saturate: 3 },
 };
 
-export type BloomStyle = {
+export interface BloomStyle {
 	filter: string;
-	opacity: number;
-	mixBlendMode: BloomBlend;
 	imageRendering: "auto";
-};
+	mixBlendMode: BloomBlend;
+	opacity: number;
+}
 
 /** Style for the bloom *layer* canvas (a blurred, additive copy). null when off. */
 export function bloomLayerStyle(
@@ -157,7 +159,25 @@ export function bloomLayerStyle(
 
 // Easing — gentle start + soft settle so entrances don't feel linear.
 export const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
-export const clamp01 = (t: number) => (t < 0 ? 0 : t > 1 ? 1 : t);
+export const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
+
+// Fraction of an entrance spent staggering item starts — the rest is each item's
+// own grow window, so the rise sweeps across the chart as a wave.
+const STAGGER = 0.55;
+
+/**
+ * Eased 0–1 grow factor for item `index` of `count` at global `progress`. Shared
+ * by the vertical bars (BarCanvas) and the horizontal rows (BarList) so both
+ * entrances sweep with the same wave.
+ */
+export const staggeredProgress = (
+	index: number,
+	count: number,
+	progress: number
+) => {
+	const start = count > 1 ? (index / (count - 1)) * STAGGER : 0;
+	return easeOutCubic(clamp01((progress - start) / (1 - STAGGER)));
+};
 
 /** Whether the OS asks for reduced motion (snap + steady stars). */
 export function prefersReducedMotion() {

@@ -1,22 +1,167 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
+import type { AreaVariant, ChartContextValue } from "./chart-context";
 import { useChart } from "./chart-context";
 import {
 	backingSize,
 	bloomLayerStyle,
-	clamp01,
-	easeOutCubic,
 	paintColumn,
 	prefersReducedMotion,
+	staggeredProgress,
 } from "./dither-paint";
+import type { DitherColor, Seed } from "./palette";
 import { seedOfColor } from "./palette";
 
-type Bars = { top: number[]; base: number[] }; // per data index, in backing rows
+/** Per data index, in backing rows. */
+interface Bars {
+	base: number[];
+	top: number[];
+}
 
-// Fraction of the timeline spent staggering bar starts — the rest is each bar's
-// own grow window, so the rise sweeps across the chart as a wave.
-const STAGGER = 0.55;
+/** Everything one repaint of the whole canvas needs, snapshotted for the frame. */
+interface Frame {
+	animate: boolean;
+	c: CanvasRenderingContext2D;
+	cols: number;
+	fx: number; // plot px → backing column
+	intensity: number; // 0–1 hover lift, eased by the loop
+	prog: number; // 0–1 entrance progress
+	rows: number;
+	s: ChartContextValue;
+	stacked: boolean;
+	targets: Record<string, Bars>;
+}
+
+/** One series' paint recipe within a frame. */
+interface SeriesPaint {
+	colors?: Partial<Record<number, DitherColor>>;
+	count: number; // series in this chart — drives the slot split
+	index: number; // this series' position among them
+	seed: Seed;
+	selDim: number; // selection/legend dim multiplier
+	targets: Bars;
+	variant: AreaVariant;
+}
+
+/** Mutable RAF-loop state — what the last frame painted, so the next can skip. */
+interface Loop {
+	animStart: number;
+	intensity: number;
+	lastHover: number | null | undefined;
+	lastPaintSig: string;
+	lastProg: number;
+	lastRevision: number;
+	lastSelected: string | null | undefined;
+	needsFill: boolean;
+}
+
+/** Whether the bloom layer should be mirroring the crisp canvas right now. */
+function bloomActive(s: ChartContextValue) {
+	return (
+		s.bloom !== "off" && (!s.bloomOnHover || s.isMouseInChart || s.hovered)
+	);
+}
+
+function paintBar(frame: Frame, series: SeriesPaint, i: number) {
+	const { c, s, rows, fx, stacked } = frame;
+	const t = series.targets;
+	const bp = frame.animate ? staggeredProgress(i, s.dataLength, frame.prog) : 1;
+	const base = t.base[i] ?? rows - 1;
+	// A zero-value segment in a stack would still paint its 1px highlight edge on
+	// top of the series below — skip it entirely.
+	if (stacked && t.top[i] === base) {
+		return;
+	}
+	const grown = base + ((t.top[i] ?? base) - base) * bp;
+	// Bars grow from the zero baseline toward the value. Positive values sit above
+	// the baseline (smaller pixel), negative ones below it — paintColumn wants the
+	// higher edge first, so order the pair.
+	const top = Math.min(grown, base);
+	const bottom = Math.max(grown, base);
+	const active = s.hoverIndex === i;
+	const hoverDim =
+		s.hoverIndex != null && !active && s.isMouseInChart ? 0.5 : 1;
+	const slot = s.barSlot(i, series.index, series.count);
+	const c0 = Math.round(slot.x * fx);
+	const c1 = Math.round((slot.x + slot.width) * fx);
+	const override = series.colors?.[i];
+	const barSeed = override ? seedOfColor(override) : series.seed;
+	for (let x = c0; x < c1; x++) {
+		paintColumn(c, x, top, bottom, barSeed, {
+			variant: series.variant,
+			intensity: frame.intensity + (active ? 0.4 : 0),
+			dim: series.selDim * hoverDim,
+			stacked,
+		});
+	}
+}
+
+function paintSeries(frame: Frame, series: SeriesPaint) {
+	for (let i = 0; i < frame.s.dataLength; i++) {
+		paintBar(frame, series, i);
+	}
+}
+
+function paintFrame(frame: Frame) {
+	const { c, s, cols, rows } = frame;
+	c.clearRect(0, 0, cols, rows);
+	const keys = s.configKeys;
+	const emphasis = s.selectedDataKey ?? s.focusDataKey;
+	for (const [si, key] of keys.entries()) {
+		const targets = frame.targets[key];
+		if (!targets) {
+			continue;
+		}
+		paintSeries(frame, {
+			targets,
+			index: si,
+			count: keys.length,
+			seed: s.seedOf(key),
+			variant: s.seriesSpecs[key]?.variant ?? "gradient",
+			colors: s.seriesSpecs[key]?.colors,
+			selDim: emphasis !== null && emphasis !== key ? 0.3 : 1,
+		});
+	}
+}
+
+/** Flags the loop dirty when anything the painted frame depends on has moved. */
+function markDirty(
+	loop: Loop,
+	s: ChartContextValue,
+	prog: number,
+	reduce: boolean
+) {
+	if (prog !== loop.lastProg) {
+		loop.lastProg = prog;
+		loop.needsFill = true;
+	}
+	const emphasisNow = s.selectedDataKey ?? s.focusDataKey;
+	if (emphasisNow !== loop.lastSelected) {
+		loop.lastSelected = emphasisNow;
+		loop.needsFill = true;
+	}
+	if (s.hoverIndex !== loop.lastHover) {
+		loop.lastHover = s.hoverIndex;
+		loop.needsFill = true;
+	}
+	const itTarget = s.isMouseInChart || s.hovered ? 1 : 0;
+	if (Math.abs(loop.intensity - itTarget) > 0.001) {
+		loop.intensity += (itTarget - loop.intensity) * (reduce ? 1 : 0.16);
+		loop.needsFill = true;
+	} else {
+		loop.intensity = itTarget;
+	}
+
+	// Live tweak repaint (variant, stacking) without replaying the wave.
+	const paintSig = `${s.stackType}|${s.configKeys
+		.map((k) => s.seriesSpecs[k]?.variant ?? "")
+		.join(",")}`;
+	if (paintSig !== loop.lastPaintSig) {
+		loop.lastPaintSig = paintSig;
+		loop.needsFill = true;
+	}
+}
 
 /**
  * Dither canvas for bar charts. Each category owns a band; grouped series split
@@ -70,7 +215,10 @@ export function BarCanvas() {
 	useEffect(() => {
 		const canvas = canvasRef.current;
 		const c = canvas?.getContext("2d");
-		if (!(canvas && c) || cols <= 0 || rows <= 0) {
+		if (!(canvas && c)) {
+			return;
+		}
+		if (cols <= 0 || rows <= 0) {
 			return;
 		}
 		canvas.width = cols;
@@ -88,73 +236,19 @@ export function BarCanvas() {
 		const duration = state.current.animationDuration;
 		const fx = cols / Math.max(width, 1);
 
-		// Eased grow factor for bar `i` at global progress `prog`.
-		const barProgress = (i: number, len: number, prog: number) => {
-			if (!animate) {
-				return 1;
-			}
-			const start = len > 1 ? (i / (len - 1)) * STAGGER : 0;
-			return easeOutCubic(clamp01((prog - start) / (1 - STAGGER)));
-		};
-
-		const paint = (prog: number) => {
-			const s = state.current;
-			c.clearRect(0, 0, cols, rows);
-			const stacked = s.stackType === "stacked" || s.stackType === "percent";
-			const keys = s.configKeys;
-			keys.forEach((key, si) => {
-				const t = targetsRef.current[key];
-				if (!t) {
-					return;
-				}
-				const seed = s.seedOf(key);
-				const variant = s.seriesSpecs[key]?.variant ?? "gradient";
-				const colorOverrides = s.seriesSpecs[key]?.colors;
-				const emphasis = s.selectedDataKey ?? s.focusDataKey;
-				const selDim = emphasis !== null && emphasis !== key ? 0.3 : 1;
-				for (let i = 0; i < s.dataLength; i++) {
-					const bp = barProgress(i, s.dataLength, prog);
-					const base = t.base[i] ?? rows - 1;
-					// A zero-value segment in a stack would still paint its 1px
-					// highlight edge on top of the series below — skip it entirely.
-					if (stacked && t.top[i] === base) {
-						continue;
-					}
-					const grown = base + ((t.top[i] ?? base) - base) * bp;
-					// Bars grow from the zero baseline toward the value. Positive values
-					// sit above the baseline (smaller pixel), negative ones below it —
-					// paintColumn wants the higher edge first, so order the pair.
-					const top = Math.min(grown, base);
-					const bottom = Math.max(grown, base);
-					const active = s.hoverIndex === i;
-					const hoverDim =
-						s.hoverIndex != null && !active && s.isMouseInChart ? 0.5 : 1;
-					const slot = s.barSlot(i, si, keys.length);
-					const c0 = Math.round(slot.x * fx);
-					const c1 = Math.round((slot.x + slot.width) * fx);
-					const override = colorOverrides?.[i];
-					const barSeed = override ? seedOfColor(override) : seed;
-					for (let x = c0; x < c1; x++) {
-						paintColumn(c, x, top, bottom, barSeed, {
-							variant,
-							intensity: intensity + (active ? 0.4 : 0),
-							dim: selDim * hoverDim,
-							stacked,
-						});
-					}
-				}
-			});
-		};
-
 		let raf = 0;
-		let animStart = 0;
-		let lastProg = -1;
-		let lastRevision = state.current.revision;
-		let intensity = 0;
-		let needsFill = true;
-		let lastPaintSig = "";
-		let lastSelected: string | null | undefined = Symbol() as never;
-		let lastHover: number | null | undefined = Symbol() as never;
+		const loop: Loop = {
+			animStart: 0,
+			intensity: 0,
+			// Sentinels no real emphasis / hover index can equal, so the first frame
+			// always records its starting values.
+			lastHover: Symbol("unset") as never,
+			lastPaintSig: "",
+			lastProg: -1,
+			lastRevision: state.current.revision,
+			lastSelected: Symbol("unset") as never,
+			needsFill: true,
+		};
 
 		const draw = (now: number) => {
 			raf = requestAnimationFrame(draw);
@@ -162,70 +256,44 @@ export function BarCanvas() {
 			if (!s.ready) {
 				return;
 			}
-			if (bloomCtx) {
-				const on =
-					s.bloom !== "off" &&
-					(!s.bloomOnHover || s.isMouseInChart || s.hovered);
-				if (on) {
-					bloomCtx.clearRect(0, 0, cols, rows);
-					bloomCtx.drawImage(canvas, 0, 0);
-				}
+			if (bloomCtx && bloomActive(s)) {
+				bloomCtx.clearRect(0, 0, cols, rows);
+				bloomCtx.drawImage(canvas, 0, 0);
 			}
-			if (s.revision !== lastRevision) {
-				lastRevision = s.revision;
-				animStart = 0; // re-play the wave on data change / replay
-				lastProg = -1;
+			if (s.revision !== loop.lastRevision) {
+				loop.lastRevision = s.revision;
+				loop.animStart = 0; // re-play the wave on data change / replay
+				loop.lastProg = -1;
 			}
-			if (!animStart) {
-				animStart = now;
+			if (!loop.animStart) {
+				loop.animStart = now;
 			}
-			const prog = animate ? Math.min(1, (now - animStart) / duration) : 1;
+			const prog = animate ? Math.min(1, (now - loop.animStart) / duration) : 1;
+			markDirty(loop, s, prog, reduce);
 
-			if (prog !== lastProg) {
-				lastProg = prog;
-				needsFill = true;
-			}
-			const emphasisNow = s.selectedDataKey ?? s.focusDataKey;
-			if (emphasisNow !== lastSelected) {
-				lastSelected = emphasisNow;
-				needsFill = true;
-			}
-			if (s.hoverIndex !== lastHover) {
-				lastHover = s.hoverIndex;
-				needsFill = true;
-			}
-			const itTarget = s.isMouseInChart || s.hovered ? 1 : 0;
-			if (Math.abs(intensity - itTarget) > 0.001) {
-				intensity += (itTarget - intensity) * (reduce ? 1 : 0.16);
-				needsFill = true;
-			} else {
-				intensity = itTarget;
-			}
-
-			// Live tweak repaint (variant, stacking) without replaying the wave.
-			const paintSig = `${s.stackType}|${s.configKeys
-				.map((k) => s.seriesSpecs[k]?.variant ?? "")
-				.join(",")}`;
-			if (paintSig !== lastPaintSig) {
-				lastPaintSig = paintSig;
-				needsFill = true;
-			}
-
-			if (!needsFill) {
+			if (!loop.needsFill) {
 				return;
 			}
-			paint(prog);
-			needsFill = false;
+			paintFrame({
+				animate,
+				c,
+				cols,
+				fx,
+				intensity: loop.intensity,
+				prog,
+				rows,
+				s,
+				stacked: s.stackType === "stacked" || s.stackType === "percent",
+				targets: targetsRef.current,
+			});
+			loop.needsFill = false;
 		};
 
 		raf = requestAnimationFrame(draw);
 		return () => cancelAnimationFrame(raf);
 	}, [cols, rows, width]);
 
-	const bloomActive = ctx.bloomOnHover
-		? ctx.isMouseInChart || ctx.hovered
-		: true;
-	const bloom = bloomLayerStyle(ctx.bloom, bloomActive);
+	const bloom = bloomLayerStyle(ctx.bloom, bloomActive(ctx));
 	const pos = {
 		left: ctx.margins.left,
 		top: ctx.margins.top,

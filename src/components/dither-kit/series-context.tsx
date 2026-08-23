@@ -1,11 +1,11 @@
 import { createContext, use } from "react";
 import type { Seed } from "./palette";
 
-export type SeriesContextValue = {
+export interface SeriesContextValue {
 	dataKey: string;
-	seed: Seed;
 	dimmed: boolean;
-};
+	seed: Seed;
+}
 
 export const SeriesContext = createContext<SeriesContextValue | null>(null);
 

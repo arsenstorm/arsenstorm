@@ -7,15 +7,15 @@ import {
 import type { DitherColor } from "./palette";
 import { SeriesContext } from "./series-context";
 
-export type BarProps = {
-	dataKey: string;
-	variant?: AreaVariant;
-	strokeVariant?: StrokeVariant;
-	isClickable?: boolean;
+export interface BarProps {
+	children?: ReactNode;
 	// Per-datum colour overrides, keyed by data index.
 	colors?: Partial<Record<number, DitherColor>>;
-	children?: ReactNode;
-};
+	dataKey: string;
+	isClickable?: boolean;
+	strokeVariant?: StrokeVariant;
+	variant?: AreaVariant;
+}
 
 /**
  * One bar series. The dithered bars are painted on the canvas; this registers

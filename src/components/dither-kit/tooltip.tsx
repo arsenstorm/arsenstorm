@@ -1,9 +1,9 @@
 "use client";
 
+import { cn } from "cnfast";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { useCommonChart } from "./common-context";
-import { cn } from "./lib";
 import { rgb } from "./palette";
 
 export type TooltipVariant = "default" | "frosted-glass";

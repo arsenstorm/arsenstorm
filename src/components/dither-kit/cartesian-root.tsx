@@ -1,3 +1,4 @@
+import { cn } from "cnfast";
 import {
 	Children,
 	type ComponentType,
@@ -9,12 +10,11 @@ import {
 	ChartContext,
 	type ChartType,
 	type Margins,
-	useChartController,
 } from "./chart-context";
 import { CommonChartContext } from "./common-context";
 import type { BloomInput } from "./dither-paint";
-import { cn } from "./lib";
 import type { StackType } from "./scales";
+import { useChartController } from "./use-chart-controller";
 import { useChartDimensions } from "./use-chart-dimensions";
 
 // `object` rather than `Record<string, unknown>`: interfaces don't get an
@@ -29,30 +29,60 @@ const DEFAULT_MARGINS: Margins = {
 	left: 36,
 };
 
-export type CartesianChartProps<TData extends Row> = {
-	data: TData[];
-	config: ChartConfig;
-	children: ReactNode;
-	stackType?: StackType;
-	margins?: Partial<Margins>;
-	className?: string;
+export interface CartesianChartProps<TData extends Row> {
 	animate?: boolean;
 	animationDuration?: number;
-	replayToken?: number; // change to re-play the entrance without remounting
-	/** Set false for a decorative sparkline: keeps the hover lift but no scrub
-	 * crosshair / tooltip. */
-	interactive?: boolean;
-	/** Parent-driven hover (e.g. the whole card/row) — lifts the fill. */
-	hovered?: boolean;
 	/** Glow on the dither fill. */
 	bloom?: BloomInput;
 	/** Only bloom while the chart is hovered. */
 	bloomOnHover?: boolean;
+	children: ReactNode;
+	className?: string;
+	config: ChartConfig;
+	data: TData[];
+	defaultSelectedDataKey?: string | null;
+	/** Parent-driven hover (e.g. the whole card/row) — lifts the fill. */
+	hovered?: boolean;
+	/** Set false for a decorative sparkline: keeps the hover lift but no scrub
+	 * crosshair / tooltip. */
+	interactive?: boolean;
+	margins?: Partial<Margins>;
 	/** Fires with the scrubbed index as the pointer moves (null on leave). */
 	onHoverChange?: (index: number | null) => void;
-	defaultSelectedDataKey?: string | null;
 	onSelectionChange?: (key: string | null) => void;
-};
+	replayToken?: number; // change to re-play the entrance without remounting
+	stackType?: StackType;
+}
+
+/** One absolutely-positioned SVG layer, its contents shifted into the plot rect.
+ * With a `label` it is the chart's announced image; without one it is decorative
+ * chrome hidden from assistive tech. */
+function Layer({
+	children,
+	height,
+	label,
+	margins,
+	width,
+}: {
+	children: ReactNode;
+	height: number;
+	label?: string;
+	margins: Margins;
+	width: number;
+}) {
+	return (
+		<svg
+			aria-hidden={label ? undefined : true}
+			aria-label={label}
+			className="absolute inset-0 overflow-visible"
+			height={height}
+			role={label ? "img" : "presentation"}
+			width={width}
+		>
+			<g transform={`translate(${margins.left},${margins.top})`}>{children}</g>
+		</svg>
+	);
+}
 
 /** Which render layer a composed part targets — defaults to the front SVG. */
 function layerOf(node: ReactNode): "back" | "dom" | "svg" {
@@ -157,31 +187,20 @@ export function CartesianRoot<TData extends Row>({
 					ref={ref}
 				>
 					{ctx.ready && backChildren.length > 0 && (
-						<svg
-							aria-hidden
-							className="absolute inset-0 overflow-visible"
-							height={size.height}
-							role="presentation"
-							width={size.width}
-						>
-							<g transform={`translate(${margins.left},${margins.top})`}>
-								{backChildren}
-							</g>
-						</svg>
+						<Layer height={size.height} margins={margins} width={size.width}>
+							{backChildren}
+						</Layer>
 					)}
 					<Canvas />
 					{ctx.ready && (
-						<svg
-							aria-label="Chart"
-							className="absolute inset-0 overflow-visible"
+						<Layer
 							height={size.height}
-							role="img"
+							label="Chart"
+							margins={margins}
 							width={size.width}
 						>
-							<g transform={`translate(${margins.left},${margins.top})`}>
-								{svgChildren}
-							</g>
-						</svg>
+							{svgChildren}
+						</Layer>
 					)}
 					{domChildren}
 				</div>
