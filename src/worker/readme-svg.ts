@@ -5,6 +5,12 @@ import { type Env, SVG_HEADERS } from "./types";
 
 const MAX_YEARS = 3;
 
+const LINK_LABELS: Record<string, string> = {
+	"link-website": "Website",
+	"link-twitter": "Twitter",
+	"link-instagram": "Instagram",
+};
+
 function noData(theme: "light" | "dark"): Response {
 	const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="420" height="60" fill="none">
 		<rect width="420" height="60" rx="6" fill="${theme === "dark" ? "#161b22" : "#ebedf0"}"/>
@@ -52,31 +58,14 @@ function renderReadmeSection({
 		return top({ contributions: data.contributions, height: 20, theme });
 	}
 
-	if (section === "link-website") {
+	const linkLabel = LINK_LABELS[section];
+	if (linkLabel) {
 		return link({
 			height: 18,
 			theme,
 			width: 100,
 			index: Number(url.searchParams.get("i")),
-		})("Website");
-	}
-
-	if (section === "link-twitter") {
-		return link({
-			height: 18,
-			theme,
-			width: 100,
-			index: Number(url.searchParams.get("i")),
-		})("Twitter");
-	}
-
-	if (section === "link-instagram") {
-		return link({
-			height: 18,
-			theme,
-			width: 100,
-			index: Number(url.searchParams.get("i")),
-		})("Instagram");
+		})(linkLabel);
 	}
 
 	if (section === "fallback") {
