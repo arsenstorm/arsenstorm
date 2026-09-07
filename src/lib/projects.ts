@@ -11,6 +11,30 @@ export interface Project {
 export const PROJECTS: Project[] = [
 	{
 		year: "2026",
+		title: "LGTM",
+		description:
+			"Orchestration for coding agents across machines and providers.",
+		href: "https://github.com/arsenstorm/lgtm",
+		featured: true,
+	},
+	{
+		year: "2026",
+		title: "Nearby",
+		description:
+			"Serverless peer-to-peer voice rooms with end-to-end encryption.",
+		href: "https://github.com/arsenstorm/nearby",
+		featured: true,
+	},
+	{
+		year: "2026",
+		title: "Memory Wallet",
+		description:
+			"An iOS app for storing and resurfacing polaroids in your Apple Wallet.",
+		href: "https://apps.apple.com/gb/app/memory-wallet/id6789089080",
+		featured: true,
+	},
+	{
+		year: "2026",
 		title: "Hookrail",
 		description:
 			"A Rails gateway that verifies, transforms, and reliably delivers webhooks.",
