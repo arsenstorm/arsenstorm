@@ -88,7 +88,7 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
                 {item.copy ? (
                   <button
                     aria-label={`Copy ${item.copy}`}
-                    class="group/copy flex size-5 translate-y-px items-center justify-center rounded-md text-neutral-400 opacity-0 transition hover:text-neutral-950 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 group-hover:opacity-100 data-copied:opacity-100 dark:text-neutral-500 dark:focus-visible:ring-white/30 dark:hover:text-neutral-50"
+                    class="group/copy flex size-5 translate-y-px items-center justify-center rounded-md text-neutral-400 opacity-0 transition-[color,opacity] pointer-coarse:opacity-100 hover:text-neutral-950 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 group-hover:opacity-100 data-copied:opacity-100 dark:text-neutral-500 dark:focus-visible:ring-white/30 dark:hover:text-neutral-50"
                     data-copy={item.copy}
                     type="button"
                   >
