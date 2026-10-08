@@ -30,6 +30,7 @@ const showContent = !entry.hidden || import.meta.env.DEV;
 
 <BaseLayout
   description={metaDescription}
+  noindex={!showContent}
   path={entry.href}
   title={entry.company}
   type="article"

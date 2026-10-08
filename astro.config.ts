@@ -79,7 +79,7 @@ export default defineConfig({
 			],
 		}),
 	},
-	integrations: [preact({ compat: true }), mdx(), sitemap(), contentHmr()],
+	integrations: [preact({ compat: true }), mdx(), sitemap({ filter: (page) => !page.endsWith("/experience/betterstack") }), contentHmr()],
 	vite: {
 		plugins: [
 			tailwindcss(),

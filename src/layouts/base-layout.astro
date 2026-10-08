@@ -6,12 +6,13 @@ import "#/styles.css";
 interface Props {
 	description: string;
 	jsonLd?: string;
+	noindex?: boolean;
 	path?: string;
 	title: string;
 	type?: "article" | "website";
 }
 
-const { title, description, path = "/", type, jsonLd } = Astro.props;
+const { title, description, path = "/", type, jsonLd, noindex } = Astro.props;
 
 const meta = pageMeta(title, description, path, type ? { type } : {});
 const links = pageLinks(path);
@@ -43,6 +44,7 @@ const links = pageLinks(path);
 		/>
 		<link href="/manifest.json" id="app-manifest" rel="manifest" />
 		{jsonLd && <script type="application/ld+json" set:html={jsonLd} />}
+		{noindex && <meta name="robots" content="noindex" />}
 	</head>
 	<body>
 		<div class="isolate min-h-dvh bg-white font-sans text-neutral-950 antialiased dark:bg-neutral-950 dark:text-neutral-50">
