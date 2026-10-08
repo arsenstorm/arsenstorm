@@ -32,6 +32,7 @@ export async function getExperience() {
 			href: `/experience/${entry.id}`,
 			period: formatPeriod(entry.data.start, entry.data.end),
 			...entry.data,
+			logo: entry.data.logo?.src,
 		}))
 		.sort(
 			(a, b) =>

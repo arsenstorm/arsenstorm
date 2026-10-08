@@ -22,20 +22,21 @@ const experience = defineCollection({
 		base: "./src/experience",
 		generateId: ({ entry }) => entry.split("/")[0] ?? entry,
 	}),
-	schema: z.object({
-		company: z.string(),
-		logo: z.string().optional(),
-		role: z.string(),
-		start: z.string(),
-		end: z.string().nullable(),
-		summary: z.string(),
-		kind: z.enum(["experience", "earlier"]).default("experience"),
-		hidden: z.boolean().default(false),
-		highlights: z.array(z.string()).default([]),
-		facts: z
-			.array(z.object({ label: z.string(), value: z.string() }))
-			.default([]),
-	}),
+	schema: ({ image }) =>
+		z.object({
+			company: z.string(),
+			logo: image().optional(),
+			role: z.string(),
+			start: z.string(),
+			end: z.string().nullable(),
+			summary: z.string(),
+			kind: z.enum(["experience", "earlier"]).default("experience"),
+			hidden: z.boolean().default(false),
+			highlights: z.array(z.string()).default([]),
+			facts: z
+				.array(z.object({ label: z.string(), value: z.string() }))
+				.default([]),
+		}),
 });
 
 export const collections = { writeups, experience };
