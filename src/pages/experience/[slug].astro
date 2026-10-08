@@ -41,7 +41,7 @@ const showContent = !entry.hidden || import.meta.env.DEV;
     />
 
     {
-      showContent || (
+      !showContent && (
         <p class="text-neutral-500 text-sm dark:text-neutral-400">
           This one isn't public yet.
         </p>
