@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 export interface ExperienceSummary {
 	company: string;
 	end: string | null;
+	hidden: boolean;
 	highlights: string[];
 	href: string;
 	kind: "experience" | "earlier";

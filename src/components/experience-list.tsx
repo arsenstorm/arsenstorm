@@ -1,4 +1,5 @@
 import { cn } from "cnfast";
+import { Lock } from "lucide-react";
 import { LinkCardList } from "#/components/link-card.tsx";
 import type { ExperienceSummary } from "#/lib/experience";
 
@@ -27,7 +28,17 @@ export function ExperienceList({ items }: { items: ExperienceSummary[] }) {
 				description: item.summary,
 				href: item.href,
 				key: item.slug,
-				meta: item.period,
+				meta: item.hidden ? (
+					<span
+						className="inline-flex items-center gap-1"
+						title="Not yet public"
+					>
+						<Lock aria-label="Not yet public" className="size-3" />
+						{item.period}
+					</span>
+				) : (
+					item.period
+				),
 				title: (
 					<>
 						{item.role} at{" "}

@@ -21,7 +21,11 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await render(entry.entry);
 const others = (await getExperience()).filter((e) => e.slug !== entry.slug);
-const metaDescription = `Arsen Shkrumelyak was a ${entry.role} at ${entry.company} (${entry.period}). ${entry.summary}`;
+const tense = entry.end ? "was" : "is";
+const metaDescription = `Arsen Shkrumelyak ${tense} a ${entry.role} at ${entry.company} (${entry.period}). ${entry.summary}`;
+// hidden entries stay readable in `astro dev` so drafts can be previewed,
+// but production only gets the heading and a notice.
+const showContent = !entry.hidden || import.meta.env.DEV;
 ---
 
 <BaseLayout
@@ -37,7 +41,15 @@ const metaDescription = `Arsen Shkrumelyak was a ${entry.role} at ${entry.compan
     />
 
     {
-      entry.facts.length > 0 && (
+      showContent || (
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">
+          This one isn't public yet.
+        </p>
+      )
+    }
+
+    {
+      showContent && entry.facts.length > 0 && (
         <section aria-label="At a glance">
           <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-sm">
             {entry.facts.map((fact) => (
@@ -55,9 +67,13 @@ const metaDescription = `Arsen Shkrumelyak was a ${entry.role} at ${entry.compan
       )
     }
 
-    <article>
-      <Content components={writeupComponents} />
-    </article>
+    {
+      showContent && (
+        <article>
+          <Content components={writeupComponents} />
+        </article>
+      )
+    }
 
     {
       others.length > 0 && (

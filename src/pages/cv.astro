@@ -105,7 +105,7 @@ const EXPERIENCE_BULLETS: Record<string, Variant[]> = {
 };
 
 const experience = (await getExperience()).filter(
-	(item) => item.kind === "experience"
+	(item) => item.kind === "experience" && !item.hidden
 );
 
 const writeups = await getWriteups();
