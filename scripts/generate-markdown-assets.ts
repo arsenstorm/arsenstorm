@@ -187,12 +187,14 @@ function requireString(fields: Frontmatter, key: string, file: string): string {
 	return value;
 }
 
-function requireList(fields: Frontmatter, key: string, file: string): string[] {
+// Mirrors the content schema, where list fields default to `[]` when absent.
+function optionalList(fields: Frontmatter, key: string, file: string): string[] {
 	const value = fields[key];
+	if (value === undefined) {
+		return [];
+	}
 	if (!Array.isArray(value)) {
-		throw new Error(
-			`Frontmatter field "${key}" missing or not a list in ${file}.`
-		);
+		throw new Error(`Frontmatter field "${key}" is not a list in ${file}.`);
 	}
 	return value;
 }
@@ -457,6 +459,7 @@ interface Writeup {
 interface Experience {
 	company: string;
 	end: string | null;
+	hidden: boolean;
 	highlights: string[];
 	role: string;
 	slug: string;
@@ -495,7 +498,8 @@ function readExperience(): Experience[] {
 			return {
 				company: requireString(fields, "company", file),
 				end: typeof end === "string" ? end : null,
-				highlights: requireList(fields, "highlights", file),
+				hidden: fields.hidden === "true",
+				highlights: optionalList(fields, "highlights", file),
 				role: requireString(fields, "role", file),
 				slug,
 				start: requireString(fields, "start", file),
@@ -611,12 +615,13 @@ async function main(): Promise<void> {
 	const writeups = readWriteups();
 	const experience = readExperience();
 	const body = experienceBody(experience);
+	const cvBody = experienceBody(experience.filter((item) => !item.hidden));
 
 	await write("index.md", indexPage());
 	await write("writing.md", writingPage(writeups));
 	await write("projects.md", projectsPage());
 	await write("experience.md", `# Experience\n\n${body}`);
-	await write("cv.md", `# CV\n\nPDF: ${SITE_URL}/cv.pdf\n\n${body}`);
+	await write("cv.md", `# CV\n\nPDF: ${SITE_URL}/cv.pdf\n\n${cvBody}`);
 	await writeEntries(
 		WRITEUPS_DIRECTORY,
 		"writing",
@@ -625,7 +630,7 @@ async function main(): Promise<void> {
 	await writeEntries(
 		EXPERIENCE_DIRECTORY,
 		"experience",
-		experience.map((item) => item.slug)
+		experience.filter((item) => !item.hidden).map((item) => item.slug)
 	);
 	await write("llms.txt", llmsTxt(writeups));
 }
