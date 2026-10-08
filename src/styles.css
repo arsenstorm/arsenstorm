@@ -6,14 +6,16 @@
 	font-style: normal;
 	font-weight: 100 900;
 	font-display: swap;
-	src: url("/fonts/InterVariable.woff2") format("woff2");
+	src: url("/fonts/InterVariable-latin.woff2") format("woff2");
+	unicode-range: U+0020-007E, U+00A0-00FF, U+0100-017F, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2199, U+21A9-21AA, U+2212-2215, U+2248, U+2260-2265, U+2713-2717, U+FEFF, U+FFFD;
 }
 @font-face {
 	font-family: InterVariable;
 	font-style: italic;
 	font-weight: 100 900;
 	font-display: swap;
-	src: url("/fonts/InterVariable-Italic.woff2") format("woff2");
+	src: url("/fonts/InterVariable-Italic-latin.woff2") format("woff2");
+	unicode-range: U+0020-007E, U+00A0-00FF, U+0100-017F, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2199, U+21A9-21AA, U+2212-2215, U+2248, U+2260-2265, U+2713-2717, U+FEFF, U+FFFD;
 }
 
 /* Screen-only so printing in dark mode still produces a light document. */

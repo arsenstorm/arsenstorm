@@ -50,7 +50,7 @@ describe("isContentPath", () => {
 		"/readme/preview",
 		"/readme",
 		"/og",
-		"/fonts/InterVariable.woff2",
+		"/fonts/InterVariable-latin.woff2",
 		"/404",
 	])("returns false for %s", (pathname) => {
 		expect(isContentPath(pathname)).toBe(false);

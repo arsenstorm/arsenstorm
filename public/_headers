@@ -1,0 +1,5 @@
+# Fonts and icons are versioned by filename, so they can be cached like /_astro/*.
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+/icons/*
+  Cache-Control: public, max-age=604800
