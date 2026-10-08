@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "cnfast";
-import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { useCommonChart } from "./common-context";
 import { rgb } from "./palette";
@@ -15,8 +14,9 @@ const VARIANT: Record<TooltipVariant, string> = {
 
 /**
  * Floating hover tooltip. Reads the shared common context so it works in every
- * chart family. It glides between points and fades in/out (instead of snapping),
- * and dims unselected series/slices.
+ * chart family. It glides between points and fades in/out via CSS transitions,
+ * staying mounted so the fade-out keeps its last content, and dims unselected
+ * series/slices.
  */
 export function Tooltip({
 	labelKey,
@@ -47,65 +47,46 @@ export function Tooltip({
 		? allItems.filter((item) => item.value !== 0)
 		: allItems;
 
+	if (items.length === 0) {
+		return null;
+	}
+
 	return (
-		<AnimatePresence>
-			{show && items.length > 0 && (
-				<motion.div
-					animate={{
-						opacity: 1,
-						x: "-50%",
-						y: "-115%",
-						top: chart.tooltipTop,
-						left: chart.tooltipLeft,
-					}}
-					className={cn(
-						"pointer-events-none absolute z-10 rounded-md border border-border px-2 py-1 shadow-sm",
-						VARIANT[variant]
-					)}
-					exit={{ opacity: 0 }}
-					initial={{
-						opacity: 0,
-						x: "-50%",
-						y: "-115%",
-						top: chart.tooltipTop,
-						left: chart.tooltipLeft,
-					}}
-					key="dither-tooltip"
-					transition={{
-						type: "spring",
-						stiffness: 520,
-						damping: 38,
-						mass: 0.6,
-					}}
-				>
-					{heading && (
-						<div className="mb-0.5 font-mono text-[10px] text-muted-foreground">
-							{heading}
-						</div>
-					)}
-					<div className="flex flex-col gap-0.5">
-						{items.map((item) => (
-							<div
-								className="flex items-center gap-1.5 font-mono text-[11px] text-popover-foreground tabular-nums"
-								key={item.name}
-								style={{ opacity: item.dimmed ? 0.4 : 1 }}
-							>
-								<span
-									className="size-2 rounded-[1px]"
-									style={{ backgroundColor: rgb(item.seed.fill) }}
-								/>
-								<span className="text-muted-foreground">{item.label}</span>
-								<span className="ml-auto pl-2 text-foreground">
-									{valueFormatter
-										? valueFormatter(item.value, item.name)
-										: item.value.toLocaleString()}
-								</span>
-							</div>
-						))}
-					</div>
-				</motion.div>
+		<div
+			aria-hidden={!show}
+			className={cn(
+				"pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-[115%] rounded-md border border-border px-2 py-1 shadow-sm transition-[top,left,opacity] duration-200 ease-out",
+				show ? "opacity-100" : "opacity-0",
+				VARIANT[variant]
 			)}
-		</AnimatePresence>
+			style={{ left: chart.tooltipLeft, top: chart.tooltipTop }}
+		>
+			{heading && (
+				<div className="mb-0.5 font-mono text-[10px] text-muted-foreground">
+					{heading}
+				</div>
+			)}
+			<div className="flex flex-col gap-0.5">
+				{items.map((item) => (
+					<div
+						className="flex items-center gap-1.5 font-mono text-[11px] text-popover-foreground tabular-nums"
+						key={item.name}
+						style={{ opacity: item.dimmed ? 0.4 : 1 }}
+					>
+						<span
+							className="size-2 rounded-[1px]"
+							style={{ backgroundColor: rgb(item.seed.fill) }}
+						/>
+						<span className="text-muted-foreground">{item.label}</span>
+						<span className="ml-auto pl-2 text-foreground">
+							{valueFormatter
+								? valueFormatter(item.value, item.name)
+								: item.value.toLocaleString()}
+						</span>
+					</div>
+				))}
+			</div>
+		</div>
 	);
 }
 

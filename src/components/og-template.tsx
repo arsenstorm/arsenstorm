@@ -26,7 +26,7 @@ interface DefaultOGTemplateProps {
 	title: string;
 }
 
-export function signalOgReady() {
+function signalOgReady() {
 	if (typeof window !== "undefined") {
 		window.__OG_READY__ = true;
 	}
@@ -154,6 +154,7 @@ export function DefaultOGTemplate({
 						alt=""
 						className="size-full"
 						height={80}
+						loading="lazy"
 						src={icon || "/apple-touch-icon.png"}
 						width={80}
 					/>

@@ -114,7 +114,6 @@ export default defineConfig({
 								"hls-video-element/react",
 								"lucide-react",
 								"media-chrome/react",
-								"motion/react",
 							],
 						},
 					};
