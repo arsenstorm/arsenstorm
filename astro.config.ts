@@ -1,7 +1,7 @@
 import cloudflare from "@astrojs/cloudflare";
 import { unified } from "@astrojs/markdown-remark";
 import mdx from "@astrojs/mdx";
-import react from "@astrojs/react";
+import preact from "@astrojs/preact";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
@@ -79,15 +79,38 @@ export default defineConfig({
 			],
 		}),
 	},
-	integrations: [react(), mdx(), sitemap(), contentHmr()],
+	integrations: [preact({ compat: true }), mdx(), sitemap(), contentHmr()],
 	vite: {
 		plugins: [
 			tailwindcss(),
+			// With preact compat, any dependency that imports "react" must be
+			// bundled into the server builds so the alias applies to it. Left
+			// external, lucide-react would load the real React kept for the
+			// markdown script and hand preact forwardRef objects as tag names.
+			{
+				name: "bundle-react-consumers",
+				configEnvironment(name: string) {
+					if (name !== "ssr" && name !== "prerender") {
+						return;
+					}
+					return {
+						resolve: {
+							noExternal: [
+								"react",
+								"react-dom",
+								"react/jsx-runtime",
+								"lucide-react",
+								"media-chrome",
+								"hls-video-element",
+							],
+						},
+					};
+				},
+			},
 			// The Cloudflare adapter's SSR environment discovers island deps
 			// lazily; each discovery re-runs the optimizer and reloads the
-			// program, and react/react-dom/server can land in different optimize
-			// passes — two React instances, null hook dispatcher, "Invalid hook
-			// call". Pre-bundle every SSR dep in one startup pass instead. Add
+			// program, and preact/compat and preact/hooks can land in different
+			// optimize passes — two Preact instances, broken hooks. Pre-bundle every SSR dep in one startup pass instead. Add
 			// new island packages here. Scoped to "ssr" only: extending it to
 			// other environments (prerender) hangs dev startup.
 			// See withastro/astro#16248.
@@ -100,11 +123,11 @@ export default defineConfig({
 					return {
 						optimizeDeps: {
 							include: [
-								"react",
-								"react/jsx-runtime",
-								"react/jsx-dev-runtime",
-								"react-dom",
-								"react-dom/server",
+								"preact",
+								"preact/compat",
+								"preact/hooks",
+								"preact/jsx-runtime",
+								"preact-render-to-string",
 								"astro/zod",
 								"astro/assets/services/noop",
 								"@web-kits/audio",
@@ -120,7 +143,5 @@ export default defineConfig({
 				},
 			},
 		],
-		resolve: { dedupe: ["react", "react-dom"] },
-		ssr: { noExternal: ["react", "react-dom"] },
 	},
 });

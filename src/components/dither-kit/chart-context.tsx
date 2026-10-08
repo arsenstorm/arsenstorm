@@ -1,5 +1,5 @@
 import type { ScaleLinear } from "d3-scale";
-import { createContext, use, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import type { CommonChart } from "./common-context";
 import type { BloomInput } from "./dither-paint";
 import type { DitherColor, Seed } from "./palette";
@@ -108,7 +108,7 @@ const ROOT_OF: Record<ChartType, string> = {
 
 /** Generic accessor for internal layers (canvas/overlay) that work for any root. */
 export function useChart() {
-	const ctx = use(ChartContext);
+	const ctx = useContext(ChartContext);
 	if (!ctx) {
 		throw new Error(
 			"Chart parts must be used within a chart root (e.g. <AreaChart />)."
@@ -126,7 +126,7 @@ export function useChartPart(
 	part: string,
 	kind?: ChartType | ChartType[]
 ): ChartContextValue {
-	const ctx = use(ChartContext);
+	const ctx = useContext(ChartContext);
 	if (!ctx) {
 		const where = kind
 			? ROOT_OF[Array.isArray(kind) ? kind[0] : kind]
