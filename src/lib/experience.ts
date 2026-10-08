@@ -17,7 +17,7 @@ export interface ExperienceSummary {
 
 const ONGOING_SORT_KEY = "9999";
 
-export function formatPeriod(start: string, end: string | null): string {
+function formatPeriod(start: string, end: string | null): string {
 	const startYear = start.slice(0, 4);
 	const endYear = end ? end.slice(0, 4) : "Present";
 	return startYear === endYear ? startYear : `${startYear}–${endYear}`;

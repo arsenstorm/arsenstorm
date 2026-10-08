@@ -187,13 +187,3 @@ export const PROJECTS: Project[] = [
 		description: "Computer vision for checking vehicles against DVLA records.",
 	},
 ];
-
-export function groupByYear(projects: Project[]): [string, Project[]][] {
-	const map = new Map<string, Project[]>();
-	for (const project of projects) {
-		const bucket = map.get(project.year) ?? [];
-		bucket.push(project);
-		map.set(project.year, bucket);
-	}
-	return [...map.entries()].sort((a, b) => b[0].localeCompare(a[0]));
-}

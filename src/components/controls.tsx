@@ -4,7 +4,7 @@ import { HomeIcon, Moon, Sun, Volume2, VolumeX } from "lucide-react";
 const ICON_BUTTON =
 	"-m-1 relative rounded-md p-1 text-neutral-400 transition-colors after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-x-1/2 after:-translate-y-1/2 hover:text-neutral-950 focus-visible:text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 dark:text-neutral-500 dark:hover:text-neutral-50 dark:focus-visible:text-neutral-50 dark:focus-visible:ring-white/30";
 
-export function AudioToggle() {
+function AudioToggle() {
 	return (
 		<button
 			aria-label="Disable interface sounds"
@@ -19,7 +19,7 @@ export function AudioToggle() {
 	);
 }
 
-export function ThemeSwitch() {
+function ThemeSwitch() {
 	return (
 		<button
 			aria-label="Toggle theme"

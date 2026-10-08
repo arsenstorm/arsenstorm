@@ -2,6 +2,7 @@ import type { WriteupSummary } from "#/lib/writeups";
 
 const SITE_NAME = "Arsen Shkrumelyak";
 export const SITE_URL = "https://arsenstorm.com";
+export const SITE_DESCRIPTION = "I build software with care.";
 const DEFAULT_OG_WIDTH = "1200";
 const DEFAULT_OG_HEIGHT = "630";
 const LEADING_SLASH_REGEX = /^\//;

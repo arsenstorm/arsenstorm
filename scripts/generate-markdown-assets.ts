@@ -1,3 +1,4 @@
+import { SITE_DESCRIPTION } from "#/lib/seo";
 import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
@@ -20,12 +21,6 @@ const WRITEUPS_DIRECTORY = fileURLToPath(
 const EXPERIENCE_DIRECTORY = fileURLToPath(
 	new URL("../src/experience/", import.meta.url)
 );
-
-// ponytail: the site's default description lives as a local `const DESCRIPTION`
-// in src/pages/index.astro (and src/lib/render.ts) — it is not exported from
-// src/lib/seo.ts, and src/ is out of scope for this change. Export it there and
-// import it here when src/ is next touched.
-const SITE_DESCRIPTION = "I build software with care.";
 
 const FRONTMATTER_REGEX = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
 const IMPORT_REGEX =

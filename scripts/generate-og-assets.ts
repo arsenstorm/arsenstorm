@@ -84,7 +84,6 @@ function discoverRoutes(): string[] {
 	return routes.sort();
 }
 
-// Ported verbatim from src/worker/og-browser.ts extractOgTemplate.
 function extractOgTemplate(page: Page): Promise<OgDimensions | null> {
 	return page.evaluate((selector) => {
 		const ogWindow = window as typeof window & {
@@ -150,7 +149,6 @@ function extractOgTemplate(page: Page): Promise<OgDimensions | null> {
 	}, OG_TEMPLATE_SELECTOR);
 }
 
-// Ported verbatim from src/worker/og-browser.ts waitForOgReady.
 async function waitForOgReady(page: Page): Promise<void> {
 	try {
 		await page.waitForFunction("window.__OG_READY__ === true", {
@@ -175,7 +173,6 @@ async function waitForOgReady(page: Page): Promise<void> {
 	}
 }
 
-// Ported verbatim from src/worker/og-browser.ts hasRenderedOgTemplate.
 function hasRenderedOgTemplate(page: Page): Promise<boolean> {
 	return page.evaluate(
 		() =>

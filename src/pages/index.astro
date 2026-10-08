@@ -13,10 +13,10 @@ import ClipboardCheck from "#/icons/clipboard-check.tsx";
 import BaseLayout from "#/layouts/base-layout.astro";
 import { getExperience } from "#/lib/experience";
 import { PROJECTS } from "#/lib/projects.ts";
+import { SITE_DESCRIPTION } from "#/lib/seo";
 import { getWriteups } from "#/lib/writeups";
 
 const TITLE = "Arsen Shkrumelyak";
-const DESCRIPTION = "I build software with care.";
 const META_DESCRIPTION =
 	"Arsen Shkrumelyak builds software with care in London. Freelance software engineer, previously founding engineer at Anyverse. Projects, write-ups and CV.";
 const PERSON_JSON_LD = JSON.stringify({
@@ -59,7 +59,7 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
 
 <BaseLayout description={META_DESCRIPTION} jsonLd={PERSON_JSON_LD} title={TITLE}>
   <Main>
-    <PageHeading description={DESCRIPTION} noHomeLink title={TITLE} />
+    <PageHeading description={SITE_DESCRIPTION} noHomeLink title={TITLE} />
 
     <Section
       cta={experience.length > 2

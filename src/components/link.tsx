@@ -22,5 +22,3 @@ export function Anchor({ href, rel, target, ...props }: AnchorProps) {
 		/>
 	);
 }
-
-export const MaybeExternalLink = Anchor;
