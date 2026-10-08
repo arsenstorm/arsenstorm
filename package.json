@@ -49,7 +49,7 @@
 	"scripts": {
 		"dev": "astro dev --port 3000",
 		"dev:worker": "wrangler dev --port 8787",
-		"build": "astro build && bun scripts/generate-markdown-assets.ts",
+		"build": "astro build && bun scripts/generate-markdown-assets.ts && bun scripts/generate-early-hints.ts",
 		"generate:markdown-assets": "bun scripts/generate-markdown-assets.ts",
 		"generate:og": "bun scripts/generate-og-assets.ts",
 		"preview": "astro preview",
