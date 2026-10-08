@@ -36,24 +36,3 @@ export interface Stats {
 	contributions: number;
 	years: Year[];
 }
-
-export interface GitHubActivityDay {
-	count: number;
-	date: string;
-	level: ContributionIntensity;
-	weekday: number;
-}
-
-export interface GitHubActivityWeek {
-	days: GitHubActivityDay[];
-	firstDay: string;
-}
-
-export interface GitHubActivitySnapshot {
-	fetchedAt: string;
-	from: string;
-	to: string;
-	totalContributions: number;
-	username: string;
-	weeks: GitHubActivityWeek[];
-}

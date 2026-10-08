@@ -1,7 +1,6 @@
 import type {
 	Contribution,
 	ContributionIntensity,
-	GitHubActivitySnapshot,
 	GitHubResponse,
 	Year,
 } from "#/lib/types";
@@ -34,23 +33,6 @@ function levelToInt(
 		default:
 			return 0;
 	}
-}
-
-function getUtcWeekday(date: string): number {
-	const [year, month, day] = date.split("-").map(Number);
-	if (!(year && month && day)) {
-		throw new Error(`Invalid GitHub contribution date: ${date}`);
-	}
-
-	return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
-}
-
-function getGitHubActivityRange(now = new Date()) {
-	const to = new Date(now);
-	const from = new Date(to);
-	from.setUTCFullYear(from.getUTCFullYear() - 1);
-
-	return { from, to };
 }
 
 async function readGitHubJson(
@@ -159,36 +141,4 @@ export async function getAllContributions(
 	}
 
 	return [years.reverse(), totalContributions];
-}
-
-export async function fetchGitHubActivity(
-	token: string
-): Promise<GitHubActivitySnapshot> {
-	const { from, to } = getGitHubActivityRange();
-	const data = await fetchContributions(token, from, to);
-	const weeks = data.weeks.map((week) => {
-		const firstDay = week.contributionDays[0]?.date;
-		if (!firstDay) {
-			throw new Error("GitHub response included an empty contribution week.");
-		}
-
-		return {
-			days: week.contributionDays.map((day) => ({
-				count: day.contributionCount,
-				date: day.date,
-				level: levelToInt(day.contributionLevel),
-				weekday: getUtcWeekday(day.date),
-			})),
-			firstDay,
-		};
-	});
-
-	return {
-		fetchedAt: new Date().toISOString(),
-		from: from.toISOString(),
-		to: to.toISOString(),
-		totalContributions: data.contributions,
-		username: USERNAME,
-		weeks,
-	};
 }

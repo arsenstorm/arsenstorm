@@ -1,6 +1,6 @@
 import { handle } from "@astrojs/cloudflare/handler";
 import { ogImagePath } from "#/lib/seo";
-import { handleGitHubActivity, refreshGitHubStats } from "#/worker/github";
+import { refreshGitHubStats } from "#/worker/github";
 import {
 	handleMarkdown,
 	isContentPath,
@@ -9,9 +9,7 @@ import {
 import { handleReadmePreview } from "#/worker/readme-preview";
 import { handleSvg } from "#/worker/readme-svg";
 import type { Env } from "#/worker/types";
-import { handleWeather, refreshWeather } from "#/worker/weather";
 
-const WEATHER_REFRESH_CRON = "0 * * * *";
 const GITHUB_STATS_REFRESH_CRON = "0 */6 * * *";
 const OG_PATH = "/og";
 const CV_PDF_HEADERS = {
@@ -30,14 +28,6 @@ export default {
 
 		if (url.pathname === "/readme/preview") {
 			return handleReadmePreview();
-		}
-
-		if (url.pathname === "/api/weather") {
-			return await handleWeather(request, env);
-		}
-
-		if (url.pathname === "/api/github") {
-			return await handleGitHubActivity(request, env);
 		}
 
 		if (url.pathname === OG_PATH) {
@@ -68,15 +58,9 @@ export default {
 	},
 
 	async scheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionContext) {
-		switch (event.cron) {
-			case WEATHER_REFRESH_CRON:
-				await refreshWeather(env);
-				return;
-			case GITHUB_STATS_REFRESH_CRON:
-				await refreshGitHubStats(env);
-				return;
-			default:
-				throw new Error(`Unexpected scheduled cron: ${event.cron}`);
+		if (event.cron !== GITHUB_STATS_REFRESH_CRON) {
+			throw new Error(`Unexpected scheduled cron: ${event.cron}`);
 		}
+		await refreshGitHubStats(env);
 	},
 };

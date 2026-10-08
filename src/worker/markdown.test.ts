@@ -47,7 +47,7 @@ describe("isContentPath", () => {
 
 	it.each([
 		"/cv.pdf",
-		"/api/weather",
+		"/readme/preview",
 		"/readme",
 		"/og",
 		"/fonts/InterVariable.woff2",

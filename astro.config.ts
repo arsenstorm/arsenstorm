@@ -112,7 +112,6 @@ export default defineConfig({
 								"d3-scale",
 								"d3-shape",
 								"hls-video-element/react",
-								"img-fx",
 								"lucide-react",
 								"media-chrome/react",
 								"motion/react",

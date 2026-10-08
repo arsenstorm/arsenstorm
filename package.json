@@ -12,14 +12,12 @@
 		"d3-scale": "^4.0.2",
 		"d3-shape": "^3.2.0",
 		"hls-video-element": "^1.5.11",
-		"img-fx": "^0.3.1",
 		"lucide-react": "^0.545.0",
 		"media-chrome": "^4.19.2",
 		"motion": "^12.40.0",
 		"react": "^19.2.0",
 		"react-dom": "^19.2.0",
-		"tailwindcss": "^4.3.3",
-		"three": "^0.184.0"
+		"tailwindcss": "^4.3.3"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.12",
@@ -53,13 +51,11 @@
 	},
 	"name": "arsenstorm",
 	"scripts": {
-		"dev": "bun run generate:weather-snapshot && astro dev --port 3000",
+		"dev": "astro dev --port 3000",
 		"dev:worker": "wrangler dev --port 8787",
-		"build": "bun run generate:map-snapshots && astro build && bun scripts/generate-markdown-assets.ts",
+		"build": "astro build && bun scripts/generate-markdown-assets.ts",
 		"generate:markdown-assets": "bun scripts/generate-markdown-assets.ts",
 		"generate:og": "bun scripts/generate-og-assets.ts",
-		"generate:map-snapshots": "bun scripts/generate-map-snapshots.ts",
-		"generate:weather-snapshot": "bun scripts/generate-weather-snapshot.ts",
 		"preview": "astro preview",
 		"test": "vitest run",
 		"typecheck": "bunx tsc --noEmit",
