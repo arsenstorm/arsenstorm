@@ -73,6 +73,7 @@ export function technicalWriteupJsonLd(writeup: WriteupSummary): string {
 		author: {
 			"@type": "Person",
 			name: SITE_NAME,
+			url: SITE_URL,
 		},
 		datePublished: writeup.publishedAt,
 		description: writeup.metaDescription ?? writeup.description,
