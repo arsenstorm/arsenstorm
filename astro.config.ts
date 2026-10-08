@@ -45,10 +45,7 @@ export default defineConfig({
 	// Emit `work.html` instead of `work/index.html`: links are slashless, so
 	// directory output made every internal navigation pay a 307 redirect to the
 	// trailing-slash form before the page was served.
-	// Inline the single stylesheet: it is ~11 KB gzipped, and as a separate
-	// request it was the last render-blocking fetch on every page. Cross-page CSS
-	// caching matters less here because links are prefetched and prerendered.
-	build: { format: "file", inlineStylesheets: "always" },
+	build: { format: "file" },
 	// Prefetch every internal link as it enters the viewport — unlike hover,
 	// this also covers touch devices, which never fire hover at all.
 	prefetch: { defaultStrategy: "viewport", prefetchAll: true },
