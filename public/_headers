@@ -8,8 +8,6 @@
   Cache-Control: public, max-age=604800
 /*.ico
   Cache-Control: public, max-age=604800
-# Iframe demo documents and the markdown twins of each page are not pages.
+# Iframe demo documents are not pages. Markdown twins get noindex from the worker.
 /writeup-demos/*
-  X-Robots-Tag: noindex
-/*.md
   X-Robots-Tag: noindex

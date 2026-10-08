@@ -5,6 +5,7 @@ const MD_HEADERS = {
 	"cache-control": "public, max-age=300, stale-while-revalidate=3600",
 	"content-type": "text/markdown; charset=utf-8",
 	vary: "Accept",
+	"x-robots-tag": "noindex",
 };
 const TXT_HEADERS = {
 	...MD_HEADERS,
