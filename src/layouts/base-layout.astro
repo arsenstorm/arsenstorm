@@ -22,6 +22,8 @@ const links = pageLinks(path);
 		<script is:inline set:html={HEAD_INIT_SCRIPT} />
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+		<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#09090b" />
 		{
 			meta.map((entry) =>
 				"title" in entry ? (
