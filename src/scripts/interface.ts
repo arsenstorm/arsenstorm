@@ -129,10 +129,9 @@ type Theme = "light" | "dark";
 function applyTheme(theme: Theme) {
 	const root = document.documentElement;
 	root.dataset.theme = theme;
-	root.style.setProperty(
-		"--map-surface",
-		theme === "dark" ? "#0f0f0f" : "#f5f5f5"
-	);
+	for (const meta of document.querySelectorAll('meta[name="theme-color"]')) {
+		meta.setAttribute("content", theme === "dark" ? "#09090b" : "#ffffff");
+	}
 	if (theme === "dark") {
 		root.classList.add("dark");
 		root.style.background = "rgb(9 9 11)";
