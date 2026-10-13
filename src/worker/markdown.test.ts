@@ -36,8 +36,7 @@ describe("isContentPath", () => {
 		"/writing/foo.md",
 		"/projects",
 		"/experience/afinity",
-		"/cv",
-		"/cv.md",
+		"/experience.md",
 		"/work",
 		"/work.md",
 		"/index.md",
@@ -46,7 +45,6 @@ describe("isContentPath", () => {
 	});
 
 	it.each([
-		"/cv.pdf",
 		"/readme/preview",
 		"/readme",
 		"/og",
@@ -83,8 +81,8 @@ describe("markdownAssetPath", () => {
 		["/", "/index.md"],
 		["/work", "/projects.md"],
 		["/work.md", "/projects.md"],
-		["/cv", "/cv.md"],
-		["/cv.md", "/cv.md"],
+		["/experience", "/experience.md"],
+		["/experience.md", "/experience.md"],
 		["/writing/foo/", "/writing/foo.md"],
 	])("maps %s to %s", (pathname, expected) => {
 		expect(markdownAssetPath(pathname)).toBe(expected);
@@ -93,7 +91,7 @@ describe("markdownAssetPath", () => {
 
 describe("handleMarkdown", () => {
 	const assets = new Map([
-		["/cv.md", "# CV"],
+		["/experience.md", "# Experience"],
 		["/projects.md", "# Projects"],
 	]);
 	const env = {
@@ -118,13 +116,13 @@ describe("handleMarkdown", () => {
 		);
 
 	it("returns null for HTML clients on known pages", async () => {
-		expect(await get("/cv")).toBeNull();
+		expect(await get("/experience")).toBeNull();
 	});
 
 	it("serves markdown for negotiated content paths", async () => {
-		const response = await get("/cv", "text/markdown");
+		const response = await get("/experience", "text/markdown");
 		expect(response?.status).toBe(200);
-		expect(await response?.text()).toBe("# CV");
+		expect(await response?.text()).toBe("# Experience");
 	});
 
 	it("aliases /work to the projects markdown", async () => {

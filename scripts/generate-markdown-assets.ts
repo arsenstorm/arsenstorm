@@ -527,7 +527,6 @@ function indexPage(): string {
 			`- [Writing](${SITE_URL}/writing)`,
 			`- [Projects](${SITE_URL}/projects)`,
 			`- [Experience](${SITE_URL}/experience)`,
-			`- [CV](${SITE_URL}/cv.pdf)`,
 		].join("\n"),
 	].join("\n\n");
 }
@@ -568,7 +567,6 @@ function llmsTxt(writeups: Writeup[]): string {
 			`- [Writing index](${SITE_URL}/writing.md)`,
 			`- [Projects](${SITE_URL}/projects.md)`,
 			`- [Experience](${SITE_URL}/experience.md)`,
-			`- [CV](${SITE_URL}/cv.md)`,
 		].join("\n"),
 	].join("\n\n");
 }
@@ -610,13 +608,11 @@ async function main(): Promise<void> {
 	const writeups = readWriteups();
 	const experience = readExperience();
 	const body = experienceBody(experience);
-	const cvBody = experienceBody(experience.filter((item) => !item.hidden));
 
 	await write("index.md", indexPage());
 	await write("writing.md", writingPage(writeups));
 	await write("projects.md", projectsPage());
 	await write("experience.md", `# Experience\n\n${body}`);
-	await write("cv.md", `# CV\n\nPDF: ${SITE_URL}/cv.pdf\n\n${cvBody}`);
 	await writeEntries(
 		WRITEUPS_DIRECTORY,
 		"writing",

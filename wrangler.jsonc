@@ -15,7 +15,6 @@
       "/readme",
       "/readme/preview",
       "/og",
-      "/cv.pdf",
       "/",
       "/index.md",
       "/writing",
@@ -26,8 +25,6 @@
       "/experience",
       "/experience.md",
       "/experience/*",
-      "/cv",
-      "/cv.md",
       "/work",
       "/work.md",
       "/llms.txt"

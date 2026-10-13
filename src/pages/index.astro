@@ -18,7 +18,7 @@ import { getWriteups } from "#/lib/writeups";
 
 const TITLE = "Arsen Shkrumelyak";
 const META_DESCRIPTION =
-	"Arsen Shkrumelyak builds software with care in London. Software engineer at Better Stack, previously founding engineer at Anyverse. Projects, write-ups and CV.";
+	"Arsen Shkrumelyak builds software with care in London. Software engineer at Better Stack, previously founding engineer at Anyverse. Projects and write-ups.";
 const PERSON_JSON_LD = JSON.stringify({
 	"@context": "https://schema.org",
 	"@type": "Person",
@@ -50,7 +50,6 @@ const ELSEWHERE: { label: string; href: string; copy?: string }[] = [
 		href: "mailto:arsen@shkrumelyak.com",
 		copy: "arsen@shkrumelyak.com",
 	},
-	{ label: "CV", href: "/cv" },
 ];
 
 const writeups = await getWriteups();

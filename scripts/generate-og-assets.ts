@@ -4,7 +4,7 @@ import { isAbsolute, join, relative } from "node:path";
 import process, { stdout } from "node:process";
 import { fileURLToPath } from "node:url";
 import puppeteer, { type Browser, type Page } from "puppeteer";
-import { ogImagePath, SITE_URL } from "../src/lib/seo";
+import { ogImagePath } from "../src/lib/seo";
 
 const DIST_CLIENT = fileURLToPath(new URL("../dist/client/", import.meta.url));
 const OG_OUTPUT_DIRECTORY = join(DIST_CLIENT, "og");
@@ -13,7 +13,6 @@ const OG_DEFAULT_HEIGHT = 630;
 const OG_TEMPLATE_SELECTOR = "[data-og-template]";
 const PAGE_LOAD_TIMEOUT_MS = 15_000;
 const OG_READY_TIMEOUT_MS = 25_000;
-const CV_PDF_OUTPUT = join(DIST_CLIENT, "cv.pdf");
 
 const HTML_EXTENSION_REGEX = /\.html$/;
 const LEADING_SLASH_REGEX = /^\//;
@@ -219,37 +218,6 @@ async function renderOgImage(
 	stdout.write(`generated ${relative(process.cwd(), outPath)}\n`);
 }
 
-async function renderCvPdf(page: Page, origin: string): Promise<void> {
-	// `domcontentloaded`, not `networkidle0`: the CV page is prerendered so the
-	// full content is already in the initial HTML.
-	await page.goto(`${origin}/cv`, {
-		timeout: PAGE_LOAD_TIMEOUT_MS,
-		waitUntil: "domcontentloaded",
-	});
-	// Apply print styles before waiting on fonts so the print-only static
-	// Inter faces are actually fetched before the PDF is rendered.
-	await page.emulateMediaType("print");
-	// Wait for web fonts (Inter) so the PDF doesn't fall back to a default face.
-	await page.evaluateHandle("document.fonts.ready");
-	// Root-relative hrefs would bake this local preview origin into the PDF's
-	// link annotations; resolve them against the production origin instead.
-	await page.evaluate((siteUrl) => {
-		for (const anchor of document.querySelectorAll("a[href]")) {
-			const href = anchor.getAttribute("href");
-			if (href?.startsWith("/")) {
-				anchor.setAttribute("href", new URL(href, siteUrl).toString());
-			}
-		}
-	}, SITE_URL);
-	const pdf = await page.pdf({
-		format: "A4",
-		preferCSSPageSize: true,
-		printBackground: true,
-	});
-	await writeFile(CV_PDF_OUTPUT, pdf);
-	stdout.write(`generated ${relative(process.cwd(), CV_PDF_OUTPUT)}\n`);
-}
-
 async function main(): Promise<void> {
 	if (!existsSync(DIST_CLIENT)) {
 		throw new Error(
@@ -283,10 +251,6 @@ async function main(): Promise<void> {
 			await renderOgImage(ogPage, origin, route);
 		}
 		await ogPage.close();
-
-		const pdfPage = await browser.newPage();
-		await renderCvPdf(pdfPage, origin);
-		await pdfPage.close();
 	} finally {
 		await browser?.close();
 		await server.stop();

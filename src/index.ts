@@ -12,11 +12,6 @@ import type { Env } from "#/worker/types";
 
 const GITHUB_STATS_REFRESH_CRON = "0 */6 * * *";
 const OG_PATH = "/og";
-const CV_PDF_HEADERS = {
-	"cache-control": "public, max-age=3600, stale-while-revalidate=86400",
-	"content-disposition": 'inline; filename="Arsen-Shkrumelyak-CV.pdf"',
-	"content-type": "application/pdf",
-};
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext) {
@@ -36,14 +31,6 @@ export default {
 				new URL(ogImagePath(path), url.origin).toString(),
 				301
 			);
-		}
-
-		if (url.pathname === "/cv.pdf") {
-			const asset = await env.ASSETS.fetch(request);
-			if (!asset.ok) {
-				return asset;
-			}
-			return new Response(asset.body, { headers: CV_PDF_HEADERS });
 		}
 
 		const markdown = await handleMarkdown(request, env);

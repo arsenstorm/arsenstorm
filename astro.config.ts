@@ -33,8 +33,8 @@ export default defineConfig({
 	// imports; `output: "static"` produces an assets-only, no-op-worker deploy.
 	output: "server",
 	// Astro 7 defaults compressHTML to "jsx", which strips whitespace between
-	// inline elements. These pages are screenshot-rendered to OG images and a CV
-	// PDF, so keep the v5/v6 HTML-aware behavior to preserve inline spacing.
+	// inline elements. These pages are screenshot-rendered to OG images, so
+	// keep the v5/v6 HTML-aware behavior to preserve inline spacing.
 	compressHTML: true,
 	// With the Cloudflare adapter, Astro splits outDir into client/ + server/
 	// subdirectories. outDir "./dist" therefore emits the static assets to
