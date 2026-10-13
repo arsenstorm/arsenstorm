@@ -49,10 +49,10 @@ const links = pageLinks(path);
 		<div class="isolate min-h-dvh bg-white font-sans text-neutral-950 antialiased dark:bg-neutral-950 dark:text-neutral-50">
 			<a
 				aria-label="Home"
-				class="fixed top-6 left-6 z-10 block size-6 overflow-hidden rounded-md bg-neutral-950 outline-neutral-950/30 outline-offset-2 transition-opacity hover:opacity-70 focus-visible:outline-2 print:hidden dark:outline-white/30"
+				class="fixed top-6 left-6 z-10 block size-6 rounded-md outline-neutral-950/30 outline-offset-2 transition-opacity after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-x-1/2 after:-translate-y-1/2 hover:opacity-70 focus-visible:outline-2 active:opacity-70 print:hidden dark:outline-white/30"
 				href="/"
 			>
-				<img alt="" class="size-full" height="24" src="/apple-touch-icon.png" width="24" />
+				<img alt="" class="size-full rounded-md" height="24" src="/apple-touch-icon.png" width="24" />
 			</a>
 			<slot />
 		</div>

@@ -19,7 +19,7 @@ function MdxAnchor({
 	return (
 		<Anchor
 			className={cn(
-				"rounded-sm text-neutral-950 underline decoration-neutral-300 underline-offset-4 outline-neutral-950/30 outline-offset-2 transition-colors hover:decoration-neutral-950 focus-visible:decoration-neutral-950 focus-visible:outline-[1.5px] dark:text-neutral-50 dark:decoration-neutral-700 dark:outline-white/30 dark:focus-visible:decoration-neutral-50 dark:hover:decoration-neutral-50",
+				"rounded-sm text-neutral-950 underline decoration-neutral-300 underline-offset-4 outline-neutral-950/30 outline-offset-2 transition-colors hover:decoration-neutral-950 focus-visible:decoration-neutral-950 focus-visible:outline-[1.5px] active:decoration-neutral-950 dark:text-neutral-50 dark:decoration-neutral-700 dark:outline-white/30 dark:active:decoration-neutral-50 dark:focus-visible:decoration-neutral-50 dark:hover:decoration-neutral-50",
 				className
 			)}
 			href={href}
@@ -61,7 +61,7 @@ function MdxSectionHeading({
 			{id ? (
 				<Anchor
 					aria-label="Link to section"
-					className="hidden size-[1lh] shrink-0 items-center justify-center rounded-md text-neutral-300 transition-colors hover:text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 group-hover:flex dark:text-neutral-700 dark:focus-visible:ring-white/30 dark:hover:text-neutral-50"
+					className="relative flex size-[1lh] shrink-0 items-center justify-center rounded-md text-neutral-300 opacity-0 pointer-coarse:opacity-100 transition-[color,opacity] before:absolute before:-inset-2.5 hover:text-neutral-950 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 active:text-neutral-950 group-hover:opacity-100 dark:text-neutral-700 dark:active:text-neutral-50 dark:focus-visible:ring-white/30 dark:hover:text-neutral-50"
 					href={`#${id}`}
 				>
 					<LinkIcon

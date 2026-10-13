@@ -6,7 +6,7 @@ import ClipboardCheck from "#/icons/clipboard-check.tsx";
 import { Frame } from "./frame.tsx";
 
 const codeBlockActionClass =
-	"flex size-5 items-center justify-center rounded-md text-neutral-500 transition-colors hover:text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 dark:text-neutral-400 dark:focus-visible:ring-white/30 dark:hover:text-neutral-50";
+	"relative flex size-5 items-center justify-center rounded-md text-neutral-500 transition-colors before:absolute before:-inset-x-0.5 before:-inset-y-3 hover:text-neutral-950 active:text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 dark:text-neutral-400 dark:focus-visible:ring-white/30 dark:hover:text-neutral-50 dark:active:text-neutral-50";
 
 const LANGUAGE_LABELS: Record<string, string> = {
 	bash: "Shell",
@@ -160,7 +160,7 @@ function MdxCodeBlock({
 					<button
 						aria-controls={codeBlockId}
 						aria-expanded="false"
-						className="pointer-events-auto h-6 rounded-md px-3 font-medium text-neutral-600 text-xs transition-colors hover:bg-neutral-950/2.5 hover:text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 dark:text-neutral-400 dark:focus-visible:ring-white/30 dark:hover:bg-white/5 dark:hover:text-neutral-50"
+						className="pointer-events-auto h-6 rounded-md px-3 font-medium text-neutral-600 text-xs transition-colors hover:bg-neutral-950/2.5 hover:text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 active:bg-neutral-950/2.5 active:text-neutral-950 dark:text-neutral-400 dark:focus-visible:ring-white/30 dark:hover:bg-white/5 dark:hover:text-neutral-50"
 						data-code-action="toggle"
 						type="button"
 					>

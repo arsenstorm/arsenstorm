@@ -32,7 +32,7 @@ export function Panel({
 						</p>
 						{onReset ? (
 							<button
-								className="my-1 mr-3 flex items-center gap-1 font-medium text-neutral-500 text-xs tracking-tight transition-colors hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-neutral-50"
+								className="my-1 mr-3 flex items-center gap-1 font-medium text-neutral-500 text-xs tracking-tight transition-colors hover:text-neutral-950 active:text-neutral-950 dark:text-neutral-400 dark:active:text-neutral-50 dark:hover:text-neutral-50"
 								data-demo-reset={demo ? "" : undefined}
 								onClick={onReset}
 								type="button"
