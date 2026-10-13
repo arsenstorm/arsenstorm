@@ -88,11 +88,6 @@ html {
 	html::-webkit-scrollbar-thumb {
 		background-color: rgb(113 113 122 / 70%);
 	}
-
-	code[data-theme*=" "],
-	code[data-theme*=" "] span {
-		color: var(--shiki-dark);
-	}
 }
 
 a,
@@ -126,4 +121,12 @@ code[data-theme*=" "],
 code[data-theme*=" "] span {
 	background-color: transparent;
 	color: var(--shiki-light);
+}
+
+/* After the light rule: same specificity, so source order decides. */
+@media screen and (prefers-color-scheme: dark) {
+	code[data-theme*=" "],
+	code[data-theme*=" "] span {
+		color: var(--shiki-dark);
+	}
 }
