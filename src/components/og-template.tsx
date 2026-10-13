@@ -36,6 +36,9 @@ function useOgPreview() {
 	const [isPreview, setIsPreview] = useState(false);
 
 	useEffect(() => {
+		if (!import.meta.env.DEV) {
+			return;
+		}
 		const updatePreview = () => {
 			setIsPreview(
 				new URL(window.location.href).searchParams.has(OG_QUERY_PARAM)
