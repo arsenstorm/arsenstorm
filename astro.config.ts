@@ -130,7 +130,6 @@ export default defineConfig({
 								"preact-render-to-string",
 								"astro/zod",
 								"astro/assets/services/noop",
-								"@web-kits/audio",
 								"cnfast",
 								"d3-scale",
 								"d3-shape",

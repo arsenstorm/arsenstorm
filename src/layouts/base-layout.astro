@@ -1,5 +1,4 @@
 ---
-import { HEAD_INIT_SCRIPT } from "#/lib/head-scripts";
 import { pageLinks, pageMeta } from "#/lib/seo";
 import "#/styles.css";
 
@@ -20,9 +19,9 @@ const links = pageLinks(path);
 
 <html lang="en" class="scrollbar-gutter-stable">
 	<head>
-		<script is:inline set:html={HEAD_INIT_SCRIPT} />
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="color-scheme" content="light dark" />
 		<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
 		<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#09090b" />
 		{
@@ -42,7 +41,7 @@ const links = pageLinks(path);
 			type="font/woff2"
 			crossorigin
 		/>
-		<link href="/manifest.json" id="app-manifest" rel="manifest" />
+		<link href="/manifest.json" rel="manifest" />
 		{jsonLd && <script type="application/ld+json" set:html={jsonLd} />}
 		{noindex && <meta name="robots" content="noindex" />}
 	</head>
@@ -50,6 +49,5 @@ const links = pageLinks(path);
 		<div class="isolate min-h-dvh bg-white font-sans text-neutral-950 antialiased dark:bg-neutral-950 dark:text-neutral-50">
 			<slot />
 		</div>
-		<script>import "#/scripts/interface";</script>
 	</body>
 </html>

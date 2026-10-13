@@ -20,10 +20,8 @@
 
 /* Screen-only so printing in dark mode still produces a light document. */
 @custom-variant dark {
-	@media screen {
-		&:where(.dark, .dark *) {
-			@slot;
-		}
+	@media screen and (prefers-color-scheme: dark) {
+		@slot;
 	}
 }
 
@@ -75,15 +73,26 @@ html {
 	scrollbar-width: thin;
 }
 
-html.dark {
-	--foreground: oklch(0.985 0 0);
-	--muted-foreground: oklch(0.708 0 0);
-	--popover: oklch(0.205 0 0);
-	--popover-foreground: oklch(0.985 0 0);
-	--border: oklch(1 0 0 / 10%);
-	background: rgb(9 9 11);
-	color-scheme: dark;
-	scrollbar-color: rgb(113 113 122) transparent;
+@media screen and (prefers-color-scheme: dark) {
+	html {
+		--foreground: oklch(0.985 0 0);
+		--muted-foreground: oklch(0.708 0 0);
+		--popover: oklch(0.205 0 0);
+		--popover-foreground: oklch(0.985 0 0);
+		--border: oklch(1 0 0 / 10%);
+		background: rgb(9 9 11);
+		color-scheme: dark;
+		scrollbar-color: rgb(113 113 122) transparent;
+	}
+
+	html::-webkit-scrollbar-thumb {
+		background-color: rgb(113 113 122 / 70%);
+	}
+
+	code[data-theme*=" "],
+	code[data-theme*=" "] span {
+		color: var(--shiki-dark);
+	}
 }
 
 a,
@@ -113,26 +122,8 @@ html::-webkit-scrollbar-thumb {
 	border-radius: 999px;
 }
 
-html.dark::-webkit-scrollbar-thumb {
-	background-color: rgb(113 113 122 / 70%);
-}
-
 code[data-theme*=" "],
 code[data-theme*=" "] span {
 	background-color: transparent;
 	color: var(--shiki-light);
-}
-
-html.dark code[data-theme*=" "],
-html.dark code[data-theme*=" "] span {
-	color: var(--shiki-dark);
-}
-
-
-/* Audio-toggle icon visibility, driven by the data-sounds flag set in the head init script. */
-html[data-sounds="off"] .sound-on-icon {
-	display: none;
-}
-html:not([data-sounds="off"]) .sound-off-icon {
-	display: none;
 }
