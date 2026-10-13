@@ -116,11 +116,7 @@ function Callout({
 					visual.labelClassName
 				)}
 			>
-				<Icon
-					aria-hidden="true"
-					className="size-3.5 shrink-0"
-					strokeWidth={2}
-				/>
+				<Icon aria-hidden="true" className="size-3.5 shrink-0" />
 				<p>{title ?? visual.label}</p>
 			</div>
 			<div className={cn("rounded-[12px] p-4", visual.contentClassName)}>

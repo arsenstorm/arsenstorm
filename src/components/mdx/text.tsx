@@ -1,6 +1,6 @@
 import { cn } from "cnfast";
-import { Link as LinkIcon } from "lucide-react";
 import type { ComponentPropsWithoutRef } from "react";
+import LinkIcon from "#/icons/link.tsx";
 import { Anchor } from "../link";
 
 const listClass =
@@ -64,11 +64,7 @@ function MdxSectionHeading({
 					className="relative flex size-[1lh] shrink-0 items-center justify-center rounded-md text-neutral-300 opacity-0 pointer-coarse:opacity-100 transition-[color,opacity] before:absolute before:-inset-2.5 hover:text-neutral-950 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 active:text-neutral-950 group-hover:opacity-100 dark:text-neutral-700 dark:active:text-neutral-50 dark:focus-visible:ring-white/30 dark:hover:text-neutral-50"
 					href={`#${id}`}
 				>
-					<LinkIcon
-						aria-hidden="true"
-						className="size-[0.58lh]"
-						strokeWidth={2}
-					/>
+					<LinkIcon aria-hidden="true" className="size-[0.58lh]" />
 				</Anchor>
 			) : null}
 		</Heading>

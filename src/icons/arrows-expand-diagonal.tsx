@@ -1,0 +1,32 @@
+import type { SVGProps } from "react";
+
+type IconProps = SVGProps<SVGSVGElement> & {
+	duoOpacity?: number | string;
+};
+
+export default function ArrowsExpandDiagonal({
+	duoOpacity = 0.4,
+	...props
+}: IconProps) {
+	return (
+		<svg
+			aria-hidden="true"
+			height={18}
+			viewBox="0 0 18 18"
+			width={18}
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				d="M7.5303 10.4697C7.3838 10.3232 7.1924 10.25 7 10.25C6.8076 10.25 6.6162 10.3232 6.4697 10.4697L3.5 13.4394V10.9999C3.5 10.5858 3.1641 10.2499 2.75 10.2499C2.3359 10.2499 2 10.5858 2 10.9999V15.2499C2 15.664 2.3359 15.9999 2.75 15.9999H7C7.4141 15.9999 7.75 15.664 7.75 15.2499C7.75 14.8358 7.4141 14.4999 7 14.4999H4.5605L7.5302 11.5302C7.8232 11.2372 7.8233 10.7626 7.5303 10.4697Z"
+				data-color="color-2"
+				fill="currentColor"
+				opacity={duoOpacity}
+			/>{" "}
+			<path
+				d="M15.25 2H11C10.5859 2 10.25 2.3359 10.25 2.75C10.25 3.1641 10.5859 3.5 11 3.5H13.4395L10.4698 6.4697C10.1768 6.7627 10.1768 7.23731 10.4698 7.53021C10.7628 7.82311 11.2374 7.82321 11.5303 7.53021L14.5 4.56049V7C14.5 7.4141 14.8359 7.75 15.25 7.75C15.6641 7.75 16 7.4141 16 7V2.75C16 2.3359 15.6641 2 15.25 2Z"
+				fill="currentColor"
+			/>
+		</svg>
+	);
+}

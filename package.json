@@ -11,7 +11,6 @@
 		"d3-scale": "^4.0.2",
 		"d3-shape": "^3.2.0",
 		"hls-video-element": "^1.5.11",
-		"lucide-react": "^0.545.0",
 		"media-chrome": "^4.19.2",
 		"preact": "^10",
 		"react": "^19.3.0",

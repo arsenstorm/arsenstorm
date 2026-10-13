@@ -1,6 +1,7 @@
 import { cn } from "cnfast";
-import { ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 import { type ComponentPropsWithoutRef, useId } from "react";
+import ChevronExpandY from "#/icons/chevron-expand-y.tsx";
+import ChevronReduceY from "#/icons/chevron-reduce-y.tsx";
 import Clipboard from "#/icons/clipboard.tsx";
 import ClipboardCheck from "#/icons/clipboard-check.tsx";
 import { Frame } from "./frame.tsx";
@@ -110,15 +111,13 @@ function MdxCodeBlock({
 									data-code-action="toggle"
 									type="button"
 								>
-									<ChevronsUpDown
+									<ChevronExpandY
 										aria-hidden="true"
 										className="size-3.5 group-data-open/code:hidden"
-										strokeWidth={2}
 									/>
-									<ChevronsDownUp
+									<ChevronReduceY
 										aria-hidden="true"
 										className="hidden size-3.5 group-data-open/code:block"
-										strokeWidth={2}
 									/>
 								</button>
 							)}
@@ -128,8 +127,14 @@ function MdxCodeBlock({
 								data-code-action="copy"
 								type="button"
 							>
-								<Clipboard className="group-data-copied/code:hidden" />
-								<ClipboardCheck className="hidden group-data-copied/code:block" />
+								<Clipboard
+									aria-hidden="true"
+									className="size-3.5 group-data-copied/code:hidden"
+								/>
+								<ClipboardCheck
+									aria-hidden="true"
+									className="hidden size-3.5 group-data-copied/code:block"
+								/>
 							</button>
 						</div>
 					</div>

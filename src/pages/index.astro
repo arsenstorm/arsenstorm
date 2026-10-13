@@ -96,8 +96,8 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
                     data-copy={item.copy}
                     type="button"
                   >
-                    <Clipboard className="size-3 group-data-copied/copy:hidden" />
-                    <ClipboardCheck className="hidden size-3 group-data-copied/copy:block" />
+                    <Clipboard aria-hidden="true" className="size-3 group-data-copied/copy:hidden" />
+                    <ClipboardCheck aria-hidden="true" className="hidden size-3 group-data-copied/copy:block" />
                   </button>
                 ) : null}
               </li>

@@ -1,6 +1,6 @@
 import { cn } from "cnfast";
-import { Lock } from "lucide-react";
 import { LinkCardList } from "#/components/link-card.tsx";
+import Lock from "#/icons/lock.tsx";
 import type { ExperienceSummary } from "#/lib/experience";
 
 function LogoMark({ logo }: { logo?: string }) {
@@ -33,7 +33,8 @@ export function ExperienceList({ items }: { items: ExperienceSummary[] }) {
 						className="inline-flex items-center gap-1"
 						title="Not yet public"
 					>
-						<Lock aria-label="Not yet public" className="size-3" />
+						<Lock className="size-3" />
+						<span className="sr-only">Not yet public</span>
 						{item.period}
 					</span>
 				) : (

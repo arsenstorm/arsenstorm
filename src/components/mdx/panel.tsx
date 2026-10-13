@@ -1,5 +1,5 @@
 import { cn } from "cnfast";
-import { RotateCcw } from "lucide-react";
+import ArrowRotateAnticlockwise from "#/icons/arrow-rotate-anticlockwise.tsx";
 import { Frame } from "./frame.tsx";
 
 export function Panel({
@@ -38,7 +38,10 @@ export function Panel({
 								type="button"
 							>
 								Reset
-								<RotateCcw aria-hidden="true" className="size-3" />
+								<ArrowRotateAnticlockwise
+									aria-hidden="true"
+									className="size-3"
+								/>
 							</button>
 						) : null}
 					</div>

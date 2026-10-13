@@ -85,7 +85,7 @@ export default defineConfig({
 			tailwindcss(),
 			// With preact compat, any dependency that imports "react" must be
 			// bundled into the server builds so the alias applies to it. Left
-			// external, lucide-react would load the real React kept for the
+			// external, media-chrome would load the real React kept for the
 			// markdown script and hand preact forwardRef objects as tag names.
 			{
 				name: "bundle-react-consumers",
@@ -99,7 +99,6 @@ export default defineConfig({
 								"react",
 								"react-dom",
 								"react/jsx-runtime",
-								"lucide-react",
 								"media-chrome",
 								"hls-video-element",
 							],
@@ -134,7 +133,6 @@ export default defineConfig({
 								"d3-scale",
 								"d3-shape",
 								"hls-video-element/react",
-								"lucide-react",
 								"media-chrome/react",
 							],
 						},
