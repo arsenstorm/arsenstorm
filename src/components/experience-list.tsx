@@ -1,6 +1,5 @@
 import { cn } from "cnfast";
 import { LinkCardList } from "#/components/link-card.tsx";
-import Lock from "#/icons/lock.tsx";
 import type { ExperienceSummary } from "#/lib/experience";
 
 function LogoMark({ logo }: { logo?: string }) {
@@ -28,18 +27,7 @@ export function ExperienceList({ items }: { items: ExperienceSummary[] }) {
 				description: item.summary,
 				href: item.href,
 				key: item.slug,
-				meta: item.hidden ? (
-					<span
-						className="inline-flex items-center gap-1"
-						title="Not yet public"
-					>
-						<Lock className="size-3" />
-						<span className="sr-only">Not yet public</span>
-						{item.period}
-					</span>
-				) : (
-					item.period
-				),
+				meta: item.period,
 				title: (
 					<>
 						{item.role} at{" "}

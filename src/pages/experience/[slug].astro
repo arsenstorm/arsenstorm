@@ -7,6 +7,7 @@ import KeepReading from "#/components/keep-reading.astro";
 import Main from "#/components/main.astro";
 import { writeupComponents } from "#/components/mdx";
 import { PageHeading } from "#/components/page-heading.tsx";
+import Lock from "#/icons/lock.tsx";
 import BaseLayout from "#/layouts/base-layout.astro";
 import { getExperience } from "#/lib/experience";
 
@@ -43,9 +44,10 @@ const showContent = !entry.hidden || import.meta.env.DEV;
 
     {
       !showContent && (
-        <p class="text-neutral-500 text-sm dark:text-neutral-400">
-          This one isn't public yet.
-        </p>
+        <div class="-mx-4 flex flex-col items-center justify-center gap-2 rounded-xl bg-neutral-100 px-4 py-10 text-center dark:bg-neutral-900">
+          <Lock aria-hidden="true" className="size-6 text-neutral-400 dark:text-neutral-500" />
+          <span class="text-neutral-500 text-sm dark:text-neutral-400">Not public yet</span>
+        </div>
       )
     }
 
