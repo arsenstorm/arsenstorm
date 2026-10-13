@@ -24,9 +24,7 @@ const { Content } = await render(entry.entry);
 const others = (await getExperience()).filter((e) => e.slug !== entry.slug);
 const tense = entry.end ? "was" : "is";
 const metaDescription = `Arsen Shkrumelyak ${tense} a ${entry.role} at ${entry.company} (${entry.period}). ${entry.summary}`;
-// hidden entries stay readable in `astro dev` so drafts can be previewed,
-// but production only gets the heading and a notice.
-const showContent = !entry.hidden || import.meta.env.DEV;
+const showContent = !entry.hidden;
 ---
 
 <BaseLayout
