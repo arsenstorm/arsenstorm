@@ -1,0 +1,27 @@
+---
+export const prerender = true;
+
+import Main from "#/components/main.astro";
+import { writeupComponents } from "#/components/mdx";
+import { PageHeading } from "#/components/page-heading.tsx";
+import BaseLayout from "#/layouts/base-layout.astro";
+import Note from "./_a-lil-note.mdx";
+
+const title = "a lil' note about outreach";
+const description =
+	"if i've sent you this, it's because i really liked your message.";
+---
+
+<BaseLayout
+	description={description}
+	noindex
+	path="/a-lil-note"
+	title={title}
+>
+	<Main>
+		<PageHeading description={description} title={title} />
+		<article>
+			<Note components={writeupComponents} />
+		</article>
+	</Main>
+</BaseLayout>
