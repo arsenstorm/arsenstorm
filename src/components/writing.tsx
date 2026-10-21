@@ -10,10 +10,15 @@ export function WriteupList({ items }: { items: WriteupSummary[] }) {
 				description: item.description,
 				href: item.href,
 				key: item.slug,
-				meta: new Date(item.publishedAt).toLocaleDateString("en-US", {
-					month: "short",
-					year: "numeric",
-				}),
+				meta: (
+					<time dateTime={item.publishedAt}>
+						{new Date(item.publishedAt).toLocaleDateString("en-GB", {
+							month: "short",
+							timeZone: "UTC",
+							year: "numeric",
+						})}
+					</time>
+				),
 				title: item.title,
 			}))}
 		/>

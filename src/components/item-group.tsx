@@ -33,8 +33,9 @@ function groupByDate(
 		const key =
 			groupBy === "year"
 				? (item.year ?? item.publishedAt?.split("-")[0] ?? "")
-				: new Date(item.publishedAt ?? "").toLocaleString("en-US", {
+				: new Date(item.publishedAt ?? "").toLocaleString("en-GB", {
 						month: "long",
+						timeZone: "UTC",
 					});
 		const bucket = map.get(key) ?? [];
 		bucket.push(item);
@@ -64,7 +65,15 @@ export function ItemGroup({
 				<div className="relative -mx-4" key={date}>
 					{showAll ? (
 						<h3 className="mb-2 px-4 text-neutral-400 text-sm tabular-nums md:absolute md:top-0 md:right-full md:mr-4 md:mb-0 md:px-0 md:pt-3 dark:text-neutral-500">
-							{date}
+							<time
+								dateTime={
+									groupBy === "month"
+										? groupedItems[0]?.publishedAt?.slice(0, 7)
+										: date
+								}
+							>
+								{date}
+							</time>
 						</h3>
 					) : null}
 					<ul className="flex flex-col rounded-xl bg-neutral-100 dark:bg-neutral-900">
