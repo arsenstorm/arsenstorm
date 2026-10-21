@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
+import { OgBackdrop } from "./og-backdrop";
 
 const DEFAULT_OG_WIDTH = 1200;
 const DEFAULT_OG_HEIGHT = 630;
@@ -151,8 +152,9 @@ export function DefaultOGTemplate({
 
 	return (
 		<OGTemplate>
-			<div className="flex h-full w-full flex-col items-center justify-center overflow-hidden bg-white px-24 text-center text-neutral-950">
-				<div className="flex size-20 items-center justify-center overflow-hidden rounded-2xl bg-neutral-950">
+			<div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-white px-24 text-center text-neutral-950">
+				<OgBackdrop seed={title} text={`${title} ${description}`} />
+				<div className="relative flex size-20 items-center justify-center overflow-hidden rounded-2xl bg-neutral-950">
 					<img
 						alt=""
 						className="size-full"
@@ -162,10 +164,10 @@ export function DefaultOGTemplate({
 						width={80}
 					/>
 				</div>
-				<h1 className="mt-8 max-w-[920px] text-balance font-medium text-7xl leading-[1.04]">
+				<h1 className="relative mt-8 max-w-[920px] text-balance font-medium text-7xl leading-[1.04]">
 					{title}
 				</h1>
-				<p className="mt-6 max-w-[720px] text-3xl text-neutral-500 leading-snug">
+				<p className="relative mt-6 max-w-[720px] text-3xl text-neutral-500 leading-snug">
 					{description}
 				</p>
 			</div>

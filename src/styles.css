@@ -39,6 +39,14 @@
 	--radius-4xl: 1.625rem;
 }
 
+/* OG backdrop icons. OG videos are recorded as one 5s loop, so OG animations
+ * must repeat on a period that divides 5s and end where they start. */
+@keyframes og-drift {
+	to {
+		offset-distance: 100%;
+	}
+}
+
 /* The only semantic colour tokens dither-kit uses (tooltip card, axis
  * labels, grid strokes) — kept minimal instead of the full shadcn set. */
 @theme inline {
