@@ -15,6 +15,7 @@
       "/readme",
       "/readme/preview",
       "/og",
+      "/og/*.mp4",
       "/",
       "/index.md",
       "/writing",

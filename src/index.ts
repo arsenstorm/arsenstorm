@@ -6,6 +6,7 @@ import {
 	isContentPath,
 	withVaryAccept,
 } from "#/worker/markdown";
+import { handleOgVideo, isOgVideoPath } from "#/worker/og-video";
 import { handleReadmePreview } from "#/worker/readme-preview";
 import { handleSvg } from "#/worker/readme-svg";
 import type { Env } from "#/worker/types";
@@ -31,6 +32,10 @@ export default {
 				new URL(ogImagePath(path), url.origin).toString(),
 				301
 			);
+		}
+
+		if (isOgVideoPath(url.pathname)) {
+			return await handleOgVideo(request, env);
 		}
 
 		const markdown = await handleMarkdown(request, env);
