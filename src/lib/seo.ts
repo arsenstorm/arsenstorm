@@ -20,14 +20,18 @@ function getAbsoluteUrl(path: string) {
 	return new URL(path, SITE_URL).toString();
 }
 
+function ogSlug(path: string): string {
+	return path === "/"
+		? "index"
+		: path.replace(LEADING_SLASH_REGEX, "").replace(PATH_SEPARATOR_REGEX, "-");
+}
+
 export function ogImagePath(path: string): string {
-	const slug =
-		path === "/"
-			? "index"
-			: path
-					.replace(LEADING_SLASH_REGEX, "")
-					.replace(PATH_SEPARATOR_REGEX, "-");
-	return `/og/${slug}.png`;
+	return `/og/${ogSlug(path)}.png`;
+}
+
+export function ogVideoPath(path: string): string {
+	return `/og/${ogSlug(path)}.mp4`;
 }
 
 function getOgImageUrl(path: string) {
@@ -47,6 +51,7 @@ export function pageMeta(
 	const pageTitle = getPageTitle(title);
 	const pageUrl = getAbsoluteUrl(path);
 	const imageUrl = getOgImageUrl(path);
+	const videoUrl = getAbsoluteUrl(ogVideoPath(path));
 	const type = options.type ?? "website";
 
 	return [
@@ -59,6 +64,10 @@ export function pageMeta(
 		{ property: "og:image", content: imageUrl },
 		{ property: "og:image:width", content: DEFAULT_OG_WIDTH },
 		{ property: "og:image:height", content: DEFAULT_OG_HEIGHT },
+		{ property: "og:video", content: videoUrl },
+		{ property: "og:video:type", content: "video/mp4" },
+		{ property: "og:video:width", content: DEFAULT_OG_WIDTH },
+		{ property: "og:video:height", content: DEFAULT_OG_HEIGHT },
 		{ name: "twitter:card", content: "summary_large_image" },
 		{ name: "twitter:title", content: pageTitle },
 		{ name: "twitter:description", content: description },

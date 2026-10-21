@@ -1,13 +1,53 @@
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
-import { writeFile } from "node:fs/promises";
+import { copyFile, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { isAbsolute, join, relative } from "node:path";
 import process, { stdout } from "node:process";
 import { fileURLToPath } from "node:url";
 import puppeteer, { type Browser, type Page } from "puppeteer";
-import { ogImagePath } from "../src/lib/seo";
+import { ogImagePath, ogVideoPath } from "../src/lib/seo";
 
 const DIST_CLIENT = fileURLToPath(new URL("../dist/client/", import.meta.url));
 const OG_OUTPUT_DIRECTORY = join(DIST_CLIENT, "og");
+// Kept between CI runs by actions/cache, so unchanged templates skip recording.
+const OG_VIDEO_CACHE_DIRECTORY = fileURLToPath(
+	new URL("../.cache/og-videos/", import.meta.url)
+);
+const OG_VIDEO_FPS = 60;
+const OG_VIDEO_LOOP_MS = 5000;
+const OG_VIDEO_FRAMES = (OG_VIDEO_FPS * OG_VIDEO_LOOP_MS) / 1000;
+// Frame 0 is the poster PNG; the loop ends one frame before it repeats.
+const FFMPEG_ARGS = [
+	"-hide_banner",
+	"-loglevel",
+	"error",
+	"-y",
+	"-f",
+	"image2pipe",
+	"-framerate",
+	String(OG_VIDEO_FPS),
+	"-c:v",
+	"png",
+	"-i",
+	"-",
+	"-c:v",
+	"libx264",
+	"-preset",
+	"veryslow",
+	"-tune",
+	"animation",
+	"-crf",
+	"28",
+	"-g",
+	String(OG_VIDEO_FRAMES),
+	"-pix_fmt",
+	"yuv420p",
+	"-an",
+	"-map_metadata",
+	"-1",
+	"-movflags",
+	"+faststart",
+];
 const OG_DEFAULT_WIDTH = 1200;
 const OG_DEFAULT_HEIGHT = 630;
 const OG_TEMPLATE_SELECTOR = "[data-og-template]";
@@ -179,10 +219,123 @@ function hasRenderedOgTemplate(page: Page): Promise<boolean> {
 	);
 }
 
-async function renderOgImage(
+// Pauses every animation so frames are seeked, not raced. Returns the names of
+// animations that would not join up seamlessly at the end of the loop.
+function pauseAnimations(page: Page): Promise<string[]> {
+	return page.evaluate((loopMs) => {
+		const broken: string[] = [];
+		for (const animation of document.getAnimations()) {
+			animation.pause();
+			const timing = animation.effect?.getComputedTiming();
+			const duration = Number(timing?.duration ?? 0);
+			const period = timing?.direction?.includes("alternate")
+				? duration * 2
+				: duration;
+			const loops =
+				timing?.iterations === Number.POSITIVE_INFINITY &&
+				period > 0 &&
+				loopMs % period === 0 &&
+				// A negative delay only shifts the phase; a positive one leaves
+				// the start of the loop frozen.
+				(timing.delay ?? 0) <= 0;
+			if (!loops) {
+				broken.push(
+					animation instanceof CSSAnimation
+						? animation.animationName
+						: animation.id || "unnamed"
+				);
+			}
+		}
+		return broken;
+	}, OG_VIDEO_LOOP_MS);
+}
+
+function seekAnimations(page: Page, timeMs: number): Promise<void> {
+	return page.evaluate((time) => {
+		for (const animation of document.getAnimations()) {
+			animation.currentTime = time;
+		}
+	}, timeMs);
+}
+
+// Everything the frames are drawn from: the template, the CSS, the images it
+// shows, and this script (which owns the timing and encoder settings).
+async function ogVideoHash(page: Page): Promise<string> {
+	const { css, html, images } = await page.evaluate(() => ({
+		css: [...document.styleSheets]
+			.flatMap((sheet) => [...sheet.cssRules].map((rule) => rule.cssText))
+			.join("\n"),
+		html: document.body.innerHTML,
+		images: [...document.images].map(
+			(image) => new URL(image.currentSrc || image.src).pathname
+		),
+	}));
+	const hash = createHash("sha256")
+		.update(await readFile(fileURLToPath(import.meta.url)))
+		.update(html)
+		.update(css);
+	for (const image of images) {
+		const file = resolveAsset(image);
+		if (file) {
+			hash.update(await readFile(file));
+		}
+	}
+	return hash.digest("hex");
+}
+
+async function recordOgVideo(page: Page, outPath: string): Promise<void> {
+	const partialPath = `${outPath}.partial.mp4`;
+	const ffmpeg = Bun.spawn(["ffmpeg", ...FFMPEG_ARGS, partialPath], {
+		stderr: "pipe",
+		stdin: "pipe",
+	});
+	for (let frame = 0; frame < OG_VIDEO_FRAMES; frame += 1) {
+		await seekAnimations(page, (frame * 1000) / OG_VIDEO_FPS);
+		ffmpeg.stdin.write(
+			await page.screenshot({ optimizeForSpeed: true, type: "png" })
+		);
+	}
+	await ffmpeg.stdin.end();
+	if ((await ffmpeg.exited) !== 0) {
+		const error = await new Response(ffmpeg.stderr).text();
+		throw new Error(`ffmpeg failed for ${outPath}: ${error}`);
+	}
+	await rename(partialPath, outPath);
+}
+
+async function writeOgVideo(
+	page: Page,
+	route: string,
+	usedCacheFiles: Set<string>
+): Promise<void> {
+	const cacheFile = `${await ogVideoHash(page)}.mp4`;
+	const cachePath = join(OG_VIDEO_CACHE_DIRECTORY, cacheFile);
+	const cached = existsSync(cachePath);
+	if (!cached) {
+		await recordOgVideo(page, cachePath);
+	}
+	usedCacheFiles.add(cacheFile);
+
+	const outPath = join(DIST_CLIENT, ogVideoPath(route));
+	await copyFile(cachePath, outPath);
+	stdout.write(
+		`${cached ? "reused" : "recorded"} ${relative(process.cwd(), outPath)}\n`
+	);
+}
+
+async function pruneOgVideoCache(usedCacheFiles: Set<string>): Promise<void> {
+	for (const file of readdirSync(OG_VIDEO_CACHE_DIRECTORY)) {
+		if (!usedCacheFiles.has(file)) {
+			await rm(join(OG_VIDEO_CACHE_DIRECTORY, file));
+		}
+	}
+}
+
+async function renderOgAssets(
 	page: Page,
 	origin: string,
-	route: string
+	route: string,
+	usedCacheFiles: Set<string>
 ): Promise<void> {
 	await page.setViewport({
 		deviceScaleFactor: 1,
@@ -212,10 +365,20 @@ async function renderOgImage(
 		);
 	}
 
+	const brokenLoops = await pauseAnimations(page);
+	if (brokenLoops.length > 0) {
+		throw new Error(
+			`OG animations on ${route} do not loop every ${OG_VIDEO_LOOP_MS}ms: ${brokenLoops.join(", ")}`
+		);
+	}
+	await seekAnimations(page, 0);
+
 	const screenshot = await page.screenshot({ type: "png" });
 	const outPath = join(DIST_CLIENT, ogImagePath(route));
 	await writeFile(outPath, screenshot);
 	stdout.write(`generated ${relative(process.cwd(), outPath)}\n`);
+
+	await writeOgVideo(page, route, usedCacheFiles);
 }
 
 async function main(): Promise<void> {
@@ -245,12 +408,15 @@ async function main(): Promise<void> {
 		// freshly built, locally served output.
 		browser = await puppeteer.launch({ args: ["--no-sandbox"] });
 		mkdirSync(OG_OUTPUT_DIRECTORY, { recursive: true });
+		mkdirSync(OG_VIDEO_CACHE_DIRECTORY, { recursive: true });
 
+		const usedCacheFiles = new Set<string>();
 		const ogPage = await browser.newPage();
 		for (const route of discoverRoutes()) {
-			await renderOgImage(ogPage, origin, route);
+			await renderOgAssets(ogPage, origin, route, usedCacheFiles);
 		}
 		await ogPage.close();
+		await pruneOgVideoCache(usedCacheFiles);
 	} finally {
 		await browser?.close();
 		await server.stop();
