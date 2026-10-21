@@ -30,13 +30,12 @@ function groupByDate(
 	}
 
 	for (const item of items) {
+		// Months key on year and month, so the same month in different years
+		// stays apart.
 		const key =
 			groupBy === "year"
 				? (item.year ?? item.publishedAt?.split("-")[0] ?? "")
-				: new Date(item.publishedAt ?? "").toLocaleString("en-GB", {
-						month: "long",
-						timeZone: "UTC",
-					});
+				: (item.publishedAt?.slice(0, 7) ?? "");
 		const bucket = map.get(key) ?? [];
 		bucket.push(item);
 		map.set(key, bucket);
@@ -46,6 +45,17 @@ function groupByDate(
 		const dateB = b[1][0]?.publishedAt ?? b[0];
 		return dateB.localeCompare(dateA);
 	});
+}
+
+// The year is implied for the newest year's months and spelled out for older
+// ones. Relative to the content, not today, so a rebuild never changes it.
+function monthLabel(yearMonth: string, newestYear: string | undefined): string {
+	const month = new Date(`${yearMonth}-01T00:00:00Z`).toLocaleString("en-GB", {
+		month: "long",
+		timeZone: "UTC",
+	});
+	const year = yearMonth.slice(0, 4);
+	return year === newestYear ? month : `${month} ${year}`;
 }
 
 export function ItemGroup({
@@ -58,6 +68,7 @@ export function ItemGroup({
 	const visibleItems = showAll ? items : items.slice(0, limit ?? 3);
 
 	const grouped = groupByDate(visibleItems, groupBy);
+	const newestYear = grouped[0]?.[0].slice(0, 4);
 
 	return (
 		<div className="flex flex-col gap-6" id={id}>
@@ -65,14 +76,8 @@ export function ItemGroup({
 				<div className="relative -mx-4" key={date}>
 					{showAll ? (
 						<h3 className="mb-2 px-4 text-neutral-400 text-sm tabular-nums md:absolute md:top-0 md:right-full md:mr-4 md:mb-0 md:px-0 md:pt-3 dark:text-neutral-500">
-							<time
-								dateTime={
-									groupBy === "month"
-										? groupedItems[0]?.publishedAt?.slice(0, 7)
-										: date
-								}
-							>
-								{date}
+							<time dateTime={date}>
+								{groupBy === "month" ? monthLabel(date, newestYear) : date}
 							</time>
 						</h3>
 					) : null}
