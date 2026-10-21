@@ -112,6 +112,11 @@ html {
 	::view-transition-new(root) {
 		animation-duration: 200ms;
 		animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+		/* When only one page scrolls, one snapshot leaves out the scrollbar and
+		 * Chrome stretches it to fit, nudging content sideways mid-fade. Pinned
+		 * unscaled to the top left, both line up with the reserved gutter. */
+		object-fit: none;
+		object-position: left top;
 	}
 }
 
