@@ -42,6 +42,12 @@ const links = pageLinks(path);
 			crossorigin
 		/>
 		<link href="/manifest.json" rel="manifest" />
+		<link
+			rel="alternate"
+			type="application/rss+xml"
+			title="Technical Writing | Arsen Shkrumelyak"
+			href="/rss.xml"
+		/>
 		{jsonLd && <script type="application/ld+json" set:html={jsonLd} />}
 		{noindex && <meta name="robots" content="noindex" />}
 	</head>
