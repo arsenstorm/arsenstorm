@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useCallback, useEffect } from "react";
 import {
 	type AreaVariant,
 	type StrokeVariant,
@@ -41,7 +41,7 @@ export function Bar({
 	}
 
 	useEffect(() => {
-		registerSeries({ dataKey, kind: "bar", variant, strokeVariant, colors });
+		registerSeries({ colors, dataKey, kind: "bar", strokeVariant, variant });
 		return () => unregisterSeries(dataKey);
 	}, [
 		dataKey,
@@ -51,6 +51,12 @@ export function Bar({
 		registerSeries,
 		unregisterSeries,
 	]);
+
+	const { selectDataKey, selectedDataKey } = ctx;
+	const onClick = useCallback(
+		() => selectDataKey(selectedDataKey === dataKey ? null : dataKey),
+		[selectDataKey, selectedDataKey, dataKey]
+	);
 
 	const band = ctx.bands[dataKey];
 	if (!(ctx.ready && band)) {
@@ -62,32 +68,31 @@ export function Bar({
 		ctx.selectedDataKey !== null && ctx.selectedDataKey !== dataKey;
 	const si = ctx.configKeys.indexOf(dataKey);
 	const n = ctx.configKeys.length;
-	const onClick = () =>
-		ctx.selectDataKey(ctx.selectedDataKey === dataKey ? null : dataKey);
 
 	return (
 		<>
-			{isClickable &&
-				band.map((b, i) => {
-					const slot = ctx.barSlot(i, si, n);
-					const top = ctx.y(b[1]);
-					const base = ctx.y(b[0]);
-					return (
-						// biome-ignore lint/a11y/noStaticElementInteractions: progressive enhancement; the Legend offers the same toggle accessibly
-						<rect
-							fill="transparent"
-							height={Math.abs(base - top)}
-							// biome-ignore lint/suspicious/noArrayIndexKey: index is the stable category position
-							key={i}
-							onClick={onClick}
-							style={{ cursor: "pointer" }}
-							width={slot.width}
-							x={slot.x}
-							y={Math.min(top, base)}
-						/>
-					);
-				})}
-			<SeriesContext value={{ dataKey, seed, dimmed }}>
+			{isClickable
+				? band.map((b, i) => {
+						const slot = ctx.barSlot(i, si, n);
+						const top = ctx.y(b[1]);
+						const base = ctx.y(b[0]);
+						return (
+							// biome-ignore lint/a11y/noStaticElementInteractions: progressive enhancement; the Legend offers the same toggle accessibly
+							<rect
+								fill="transparent"
+								height={Math.abs(base - top)}
+								// biome-ignore lint/suspicious/noArrayIndexKey: index is the stable category position
+								key={i}
+								onClick={onClick}
+								style={{ cursor: "pointer" }}
+								width={slot.width}
+								x={slot.x}
+								y={Math.min(top, base)}
+							/>
+						);
+					})
+				: null}
+			<SeriesContext value={{ dataKey, dimmed, seed }}>
 				{children}
 			</SeriesContext>
 		</>

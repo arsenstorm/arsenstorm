@@ -20,7 +20,7 @@ const experience = await getExperience();
 	<Main>
 		<PageHeading description={DESCRIPTION} title={TITLE} />
 
-		<Section cta={{ label: "Go back", href: "/" }} title="Experience">
+		<Section cta={{ href: "/", label: "Go back" }} title="Experience">
 			<ExperienceList items={experience} />
 		</Section>
 	</Main>

@@ -14,7 +14,7 @@ const NATIONALITIES: BarListItem[] = [
 	{ label: "Singapore", value: 47 },
 	{ label: "United States", value: 40 },
 	{ label: "Hong Kong", value: 35 },
-	{ label: "Everywhere else", value: 802, color: "grey" },
+	{ color: "grey", label: "Everywhere else", value: 802 },
 ];
 
 export function NationalityChart() {

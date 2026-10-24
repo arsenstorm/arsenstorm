@@ -28,9 +28,9 @@ export async function getExperience() {
 	return entries
 		.map((entry) => ({
 			entry,
-			slug: entry.id,
 			href: `/experience/${entry.id}`,
 			period: formatPeriod(entry.data.start, entry.data.end),
+			slug: entry.id,
 			...entry.data,
 			logo: entry.data.logo?.src,
 		}))

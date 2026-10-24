@@ -6,9 +6,9 @@ import { type Env, SVG_HEADERS } from "./types";
 const MAX_YEARS = 3;
 
 const LINK_LABELS: Record<string, string> = {
-	"link-website": "Website",
-	"link-twitter": "Twitter",
 	"link-instagram": "Instagram",
+	"link-twitter": "Twitter",
+	"link-website": "Website",
 };
 
 function noData(theme: "light" | "dark"): Response {
@@ -62,9 +62,9 @@ function renderReadmeSection({
 	if (linkLabel) {
 		return link({
 			height: 18,
+			index: Number(url.searchParams.get("i")),
 			theme,
 			width: 100,
-			index: Number(url.searchParams.get("i")),
 		})(linkLabel);
 	}
 

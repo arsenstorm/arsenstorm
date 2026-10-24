@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type FormEvent, useCallback, useState } from "react";
 import { Panel } from "#/components/mdx/panel";
 import { inputClass, labelClass, primaryButtonClass, sandboxClass } from "./ui";
 
@@ -10,11 +10,15 @@ export function SecretsDemo() {
 	const [saved, setSaved] = useState(false);
 	const [run, setRun] = useState(0);
 
-	const reset = () => {
+	const reset = useCallback(() => {
 		setSaved(false);
 		// Remount the form so the uncontrolled fields clear too.
 		setRun((count) => count + 1);
-	};
+	}, []);
+	const save = useCallback((event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		setSaved(true);
+	}, []);
 
 	return (
 		<Panel demo="secrets" onReset={reset} title="Try it: secret fields">
@@ -28,10 +32,7 @@ export function SecretsDemo() {
 						className="flex w-full max-w-56 flex-col gap-2"
 						id="secret-card-form"
 						key={run}
-						onSubmit={(event) => {
-							event.preventDefault();
-							setSaved(true);
-						}}
+						onSubmit={save}
 					>
 						<div className="flex flex-col gap-1">
 							<label className={labelClass} htmlFor="secret-name">

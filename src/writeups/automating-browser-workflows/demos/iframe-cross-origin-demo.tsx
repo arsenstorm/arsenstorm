@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Panel } from "#/components/mdx/panel";
 import { secondaryButtonClass } from "./ui";
 
@@ -50,12 +50,12 @@ export function IframeCrossOriginDemo() {
 	// frame is the only reset it has, which is rather the point.
 	const [run, setRun] = useState(0);
 
-	const reset = () => {
+	const reset = useCallback(() => {
 		setVerdict(null);
 		setRun((count) => count + 1);
-	};
+	}, []);
 
-	const tryToReachInside = () => {
+	const tryToReachInside = useCallback(() => {
 		try {
 			const doc = frameRef.current?.contentDocument;
 			if (!doc) {
@@ -67,7 +67,7 @@ export function IframeCrossOriginDemo() {
 				`Blocked: ${error instanceof Error ? error.message : String(error)}`
 			);
 		}
-	};
+	}, []);
 
 	return (
 		<Panel onReset={reset} title="Try it: a cross-origin iframe">

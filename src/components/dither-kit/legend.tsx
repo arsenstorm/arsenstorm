@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "cnfast";
+import { useCallback } from "react";
 import { useCommonChart } from "./common-context";
 import { rgb } from "./palette";
 
@@ -29,41 +30,61 @@ export function Legend({
 				align === "left" && "justify-start"
 			)}
 		>
-			{chart.names.map((name) => {
-				const seed = chart.seedOf(name);
-				const emphasis = chart.selectedDataKey ?? chart.focusDataKey;
-				const dimmed = emphasis !== null && emphasis !== name;
-				return (
-					<button
-						className={cn(
-							"flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground transition-opacity",
-							isClickable &&
-								"pointer-events-auto cursor-pointer hover:text-foreground",
-							dimmed && "opacity-40"
-						)}
-						disabled={!isClickable}
-						key={name}
-						onBlur={() => chart.setFocusDataKey(null)}
-						onClick={() =>
-							chart.selectDataKey(chart.selectedDataKey === name ? null : name)
-						}
-						onFocus={() => chart.setFocusDataKey(name)}
-						// Hovering an entry spotlights its series so overlapping layers
-						// (e.g. two meshed radar polygons) can be told apart at a glance.
-						onPointerEnter={() => chart.setFocusDataKey(name)}
-						onPointerLeave={() => chart.setFocusDataKey(null)}
-						type="button"
-					>
-						<span
-							className="size-2 rounded-[1px]"
-							style={{ backgroundColor: rgb(seed.fill) }}
-						/>
-						{chart.labelOf(name)}
-					</button>
-				);
-			})}
+			{chart.names.map((name) => (
+				<LegendItem isClickable={isClickable} key={name} name={name} />
+			))}
 		</div>
 	);
 }
 
 Legend.chartLayer = "dom" as const;
+
+function LegendItem({
+	isClickable,
+	name,
+}: {
+	isClickable: boolean;
+	name: string;
+}) {
+	const chart = useCommonChart();
+	const { selectDataKey, selectedDataKey, setFocusDataKey } = chart;
+	const seed = chart.seedOf(name);
+	const emphasis = selectedDataKey ?? chart.focusDataKey;
+	const dimmed = emphasis !== null && emphasis !== name;
+
+	const focus = useCallback(
+		() => setFocusDataKey(name),
+		[setFocusDataKey, name]
+	);
+	const unfocus = useCallback(() => setFocusDataKey(null), [setFocusDataKey]);
+	const toggle = useCallback(
+		() => selectDataKey(selectedDataKey === name ? null : name),
+		[selectDataKey, selectedDataKey, name]
+	);
+
+	return (
+		<button
+			className={cn(
+				"flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground transition-opacity",
+				isClickable &&
+					"pointer-events-auto cursor-pointer hover:text-foreground",
+				dimmed && "opacity-40"
+			)}
+			disabled={!isClickable}
+			onBlur={unfocus}
+			onClick={toggle}
+			onFocus={focus}
+			// Hovering an entry spotlights its series so overlapping layers
+			// (e.g. two meshed radar polygons) can be told apart at a glance.
+			onPointerEnter={focus}
+			onPointerLeave={unfocus}
+			type="button"
+		>
+			<span
+				className="size-2 rounded-[1px]"
+				style={{ backgroundColor: rgb(seed.fill) }}
+			/>
+			{chart.labelOf(name)}
+		</button>
+	);
+}

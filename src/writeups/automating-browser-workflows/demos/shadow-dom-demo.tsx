@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Panel } from "#/components/mdx/panel";
 import { labelClass, sandboxClass } from "./ui";
 
@@ -83,11 +83,11 @@ export function ShadowDomDemo() {
 		}
 	}, []);
 
-	const reset = () => {
+	const reset = useCallback(() => {
 		for (const resetWidget of resettersRef.current) {
 			resetWidget();
 		}
-	};
+	}, []);
 
 	return (
 		<Panel onReset={reset} title="Try it: shadow DOM">

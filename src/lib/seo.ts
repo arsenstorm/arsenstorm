@@ -39,7 +39,7 @@ function getOgImageUrl(path: string) {
 }
 
 export function pageLinks(path = "/") {
-	return [{ rel: "canonical", href: getAbsoluteUrl(path) }];
+	return [{ href: getAbsoluteUrl(path), rel: "canonical" }];
 }
 
 export function pageMeta(
@@ -56,22 +56,22 @@ export function pageMeta(
 
 	return [
 		{ title: pageTitle },
-		{ name: "description", content: description },
-		{ property: "og:title", content: pageTitle },
-		{ property: "og:description", content: description },
-		{ property: "og:type", content: type },
-		{ property: "og:url", content: pageUrl },
-		{ property: "og:image", content: imageUrl },
-		{ property: "og:image:width", content: DEFAULT_OG_WIDTH },
-		{ property: "og:image:height", content: DEFAULT_OG_HEIGHT },
-		{ property: "og:video", content: videoUrl },
-		{ property: "og:video:type", content: "video/mp4" },
-		{ property: "og:video:width", content: DEFAULT_OG_WIDTH },
-		{ property: "og:video:height", content: DEFAULT_OG_HEIGHT },
-		{ name: "twitter:card", content: "summary_large_image" },
-		{ name: "twitter:title", content: pageTitle },
-		{ name: "twitter:description", content: description },
-		{ name: "twitter:image", content: imageUrl },
+		{ content: description, name: "description" },
+		{ content: pageTitle, property: "og:title" },
+		{ content: description, property: "og:description" },
+		{ content: type, property: "og:type" },
+		{ content: pageUrl, property: "og:url" },
+		{ content: imageUrl, property: "og:image" },
+		{ content: DEFAULT_OG_WIDTH, property: "og:image:width" },
+		{ content: DEFAULT_OG_HEIGHT, property: "og:image:height" },
+		{ content: videoUrl, property: "og:video" },
+		{ content: "video/mp4", property: "og:video:type" },
+		{ content: DEFAULT_OG_WIDTH, property: "og:video:width" },
+		{ content: DEFAULT_OG_HEIGHT, property: "og:video:height" },
+		{ content: "summary_large_image", name: "twitter:card" },
+		{ content: pageTitle, name: "twitter:title" },
+		{ content: description, name: "twitter:description" },
+		{ content: imageUrl, name: "twitter:image" },
 	];
 }
 

@@ -34,7 +34,7 @@ export function XAxis({
 						// biome-ignore lint/suspicious/noArrayIndexKey: index is the stable x position
 						key={i}
 						textAnchor="middle"
-						x={ctx.xCenter(i) ?? 0}
+						x={ctx.xCenter(i)}
 						y={y}
 					>
 						{label}

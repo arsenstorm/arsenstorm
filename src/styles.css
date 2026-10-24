@@ -7,7 +7,8 @@
 	font-weight: 100 900;
 	font-display: swap;
 	src: url("/fonts/InterVariable-latin.woff2") format("woff2");
-	unicode-range: U+0020-007E, U+00A0-00FF, U+0100-017F, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2199, U+21A9-21AA, U+2212-2215, U+2248, U+2260-2265, U+2713-2717, U+FEFF, U+FFFD;
+	unicode-range:
+		U+0020-007E, U+00A0-00FF, U+0100-017F, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2199, U+21A9-21AA, U+2212-2215, U+2248, U+2260-2265, U+2713-2717, U+FEFF, U+FFFD;
 }
 @font-face {
 	font-family: InterVariable;
@@ -15,7 +16,8 @@
 	font-weight: 100 900;
 	font-display: swap;
 	src: url("/fonts/InterVariable-Italic-latin.woff2") format("woff2");
-	unicode-range: U+0020-007E, U+00A0-00FF, U+0100-017F, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2199, U+21A9-21AA, U+2212-2215, U+2248, U+2260-2265, U+2713-2717, U+FEFF, U+FFFD;
+	unicode-range:
+		U+0020-007E, U+00A0-00FF, U+0100-017F, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2199, U+21A9-21AA, U+2212-2215, U+2248, U+2260-2265, U+2713-2717, U+FEFF, U+FFFD;
 }
 
 /* Screen-only so printing in dark mode still produces a light document. */
@@ -88,9 +90,9 @@ html {
 		--popover: oklch(0.205 0 0);
 		--popover-foreground: oklch(0.985 0 0);
 		--border: oklch(1 0 0 / 10%);
-		background: rgb(9 9 11);
 		color-scheme: dark;
 		scrollbar-color: rgb(113 113 122) transparent;
+		background: rgb(9 9 11);
 	}
 
 	html::-webkit-scrollbar-thumb {
@@ -114,14 +116,14 @@ button {
 }
 
 body {
-	background: inherit;
 	margin: 0;
 	letter-spacing: -0.02em;
+	background: inherit;
 }
 
 html::-webkit-scrollbar {
-	height: 8px;
 	width: 8px;
+	height: 8px;
 }
 
 html::-webkit-scrollbar-track {
@@ -129,16 +131,16 @@ html::-webkit-scrollbar-track {
 }
 
 html::-webkit-scrollbar-thumb {
-	background-clip: content-box;
 	background-color: rgb(161 161 170 / 70%);
+	background-clip: content-box;
 	border: 2px solid transparent;
 	border-radius: 999px;
 }
 
 code[data-theme*=" "],
 code[data-theme*=" "] span {
-	background-color: transparent;
 	color: var(--shiki-light);
+	background-color: transparent;
 }
 
 /* After the light rule: same specificity, so source order decides. */

@@ -1,4 +1,4 @@
-import { Box, Diagram, Label } from "#/components/mdx/diagram.tsx";
+import { Annotation, Box, Diagram } from "#/components/mdx/diagram.tsx";
 
 const SLOT_W = 42;
 const SLOT_GAP = 8;
@@ -28,9 +28,9 @@ function GroupBracket({
 	return (
 		<>
 			<path className={BRACKET} d={d} fill="none" strokeWidth={1.25} />
-			<Label x={(from + to) / 2} y={below ? 156 : 50}>
+			<Annotation x={(from + to) / 2} y={below ? 156 : 50}>
 				{label}
-			</Label>
+			</Annotation>
 		</>
 	);
 }
@@ -104,12 +104,12 @@ export function LiveWindow() {
 				y={SLOT_Y}
 			/>
 
-			<Label x={slotX(7) + SLOT_W / 2} y={SLOT_Y - 16}>
+			<Annotation x={slotX(7) + SLOT_W / 2} y={SLOT_Y - 16}>
 				gap
-			</Label>
-			<Label x={slotX(8) + SLOT_W / 2} y={SLOT_Y - 16}>
+			</Annotation>
+			<Annotation x={slotX(8) + SLOT_W / 2} y={SLOT_Y - 16}>
 				waiting
-			</Label>
+			</Annotation>
 
 			{/* cursor */}
 			<line
@@ -120,9 +120,9 @@ export function LiveWindow() {
 				y1={SLOT_Y - 10}
 				y2={SLOT_Y + SLOT_H + 10}
 			/>
-			<Label tone="fg" x={cursorX} y={SLOT_Y + SLOT_H + 26}>
+			<Annotation tone="fg" x={cursorX} y={SLOT_Y + SLOT_H + 26}>
 				cursor — live edge
-			</Label>
+			</Annotation>
 		</Diagram>
 	);
 }

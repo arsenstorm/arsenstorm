@@ -1,4 +1,3 @@
-import { SITE_DESCRIPTION } from "#/lib/seo";
 import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
@@ -11,6 +10,7 @@ import remarkMdx from "remark-mdx";
 import remarkParse from "remark-parse";
 import remarkStringify from "remark-stringify";
 import { unified } from "unified";
+import { SITE_DESCRIPTION } from "#/lib/seo";
 import {
 	CONTACT_DESCRIPTION,
 	CONTACT_METHODS,
@@ -192,7 +192,11 @@ function requireString(fields: Frontmatter, key: string, file: string): string {
 }
 
 // Mirrors the content schema, where list fields default to `[]` when absent.
-function optionalList(fields: Frontmatter, key: string, file: string): string[] {
+function optionalList(
+	fields: Frontmatter,
+	key: string,
+	file: string
+): string[] {
 	const value = fields[key];
 	if (value === undefined) {
 		return [];
@@ -422,11 +426,10 @@ async function transformNodes(
 	nodes: MdNode[],
 	imports: Map<string, string>
 ): Promise<MdNode[]> {
-	const output: MdNode[] = [];
-	for (const node of nodes) {
-		output.push(...(await transformNode(node, imports)));
-	}
-	return output;
+	const transformed = await Promise.all(
+		nodes.map((node) => transformNode(node, imports))
+	);
+	return transformed.flat();
 }
 
 /** Turn an `index.mdx` source into plain markdown: frontmatter verbatim, JSX
@@ -498,7 +501,7 @@ function readExperience(): Experience[] {
 		.map((slug) => {
 			const file = join(EXPERIENCE_DIRECTORY, slug, "index.mdx");
 			const fields = parseFrontmatter(readFileSync(file, "utf8"));
-			const end = fields.end;
+			const { end } = fields;
 			return {
 				company: requireString(fields, "company", file),
 				end: typeof end === "string" ? end : null,
@@ -619,14 +622,16 @@ async function writeEntries(
 	route: string,
 	slugs: string[]
 ): Promise<void> {
-	for (const slug of slugs) {
-		const file = join(directory, slug, "index.mdx");
-		const markdown = await transformMdxToMarkdown(
-			readFileSync(file, "utf8"),
-			file
-		);
-		await write(`${route}/${slug}.md`, markdown);
-	}
+	await Promise.all(
+		slugs.map(async (slug) => {
+			const file = join(directory, slug, "index.mdx");
+			const markdown = await transformMdxToMarkdown(
+				readFileSync(file, "utf8"),
+				file
+			);
+			await write(`${route}/${slug}.md`, markdown);
+		})
+	);
 }
 
 async function main(): Promise<void> {

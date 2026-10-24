@@ -3,40 +3,40 @@ import { glob } from "astro/loaders";
 
 const writeups = defineCollection({
 	loader: glob({
-		pattern: "*/index.mdx",
 		base: "./src/writeups",
 		generateId: ({ entry }) => entry.split("/")[0] ?? entry,
+		pattern: "*/index.mdx",
 	}),
 	schema: z.object({
-		title: z.string(),
 		description: z.string(),
 		metaDescription: z.string().optional(),
 		publishedAt: z.string(),
 		tags: z.array(z.string()),
+		title: z.string(),
 	}),
 });
 
 const experience = defineCollection({
 	loader: glob({
-		pattern: "*/index.mdx",
 		base: "./src/experience",
 		generateId: ({ entry }) => entry.split("/")[0] ?? entry,
+		pattern: "*/index.mdx",
 	}),
 	schema: ({ image }) =>
 		z.object({
 			company: z.string(),
-			logo: image().optional(),
-			role: z.string(),
-			start: z.string(),
 			end: z.string().nullable(),
-			summary: z.string(),
-			kind: z.enum(["experience", "earlier"]).default("experience"),
-			hidden: z.boolean().default(false),
-			highlights: z.array(z.string()).default([]),
 			facts: z
 				.array(z.object({ label: z.string(), value: z.string() }))
 				.default([]),
+			hidden: z.boolean().default(false),
+			highlights: z.array(z.string()).default([]),
+			kind: z.enum(["experience", "earlier"]).default("experience"),
+			logo: image().optional(),
+			role: z.string(),
+			start: z.string(),
+			summary: z.string(),
 		}),
 });
 
-export const collections = { writeups, experience };
+export const collections = { experience, writeups };

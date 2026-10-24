@@ -9,23 +9,19 @@ import {
 import type { Env } from "./types";
 
 describe("acceptsMarkdown", () => {
-	it.each([
-		"text/markdown",
-		"text/html, text/markdown;q=0.9",
-		"TEXT/MARKDOWN",
-	])("returns true for %s", (accept) => {
-		expect(acceptsMarkdown(accept)).toBe(true);
-	});
+	it.each(["text/markdown", "text/html, text/markdown;q=0.9", "TEXT/MARKDOWN"])(
+		"returns true for %s",
+		(accept) => {
+			expect(acceptsMarkdown(accept)).toBe(true);
+		}
+	);
 
-	it.each([
-		null,
-		"*/*",
-		"text/*",
-		"text/html",
-		"text/markdown;q=0",
-	])("returns false for %s", (accept) => {
-		expect(acceptsMarkdown(accept)).toBe(false);
-	});
+	it.each([null, "*/*", "text/*", "text/html", "text/markdown;q=0"])(
+		"returns false for %s",
+		(accept) => {
+			expect(acceptsMarkdown(accept)).toBe(false);
+		}
+	);
 });
 
 describe("isContentPath", () => {

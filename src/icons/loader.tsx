@@ -37,10 +37,9 @@ export default function Loader({ duoOpacity = 0.4, ...props }: IconProps) {
 				opacity={duoOpacity}
 				r="5"
 			/>{" "}
-			<defs fill="none">
+			<defs>
 				{" "}
 				<linearGradient
-					fill="none"
 					gradientUnits="userSpaceOnUse"
 					id="nc-loader-2-fill-duo-gradient-1"
 					x1="9"
@@ -49,13 +48,9 @@ export default function Loader({ duoOpacity = 0.4, ...props }: IconProps) {
 					y2="16.25"
 				>
 					{" "}
-					<stop fill="none" stopOpacity="0.5" /> <stop
-						fill="none"
-						offset="1"
-					/>{" "}
+					<stop stopOpacity="0.5" /> <stop offset="1" />{" "}
 				</linearGradient>{" "}
 				<linearGradient
-					fill="none"
 					gradientUnits="userSpaceOnUse"
 					id="nc-loader-2-fill-duo-gradient-2"
 					x1="9"
@@ -64,8 +59,8 @@ export default function Loader({ duoOpacity = 0.4, ...props }: IconProps) {
 					y2="16.25"
 				>
 					{" "}
-					<stop fill="none" stopColor="#000" stopOpacity="0.5" />{" "}
-					<stop fill="none" offset="1" stopColor="#000" stopOpacity="0" />{" "}
+					<stop stopColor="#000" stopOpacity="0.5" />{" "}
+					<stop offset="1" stopColor="#000" stopOpacity="0" />{" "}
 				</linearGradient>{" "}
 			</defs>
 		</svg>

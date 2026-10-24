@@ -14,11 +14,11 @@ const META_DESCRIPTION =
 ---
 
 <BaseLayout description={META_DESCRIPTION} path="/writing" title={TITLE}>
-  <Main>
-    <PageHeading description={DESCRIPTION} title={TITLE} />
+	<Main>
+		<PageHeading description={DESCRIPTION} title={TITLE} />
 
-    <section>
-      <ItemGroup groupBy="month" items={await getWriteups()} />
-    </section>
-  </Main>
+		<section>
+			<ItemGroup groupBy="month" items={await getWriteups()} />
+		</section>
+	</Main>
 </BaseLayout>

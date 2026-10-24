@@ -69,6 +69,8 @@ export function ItemGroup({
 
 	const grouped = groupByDate(visibleItems, groupBy);
 	const newestYear = grouped[0]?.[0].slice(0, 4);
+	const dateLabel = (date: string) =>
+		groupBy === "month" ? monthLabel(date, newestYear) : date;
 
 	return (
 		<div className="flex flex-col gap-6" id={id}>
@@ -76,9 +78,7 @@ export function ItemGroup({
 				<div className="relative -mx-4" key={date}>
 					{showAll ? (
 						<h3 className="mb-2 px-4 text-neutral-400 text-sm tabular-nums md:absolute md:top-0 md:right-full md:mr-4 md:mb-0 md:px-0 md:pt-3 dark:text-neutral-500">
-							<time dateTime={date}>
-								{groupBy === "month" ? monthLabel(date, newestYear) : date}
-							</time>
+							<time dateTime={date}>{dateLabel(date)}</time>
 						</h3>
 					) : null}
 					<ul className="flex flex-col rounded-xl bg-neutral-100 dark:bg-neutral-900">

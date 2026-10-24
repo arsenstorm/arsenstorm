@@ -1,8 +1,8 @@
 import {
+	Annotation,
 	Arrow,
 	Box,
 	Diagram,
-	Label,
 	MarkedPath,
 } from "#/components/mdx/diagram.tsx";
 
@@ -20,27 +20,27 @@ export function MailLoop() {
 		>
 			{/* the loop: service replies to the auto-responder */}
 			<Arrow x1={40 + W} x2={360} y1={46} y2={46} />
-			<Label x={275} y={38}>
+			<Annotation x={275} y={38}>
 				replies
-			</Label>
+			</Annotation>
 
 			{/* auto-reply comes back in as a new inbound, routed through the guard */}
 			<MarkedPath d="M435,68 V142 H356" />
-			<Label x={435} y={104}>
+			<Annotation x={435} y={104}>
 				auto-reply
-			</Label>
+			</Annotation>
 
 			{/* guard lets human mail continue back to the service */}
 			<MarkedPath d="M200,142 H115 V74" />
-			<Label x={115} y={104}>
+			<Annotation x={115} y={104}>
 				not automated
-			</Label>
+			</Annotation>
 
 			{/* the break: automated mail is dropped, ending the cycle */}
 			<Arrow variant="dashed" x1={275} x2={275} y1={164} y2={196} />
-			<Label anchor="start" x={283} y={184}>
+			<Annotation anchor="start" x={283} y={184}>
 				automated
-			</Label>
+			</Annotation>
 
 			<Box h={H} label="service" variant="solid" w={W} x={40} y={24} />
 			<Box h={H} label="auto-responder" w={W} x={360} y={24} />

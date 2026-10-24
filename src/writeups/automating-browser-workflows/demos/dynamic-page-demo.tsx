@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import {
+	type ChangeEvent,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { Panel } from "#/components/mdx/panel";
 import { inputClass, labelClass, primaryButtonClass, sandboxClass } from "./ui";
 
@@ -28,20 +34,26 @@ export function DynamicPageDemo() {
 		[]
 	);
 
-	const openEditor = () => {
+	const openEditor = useCallback(() => {
 		setStage("editing");
 		setSaveReady(false);
 		lateTimerRef.current = setTimeout(() => setSaveReady(true), LATE_RENDER_MS);
-	};
+	}, []);
 
-	const reset = () => {
+	const reset = useCallback(() => {
 		if (lateTimerRef.current) {
 			clearTimeout(lateTimerRef.current);
 		}
 		setStage("idle");
 		setSaveReady(false);
 		setName("");
-	};
+	}, []);
+
+	const updateName = useCallback(
+		(event: ChangeEvent<HTMLInputElement>) => setName(event.target.value),
+		[]
+	);
+	const save = useCallback(() => setStage("saved"), []);
 
 	return (
 		<Panel
@@ -73,7 +85,7 @@ export function DynamicPageDemo() {
 							<input
 								className={inputClass}
 								id="replay-name"
-								onChange={(event) => setName(event.target.value)}
+								onChange={updateName}
 								type="text"
 								value={name}
 							/>
@@ -82,7 +94,7 @@ export function DynamicPageDemo() {
 							<button
 								className={primaryButtonClass}
 								id="replay-save"
-								onClick={() => setStage("saved")}
+								onClick={save}
 								type="button"
 							>
 								Save changes

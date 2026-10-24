@@ -81,24 +81,24 @@ function paintBar(frame: Frame, series: SeriesPaint, i: number) {
 	const bottom = Math.max(grown, base);
 	const active = s.hoverIndex === i;
 	const hoverDim =
-		s.hoverIndex != null && !active && s.isMouseInChart ? 0.5 : 1;
+		s.hoverIndex !== null && !active && s.isMouseInChart ? 0.5 : 1;
 	const slot = s.barSlot(i, series.index, series.count);
 	const c0 = Math.round(slot.x * fx);
 	const c1 = Math.round((slot.x + slot.width) * fx);
 	const override = series.colors?.[i];
 	const barSeed = override ? seedOfColor(override) : series.seed;
-	for (let x = c0; x < c1; x++) {
+	for (let x = c0; x < c1; x += 1) {
 		paintColumn(c, x, top, bottom, barSeed, {
-			variant: series.variant,
-			intensity: frame.intensity + (active ? 0.4 : 0),
 			dim: series.selDim * hoverDim,
+			intensity: frame.intensity + (active ? 0.4 : 0),
 			stacked,
+			variant: series.variant,
 		});
 	}
 }
 
 function paintSeries(frame: Frame, series: SeriesPaint) {
-	for (let i = 0; i < frame.s.dataLength; i++) {
+	for (let i = 0; i < frame.s.dataLength; i += 1) {
 		paintBar(frame, series, i);
 	}
 }
@@ -114,13 +114,13 @@ function paintFrame(frame: Frame) {
 			continue;
 		}
 		paintSeries(frame, {
-			targets,
-			index: si,
-			count: keys.length,
-			seed: s.seedOf(key),
-			variant: s.seriesSpecs[key]?.variant ?? "gradient",
 			colors: s.seriesSpecs[key]?.colors,
+			count: keys.length,
+			index: si,
+			seed: s.seedOf(key),
 			selDim: emphasis !== null && emphasis !== key ? 0.3 : 1,
+			targets,
+			variant: s.seriesSpecs[key]?.variant ?? "gradient",
 		});
 	}
 }
@@ -195,8 +195,8 @@ export function BarCanvas() {
 				continue;
 			}
 			out[key] = {
-				top: band.map((b) => (y(b[1]) / h) * (rows - 1)),
 				base: band.map((b) => (y(b[0]) / h) * (rows - 1)),
+				top: band.map((b) => (y(b[1]) / h) * (rows - 1)),
 			};
 		}
 		return out;
@@ -295,10 +295,10 @@ export function BarCanvas() {
 
 	const bloom = bloomLayerStyle(ctx.bloom, bloomActive(ctx));
 	const pos = {
+		height,
 		left: ctx.margins.left,
 		top: ctx.margins.top,
 		width,
-		height,
 	} as const;
 
 	return (

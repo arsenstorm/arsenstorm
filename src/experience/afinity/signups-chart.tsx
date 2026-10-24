@@ -17,7 +17,7 @@ const MONTHS = [
 ];
 
 const CONFIG: ChartConfig = {
-	signups: { label: "Signups", color: "blue" },
+	signups: { color: "blue", label: "Signups" },
 };
 
 export function SignupsChart() {

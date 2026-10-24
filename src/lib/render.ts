@@ -99,8 +99,8 @@ export const main = (props: Props & Main) => {
 	`;
 
 	return svg(mainStyles(props), html, {
-		height: `${props.height}`,
 		"data-theme": props.theme,
+		height: `${props.height}`,
 	});
 };
 
@@ -116,8 +116,8 @@ export const top = (props: Props & { contributions: number }) => {
 	`;
 
 	return svg(topStyles(props), html, {
-		height: `${props.height}`,
 		"data-theme": props.theme,
+		height: `${props.height}`,
 	});
 };
 
@@ -132,9 +132,9 @@ export const link = (props: Props & { index: number }) => (label: string) => {
 	`;
 
 	return svg(linkStyles(props), html, {
-		width: `${props.width ?? 100}`,
-		height: `${props.height}`,
 		"data-theme": props.theme,
+		height: `${props.height}`,
+		width: `${props.width ?? 100}`,
 	});
 };
 
@@ -151,9 +151,9 @@ export const fallback = (props: Props & { width: number }) => {
 	`;
 
 	return svg(fallbackStyles(props), html, {
-		width: `${props.width}`,
-		height: `${props.height}`,
 		"data-theme": props.theme,
+		height: `${props.height}`,
 		viewBox: `0 0 ${props.width} ${props.height}`,
+		width: `${props.width}`,
 	});
 };

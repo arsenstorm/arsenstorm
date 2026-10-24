@@ -7,14 +7,12 @@ describe("isOgVideoPath", () => {
 		expect(isOgVideoPath(path)).toBe(true);
 	});
 
-	it.each([
-		"/og/index.png",
-		"/og",
-		"/og/nested/index.mp4",
-		"/index.mp4",
-	])("ignores %s", (path) => {
-		expect(isOgVideoPath(path)).toBe(false);
-	});
+	it.each(["/og/index.png", "/og", "/og/nested/index.mp4", "/index.mp4"])(
+		"ignores %s",
+		(path) => {
+			expect(isOgVideoPath(path)).toBe(false);
+		}
+	);
 });
 
 describe("handleOgVideo", () => {
@@ -57,15 +55,14 @@ describe("handleOgVideo", () => {
 		expect(await response.text()).toBe(body);
 	});
 
-	it.each([
-		"bytes=10-",
-		"bytes=5-2",
-		"bytes=-",
-	])("rejects %s with 416", async (range) => {
-		const response = await get("/og/index.mp4", range);
-		expect(response.status).toBe(416);
-		expect(response.headers.get("content-range")).toBe("bytes */10");
-	});
+	it.each(["bytes=10-", "bytes=5-2", "bytes=-"])(
+		"rejects %s with 416",
+		async (range) => {
+			const response = await get("/og/index.mp4", range);
+			expect(response.status).toBe(416);
+			expect(response.headers.get("content-range")).toBe("bytes */10");
+		}
+	);
 
 	it("passes a missing video through", async () => {
 		expect((await get("/og/missing.mp4", "bytes=0-1")).status).toBe(404);

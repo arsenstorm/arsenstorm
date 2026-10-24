@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ChangeEvent, type FormEvent, useCallback, useState } from "react";
 import { Panel } from "#/components/mdx/panel";
 import { inputClass, labelClass, primaryButtonClass, sandboxClass } from "./ui";
 
@@ -13,11 +13,19 @@ export function NewsletterDemo() {
 	const [subscribed, setSubscribed] = useState(false);
 	const [run, setRun] = useState(0);
 
-	const reset = () => {
+	const reset = useCallback(() => {
 		setEmail("");
 		setSubscribed(false);
 		setRun((count) => count + 1);
-	};
+	}, []);
+	const subscribe = useCallback((event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		setSubscribed(true);
+	}, []);
+	const updateEmail = useCallback(
+		(event: ChangeEvent<HTMLInputElement>) => setEmail(event.target.value),
+		[]
+	);
 
 	return (
 		<Panel demo="newsletter" onReset={reset} title="Try it: a newsletter form">
@@ -31,10 +39,7 @@ export function NewsletterDemo() {
 						className="flex w-full max-w-56 flex-col gap-2"
 						id="demo-newsletter-form"
 						key={run}
-						onSubmit={(event) => {
-							event.preventDefault();
-							setSubscribed(true);
-						}}
+						onSubmit={subscribe}
 					>
 						<div className="flex flex-col gap-1">
 							<label className={labelClass} htmlFor="demo-email">
@@ -44,7 +49,7 @@ export function NewsletterDemo() {
 								autoComplete="off"
 								className={inputClass}
 								id="demo-email"
-								onChange={(event) => setEmail(event.target.value)}
+								onChange={updateEmail}
 								placeholder="you@example.com"
 								required
 								type="email"

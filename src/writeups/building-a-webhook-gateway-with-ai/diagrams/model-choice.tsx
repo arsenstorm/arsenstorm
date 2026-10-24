@@ -1,4 +1,4 @@
-import { Arrow, Box, Diagram, Label } from "#/components/mdx/diagram.tsx";
+import { Annotation, Arrow, Box, Diagram } from "#/components/mdx/diagram.tsx";
 
 const W = 170;
 const H = 46;
@@ -13,14 +13,14 @@ export function ModelChoice() {
 			viewBox="8 12 484 206"
 		>
 			<Arrow x1={215} x2={105} y1={70} y2={160} />
-			<Label x={160} y={115}>
+			<Annotation x={160} y={115}>
 				well-defined task
-			</Label>
+			</Annotation>
 
 			<Arrow x1={285} x2={395} y1={70} y2={160} />
-			<Label x={340} y={115}>
+			<Annotation x={340} y={115}>
 				loosely-defined task
-			</Label>
+			</Annotation>
 
 			<Box h={H} label="spec" variant="solid" w={W} x={165} y={24} />
 			<Box h={H} label="cheaper model" w={W} x={20} y={160} />

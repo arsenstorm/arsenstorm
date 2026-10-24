@@ -13,8 +13,8 @@ export interface Dimensions {
  * and locking its canvas to it.
  */
 export function useChartDimensions<T extends HTMLElement>() {
-	const ref = useRef<T>(null);
-	const [size, setSize] = useState<Dimensions>({ width: 0, height: 0 });
+	const ref = useRef<T | null>(null);
+	const [size, setSize] = useState<Dimensions>({ height: 0, width: 0 });
 
 	useLayoutEffect(() => {
 		const el = ref.current;
@@ -28,7 +28,7 @@ export function useChartDimensions<T extends HTMLElement>() {
 			setSize((prev) =>
 				prev.width === width && prev.height === height
 					? prev // guard against repeat fires
-					: { width, height }
+					: { height, width }
 			);
 		};
 

@@ -64,7 +64,7 @@ function useSeriesRegistry() {
 			return next;
 		});
 	}, []);
-	return { seriesSpecs, registerSeries, unregisterSeries };
+	return { registerSeries, seriesSpecs, unregisterSeries };
 }
 
 /** The stack bands and the x/y scale helpers derived from them — everything that
@@ -123,12 +123,12 @@ function useChartScales({
 			const center = xCenter(i);
 			if (stacked) {
 				const w = bandwidth * 0.9;
-				return { x: center - w / 2, width: w };
+				return { width: w, x: center - w / 2 };
 			}
 			const slot = bandwidth / Math.max(n, 1);
 			return {
-				x: center - bandwidth / 2 + si * slot + slot * 0.08,
 				width: slot * 0.84,
+				x: center - bandwidth / 2 + si * slot + slot * 0.08,
 			};
 		},
 		[xCenter, stacked, bandwidth]
@@ -137,7 +137,7 @@ function useChartScales({
 		() => buildYScale(min, max, plotHeight),
 		[min, max, plotHeight]
 	);
-	return { bands, max, min, bandwidth, xCenter, indexAtX, barSlot, y };
+	return { bands, bandwidth, barSlot, indexAtX, max, min, xCenter, y };
 }
 
 /** Top px for the tooltip card: follows the highest hovered node so it rides the
@@ -150,7 +150,7 @@ function tooltipTopFor(
 	mTop: number
 ) {
 	const floor = mTop + 44;
-	if (hoverIndex == null) {
+	if (hoverIndex === null) {
 		return floor;
 	}
 	let minY = Number.POSITIVE_INFINITY;
@@ -207,33 +207,33 @@ function useCommonChart({
 	// so it needs its own stable identity independent of the parent value.
 	return useMemo(
 		() => ({
-			names: configKeys,
-			labelOf: (n) => config[n]?.label ?? n,
-			seedOf,
-			selectedDataKey,
-			selectDataKey,
 			focusDataKey,
-			setFocusDataKey,
-			hoverIndex,
-			ready,
-			tooltipLeft: Math.max(48, Math.min(plotWidth + mLeft - 48, cursorX)),
-			tooltipTop: tooltipTopFor(hoverIndex, configKeys, bands, y, mTop),
 			heading: (i, labelKey) =>
 				labelKey ? String(data[i]?.[labelKey] ?? "") : null,
+			hoverIndex,
 			itemsAt: (i) =>
 				configKeys.map((name) => {
 					const raw = data[i]?.[name];
 					return {
-						name,
-						label: config[name]?.label ?? name,
-						value: typeof raw === "number" ? raw : 0,
-						seed: seedOf(name),
 						dimmed: (() => {
 							const emphasis = selectedDataKey ?? focusDataKey;
 							return emphasis !== null && emphasis !== name;
 						})(),
+						label: config[name]?.label ?? name,
+						name,
+						seed: seedOf(name),
+						value: typeof raw === "number" ? raw : 0,
 					};
 				}),
+			labelOf: (n) => config[n]?.label ?? n,
+			names: configKeys,
+			ready,
+			seedOf,
+			selectDataKey,
+			selectedDataKey,
+			setFocusDataKey,
+			tooltipLeft: Math.max(48, Math.min(plotWidth + mLeft - 48, cursorX)),
+			tooltipTop: tooltipTopFor(hoverIndex, configKeys, bands, y, mTop),
 		}),
 		[
 			configKeys,
@@ -329,7 +329,7 @@ export function useChartController({
 	// so it doesn't, on its own, invalidate the value or the plot geometry.
 	const { top: mTop, right: mRight, bottom: mBottom, left: mLeft } = margins;
 	const stableMargins = useMemo(
-		() => ({ top: mTop, right: mRight, bottom: mBottom, left: mLeft }),
+		() => ({ bottom: mBottom, left: mLeft, right: mRight, top: mTop }),
 		[mTop, mRight, mBottom, mLeft]
 	);
 
@@ -341,26 +341,26 @@ export function useChartController({
 	// `markEntranceDone`) so DOM markers fade in with the fill, and re-arms on
 	// each replay. Adjust-state-during-render instead of an effect, so the reset
 	// lands in the same render as the revision bump.
-	const [entrance, setEntrance] = useState({ revision, done: !animate });
+	const [entrance, setEntrance] = useState({ done: !animate, revision });
 	if (entrance.revision !== revision) {
-		setEntrance({ revision, done: !animate });
+		setEntrance({ done: !animate, revision });
 	}
 	const entranceDone =
 		entrance.revision === revision ? entrance.done : !animate;
 	// Stable across renders at the same revision; the canvas holds this in a ref.
 	const markEntranceDone = useCallback(
-		() => setEntrance({ revision, done: true }),
+		() => setEntrance({ done: true, revision }),
 		[revision]
 	);
 
 	const { bands, max, min, bandwidth, xCenter, indexAtX, barSlot, y } =
 		useChartScales({
 			chartType,
-			data,
 			configKeys,
-			stackType,
-			plotWidth,
+			data,
 			plotHeight,
+			plotWidth,
+			stackType,
 		});
 
 	// Stable so `common` and the value stay stable; re-created only on config.
@@ -370,22 +370,22 @@ export function useChartController({
 	);
 
 	const common = useCommonChart({
+		bands,
 		config,
 		configKeys,
+		cursorX,
 		data,
-		bands,
-		y,
-		seedOf,
-		selectedDataKey,
-		selectDataKey,
 		focusDataKey,
-		setFocusDataKey,
 		hoverIndex,
-		ready,
-		plotWidth,
 		mLeft,
 		mTop,
-		cursorX,
+		plotWidth,
+		ready,
+		seedOf,
+		selectDataKey,
+		selectedDataKey,
+		setFocusDataKey,
+		y,
 	});
 
 	// Memoized: this is the ChartContext value. A fresh object here would
@@ -395,46 +395,46 @@ export function useChartController({
 	// it carries never change identity, so they are left out of the deps.
 	return useMemo<ChartContextValue>(
 		() => ({
-			chartType,
-			config,
-			configKeys,
-			data,
-			dataLength: data.length,
-			stackType,
-			margins: stableMargins,
-			plot: { width: plotWidth, height: plotHeight },
-			ready,
-			xCenter,
-			bandwidth,
-			indexAtX,
-			barSlot,
-			y,
-			bands,
-			max,
-			min,
-			selectedDataKey,
-			selectDataKey,
-			focusDataKey,
-			setFocusDataKey,
-			hoverIndex,
-			setHoverIndex,
-			cursorX,
-			setCursorX,
-			isMouseInChart,
-			setMouseInChart,
-			hovered,
-			bloom,
-			bloomOnHover,
-			seriesSpecs,
-			registerSeries,
-			unregisterSeries,
 			animate,
 			animationDuration,
-			revision,
-			entranceDone,
-			markEntranceDone,
-			seedOf,
+			bands,
+			bandwidth,
+			barSlot,
+			bloom,
+			bloomOnHover,
+			chartType,
 			common,
+			config,
+			configKeys,
+			cursorX,
+			data,
+			dataLength: data.length,
+			entranceDone,
+			focusDataKey,
+			hovered,
+			hoverIndex,
+			indexAtX,
+			isMouseInChart,
+			margins: stableMargins,
+			markEntranceDone,
+			max,
+			min,
+			plot: { height: plotHeight, width: plotWidth },
+			ready,
+			registerSeries,
+			revision,
+			seedOf,
+			selectDataKey,
+			selectedDataKey,
+			seriesSpecs,
+			setCursorX,
+			setFocusDataKey,
+			setHoverIndex,
+			setMouseInChart,
+			stackType,
+			unregisterSeries,
+			xCenter,
+			y,
 		}),
 		[
 			chartType,

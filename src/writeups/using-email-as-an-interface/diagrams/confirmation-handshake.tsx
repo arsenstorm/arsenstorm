@@ -1,8 +1,8 @@
 import {
+	Annotation,
 	Arrow,
 	Box,
 	Diagram,
-	Label,
 	MarkedPath,
 } from "#/components/mdx/diagram.tsx";
 
@@ -48,39 +48,39 @@ export function ConfirmationHandshake() {
 			<Box h={36} label="Victim" w={104} x={VICTIM - 52} y={14} />
 
 			{/* 1. spoofed request */}
-			<Label anchor="start" x={ATTACKER + 6} y={78}>
+			<Annotation anchor="start" x={ATTACKER + 6} y={78}>
 				1. "delete account" · spoofed From
-			</Label>
+			</Annotation>
 			<Arrow x1={ATTACKER} x2={SERVICE} y1={86} y2={86} />
 
 			{/* 2. create pending (self) */}
 			<MarkedPath d={`M${SERVICE},108 h28 v16 h-22`} />
-			<Label anchor="start" x={SERVICE + 34} y={120}>
+			<Annotation anchor="start" x={SERVICE + 34} y={120}>
 				2. create pending action
-			</Label>
+			</Annotation>
 
 			{/* 3. confirmation to the canonical address */}
-			<Label anchor="start" x={SERVICE + 6} y={150}>
+			<Annotation anchor="start" x={SERVICE + 6} y={150}>
 				3. confirmation · Message-ID
-			</Label>
+			</Annotation>
 			<Arrow x1={SERVICE} x2={VICTIM} y1={158} y2={158} />
 
 			{/* 4. reply referencing the confirmation (return) */}
-			<Label anchor="start" x={SERVICE + 6} y={182}>
+			<Annotation anchor="start" x={SERVICE + 6} y={182}>
 				4. reply · In-Reply-To
-			</Label>
+			</Annotation>
 			<Arrow variant="dashed" x1={VICTIM} x2={SERVICE} y1={190} y2={190} />
 
 			{/* 5. verify + execute (self) */}
 			<MarkedPath d={`M${SERVICE},214 h28 v16 h-22`} />
-			<Label anchor="start" x={SERVICE + 34} y={226}>
+			<Annotation anchor="start" x={SERVICE + 34} y={226}>
 				5. verify reference · execute
-			</Label>
+			</Annotation>
 
 			{/* the cut: the confirmation never reaches the attacker */}
-			<Label x={ATTACKER} y={262}>
+			<Annotation x={ATTACKER} y={262}>
 				✗ no inbox
-			</Label>
+			</Annotation>
 		</Diagram>
 	);
 }

@@ -42,9 +42,10 @@ async function readGitHubJson(
 	let json: GitHubResponsePayload;
 	try {
 		json = JSON.parse(responseBody) as GitHubResponsePayload;
-	} catch {
+	} catch (error) {
 		throw new Error(
-			`GitHub returned invalid JSON: ${responseBody.slice(0, 200)}`
+			`GitHub returned invalid JSON: ${responseBody.slice(0, 200)}`,
+			{ cause: error }
 		);
 	}
 
@@ -116,29 +117,37 @@ export async function getAllContributions(
 	start: Date,
 	end: Date = new Date()
 ): Promise<[Year[], number]> {
-	const years: Year[] = [];
-	let cursor = start;
+	// One range per calendar year; the years are independent, so fetch them
+	// together.
+	const ranges: [Date, Date][] = [];
+	for (let cursor = start; cursor < end; ) {
+		const next = new Date(
+			Math.min(
+				new Date(cursor.getFullYear() + 1, 0, 1).getTime(),
+				end.getTime()
+			)
+		);
+		ranges.push([cursor, next]);
+		cursor = next;
+	}
+	const results = await Promise.all(
+		ranges.map(([from, to]) => fetchContributions(token, from, to))
+	);
+
 	let totalContributions = 0;
-
-	while (cursor < end) {
-		let next = new Date(cursor.getFullYear() + 1, 0, 1);
-		if (next > end) {
-			next = end;
-		}
-
-		const data = await fetchContributions(token, cursor, next);
+	const years: Year[] = results.map((data, index) => {
+		const [from, to] = ranges[index];
 		totalContributions += data.contributions;
-		years.push({
+		return {
 			days: data.weeks
 				.flatMap((week) =>
 					week.contributionDays.map((day) => levelToInt(day.contributionLevel))
 				)
 				.reverse(),
-			from: cursor.toISOString(),
-			to: next.toISOString(),
-		});
-		cursor = next;
-	}
+			from: from.toISOString(),
+			to: to.toISOString(),
+		};
+	});
 
 	return [years.reverse(), totalContributions];
 }

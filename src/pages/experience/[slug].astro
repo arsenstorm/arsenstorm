@@ -14,9 +14,9 @@ import { getExperience } from "#/lib/experience";
 
 export async function getStaticPaths() {
 	const entries = await getExperience();
-	return entries.map((entry) => ({
-		params: { slug: entry.slug },
-		props: { entry },
+	return entries.map((experience) => ({
+		params: { slug: experience.slug },
+		props: { entry: experience },
 	}));
 }
 
@@ -32,72 +32,76 @@ const showContent = !entry.hidden;
 ---
 
 <BaseLayout
-  description={metaDescription}
-  noindex={!showContent}
-  path={entry.href}
-  title={entry.company}
-  type="article"
+	description={metaDescription}
+	noindex={!showContent}
+	path={entry.href}
+	title={entry.company}
+	type="article"
 >
-  <Main>
-    <PageHeading
-      description={`${entry.role} · ${entry.period}`}
-      title={entry.company}
-    />
+	<Main>
+		<PageHeading
+			description={`${entry.role} · ${entry.period}`}
+			title={entry.company}
+		/>
 
-    {
-      !showContent && (
-        <Section cta={{ label: "Go back", href: "/" }} title="Public details hidden">
-          <div class="-mx-4 grid rounded-xl bg-neutral-100 px-4 dark:bg-neutral-900">
-            {/* An invisible copy of the homepage's experience list sizes the
+		{!showContent && (
+			<Section
+				cta={{ href: "/", label: "Go back" }}
+				title="Public details hidden"
+			>
+				<div class="-mx-4 grid rounded-xl bg-neutral-100 px-4 dark:bg-neutral-900">
+					{/* An invisible copy of the homepage's experience list sizes the
                 card, so it fills the same space at every width. */}
-            <div aria-hidden="true" class="invisible col-start-1 row-start-1" inert>
-              <ExperienceList items={homepageExperience} />
-            </div>
-            <div class="col-start-1 row-start-1 flex flex-col items-center justify-center gap-2 text-center">
-              <Lock aria-hidden="true" className="size-6 text-neutral-400 dark:text-neutral-500" />
-              <span class="text-neutral-500 text-sm dark:text-neutral-400">Not public yet</span>
-            </div>
-          </div>
-        </Section>
-      )
-    }
+					<div
+						aria-hidden="true"
+						class="invisible col-start-1 row-start-1"
+						inert
+					>
+						<ExperienceList items={homepageExperience} />
+					</div>
+					<div class="col-start-1 row-start-1 flex flex-col items-center justify-center gap-2 text-center">
+						<Lock
+							aria-hidden="true"
+							class="size-6 text-neutral-400 dark:text-neutral-500"
+						/>
+						<span class="text-neutral-500 text-sm dark:text-neutral-400">
+							Not public yet
+						</span>
+					</div>
+				</div>
+			</Section>
+		)}
 
-    {
-      showContent && entry.facts.length > 0 && (
-        <section aria-label="At a glance">
-          <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-sm">
-            {entry.facts.map((fact) => (
-              <>
-                <dt class="font-medium text-neutral-950 dark:text-neutral-50">
-                  {fact.label}
-                </dt>
-                <dd class="text-neutral-500 dark:text-neutral-400 text-pretty">
-                  {fact.value}
-                </dd>
-              </>
-            ))}
-          </dl>
-        </section>
-      )
-    }
+		{showContent && entry.facts.length > 0 && (
+			<section aria-label="At a glance">
+				<dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-sm">
+					{entry.facts.map((fact) => (
+						<>
+							<dt class="font-medium text-neutral-950 dark:text-neutral-50">
+								{fact.label}
+							</dt>
+							<dd class="text-pretty text-neutral-500 dark:text-neutral-400">
+								{fact.value}
+							</dd>
+						</>
+					))}
+				</dl>
+			</section>
+		)}
 
-    {
-      showContent && (
-        <article>
-          <Content components={writeupComponents} />
-        </article>
-      )
-    }
+		{showContent && (
+			<article>
+				<Content components={writeupComponents} />
+			</article>
+		)}
 
-    {
-      others.length > 0 && (
-        <KeepReading>
-          <ExperienceList items={others} />
-        </KeepReading>
-      )
-    }
-  </Main>
-  <script>
-    import "#/scripts/code-blocks";
-  </script>
+		{others.length > 0 && (
+			<KeepReading>
+				<ExperienceList items={others} />
+			</KeepReading>
+		)}
+	</Main>
+	<script>
+		import "#/scripts/code-blocks";
+	</script>
 </BaseLayout>

@@ -26,60 +26,71 @@ const prettyCodeOptions = {
 } satisfies RehypePrettyCodeOptions;
 
 export default defineConfig({
-	site: "https://arsenstorm.com",
-	// Every page sets `export const prerender = true`, so all HTML is still
-	// generated at build time. `output: "server"` is required so the adapter
-	// emits the server bundle that our custom Worker's `handle()` fallback
-	// imports; `output: "static"` produces an assets-only, no-op-worker deploy.
-	output: "server",
-	// Astro 7 defaults compressHTML to "jsx", which strips whitespace between
-	// inline elements. These pages are screenshot-rendered to OG images, so
-	// keep the v5/v6 HTML-aware behavior to preserve inline spacing.
-	compressHTML: true,
-	// With the Cloudflare adapter, Astro splits outDir into client/ + server/
-	// subdirectories. outDir "./dist" therefore emits the static assets to
-	// ./dist/client, matching wrangler.jsonc `assets.directory`.
-	outDir: "./dist",
-	trailingSlash: "ignore",
-	redirects: { "/work": "/projects" },
-	// Emit `work.html` instead of `work/index.html`: links are slashless, so
-	// directory output made every internal navigation pay a 307 redirect to the
-	// trailing-slash form before the page was served.
-	build: { format: "file" },
-	// Prefetch every internal link as it enters the viewport — unlike hover,
-	// this also covers touch devices, which never fire hover at all.
-	prefetch: { defaultStrategy: "viewport", prefetchAll: true },
-	// In Chromium, upgrade prefetch to full Speculation Rules prerendering: the
-	// next page is rendered in a hidden renderer on hover, so navigation commits
-	// instantly. Other browsers fall back to plain prefetch.
-	experimental: { clientPrerender: true },
 	adapter: cloudflare({
+		// No `astro:assets` image transforms are used, so skip the Cloudflare
+		// Images binding the adapter would otherwise inject.
+		imageService: "passthrough",
 		// Prerender pages in Node, not workerd: the site is fully static and needs
 		// no Cloudflare bindings at build time, and the workerd prerenderer chokes
 		// on `createRequire` in the rolldown runtime chunk.
 		prerenderEnvironment: "node",
-		// No `astro:assets` image transforms are used, so skip the Cloudflare
-		// Images binding the adapter would otherwise inject.
-		imageService: "passthrough",
 	}),
+	// Emit `work.html` instead of `work/index.html`: links are slashless, so
+	// directory output made every internal navigation pay a 307 redirect to the
+	// trailing-slash form before the page was served.
+	build: { format: "file" },
+	// Astro 7 defaults compressHTML to "jsx", which strips whitespace between
+	// inline elements. These pages are screenshot-rendered to OG images, so
+	// keep the v5/v6 HTML-aware behavior to preserve inline spacing.
+	compressHTML: true,
+	// In Chromium, upgrade prefetch to full Speculation Rules prerendering: the
+	// next page is rendered in a hidden renderer on hover, so navigation commits
+	// instantly. Other browsers fall back to plain prefetch.
+	experimental: { clientPrerender: true },
+	integrations: [
+		preact({ compat: true }),
+		mdx(),
+		sitemap({
+			filter: (page) =>
+				!(
+					page.endsWith("/experience/betterstack") ||
+					page.endsWith("/a-lil-note")
+				),
+		}),
+		contentHmr(),
+	],
 	// Astro 7 renders Markdown with its native Sätteri pipeline by default.
 	// Opt back into the unified (remark/rehype) processor so our plugin chain
 	// keeps working. MDX inherits this processor's plugins (extendMarkdownConfig),
 	// which is the non-deprecated home for them in v7 — passing them to mdx()
 	// directly now warns. See markdown.processor in the v7 upgrade guide.
 	markdown: {
-		syntaxHighlight: false,
 		processor: unified({
-			remarkPlugins: [remarkGfm, preserveCodeMeta],
 			rehypePlugins: [
 				restoreCodeMeta,
 				[rehypePrettyCode, prettyCodeOptions],
 				addHeadingSectionIds,
 				markCodeBlockOptions,
 			],
+			remarkPlugins: [remarkGfm, preserveCodeMeta],
 		}),
+		syntaxHighlight: false,
 	},
-	integrations: [preact({ compat: true }), mdx(), sitemap({ filter: (page) => !(page.endsWith("/experience/betterstack") || page.endsWith("/a-lil-note")) }), contentHmr()],
+	// With the Cloudflare adapter, Astro splits outDir into client/ + server/
+	// subdirectories. outDir "./dist" therefore emits the static assets to
+	// ./dist/client, matching wrangler.jsonc `assets.directory`.
+	outDir: "./dist",
+	// Every page sets `export const prerender = true`, so all HTML is still
+	// generated at build time. `output: "server"` is required so the adapter
+	// emits the server bundle that our custom Worker's `handle()` fallback
+	// imports; `output: "static"` produces an assets-only, no-op-worker deploy.
+	output: "server",
+	// Prefetch every internal link as it enters the viewport — unlike hover,
+	// this also covers touch devices, which never fire hover at all.
+	prefetch: { defaultStrategy: "viewport", prefetchAll: true },
+	redirects: { "/work": "/projects" },
+	site: "https://arsenstorm.com",
+	trailingSlash: "ignore",
 	vite: {
 		plugins: [
 			tailwindcss(),
@@ -88,7 +99,6 @@ export default defineConfig({
 			// external, media-chrome would load the real React kept for the
 			// markdown script and hand preact forwardRef objects as tag names.
 			{
-				name: "bundle-react-consumers",
 				configEnvironment(name: string) {
 					if (name !== "ssr" && name !== "prerender") {
 						return;
@@ -105,6 +115,7 @@ export default defineConfig({
 						},
 					};
 				},
+				name: "bundle-react-consumers",
 			},
 			// The Cloudflare adapter's SSR environment discovers island deps
 			// lazily; each discovery re-runs the optimizer and reloads the
@@ -119,8 +130,6 @@ export default defineConfig({
 			// and pre-bundling there overwrites the dev server's deps_ssr and
 			// deletes chunks it still imports. Runs after the adapter to see it.
 			{
-				name: "optimize-ssr-deps",
-				enforce: "post",
 				configEnvironment(
 					name: string,
 					options: { optimizeDeps?: { noDiscovery?: boolean } }
@@ -150,6 +159,8 @@ export default defineConfig({
 						},
 					};
 				},
+				enforce: "post",
+				name: "optimize-ssr-deps",
 			},
 		],
 	},

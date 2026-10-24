@@ -1,4 +1,4 @@
-import { Diagram, Label } from "#/components/mdx/diagram.tsx";
+import { Annotation, Diagram } from "#/components/mdx/diagram.tsx";
 
 // Median stage times from the local benchmark (1000 samples, real H.264).
 const STAGES = [
@@ -46,9 +46,9 @@ export function LatencyBreakdown() {
 				const cy = rowCenter(i);
 				return (
 					<g key={stage.label}>
-						<Label anchor="end" tone="fg" x={AX_X - 10} y={cy + 3}>
+						<Annotation anchor="end" tone="fg" x={AX_X - 10} y={cy + 3}>
 							{stage.label}
-						</Label>
+						</Annotation>
 						{stage.ms > 0 ? (
 							<rect
 								className="fill-neutral-900 dark:fill-neutral-100"
@@ -59,18 +59,18 @@ export function LatencyBreakdown() {
 								y={cy - BAR_H / 2}
 							/>
 						) : null}
-						<Label anchor="start" x={AX_X + ms(stage.ms) + 7} y={cy + 3}>
+						<Annotation anchor="start" x={AX_X + ms(stage.ms) + 7} y={cy + 3}>
 							{stage.text}
-						</Label>
+						</Annotation>
 					</g>
 				);
 			})}
 
 			{/* axis ticks */}
 			{TICKS.map((t) => (
-				<Label key={t} x={AX_X + ms(t)} y={GRID_BOTTOM + 16}>
+				<Annotation key={t} x={AX_X + ms(t)} y={GRID_BOTTOM + 16}>
 					{t === 100 ? "100 ms" : String(t)}
-				</Label>
+				</Annotation>
 			))}
 		</Diagram>
 	);

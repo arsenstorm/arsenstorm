@@ -66,12 +66,12 @@ function paintRow(
 	p.octx.clearRect(0, 0, p.thickCells, p.lenCells);
 	const top = (1 - grown) * p.lenCells;
 	const seed = seedOfColor(item.color ?? p.color);
-	for (let x = 0; x < p.thickCells; x++) {
+	for (let x = 0; x < p.thickCells; x += 1) {
 		paintColumn(p.octx, x, top, p.lenCells, seed, {
-			variant: "gradient",
-			intensity: active ? 1 : 0,
 			dim,
+			intensity: active ? 1 : 0,
 			stacked: false,
+			variant: "gradient",
 		});
 	}
 	// Rotate the vertically-painted bar 90° clockwise: offscreen (x, y) lands at
@@ -98,7 +98,8 @@ export function BarList({
 	className,
 }: BarListProps) {
 	const { ref: trackRef, size } = useChartDimensions<HTMLDivElement>();
-	const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
+	const { width } = size;
+	const listRef = useRef<HTMLDivElement>(null);
 	const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 	const hoverRef = useRef(hoverIndex);
 	const progressRef = useRef(0);
@@ -107,7 +108,6 @@ export function BarList({
 	});
 
 	useEffect(() => {
-		const width = size.width;
 		if (width <= 0 || items.length === 0) {
 			return;
 		}
@@ -132,8 +132,11 @@ export function BarList({
 				off,
 				thickCells,
 			};
+			// One canvas per row, in row order.
+			const canvases =
+				listRef.current?.querySelectorAll<HTMLCanvasElement>("canvas") ?? [];
 			for (const [i, item] of items.entries()) {
-				paintRow(p, canvasRefs.current[i], item, i, items.length, prog);
+				paintRow(p, canvases[i] ?? null, item, i, items.length, prog);
 			}
 		};
 		paintRef.current = paintAll;
@@ -158,7 +161,7 @@ export function BarList({
 		};
 		raf = requestAnimationFrame(tick);
 		return () => cancelAnimationFrame(raf);
-	}, [size.width, items, color]);
+	}, [width, items, color]);
 
 	// Hover lifts/dims are a repaint at the current progress, not a re-entrance.
 	useEffect(() => {
@@ -168,7 +171,11 @@ export function BarList({
 
 	return (
 		// biome-ignore lint/a11y/useSemanticElements: <ul> would need list-style:none, which drops the list role in Safari VoiceOver
-		<div className={cn("flex flex-col gap-2", className)} role="list">
+		<div
+			className={cn("flex flex-col gap-2", className)}
+			ref={listRef}
+			role="list"
+		>
 			{items.map((item, i) => (
 				// biome-ignore lint/a11y/useSemanticElements: matches the role="list" container above
 				<div
@@ -189,9 +196,6 @@ export function BarList({
 						<canvas
 							aria-hidden
 							className="absolute inset-0 h-full w-full"
-							ref={(el) => {
-								canvasRefs.current[i] = el;
-							}}
 							style={{ imageRendering: "pixelated" }}
 						/>
 					</div>

@@ -27,7 +27,7 @@ export function YAxis({
 					x={-tickMargin}
 					y={ctx.y(t)}
 				>
-					{tickFormatter ? tickFormatter(t) : t}
+					{tickFormatter ? tickFormatter(t) : String(t)}
 				</text>
 			))}
 		</g>

@@ -24,8 +24,8 @@ const locateCommand = `gpg --locate-keys ${PGP.email}`;
 const cards = CONTACT_METHODS.map((method) => ({
 	actions: method.copy
 		? [
-				{ label: "Copy address", copy: method.copy },
-				{ label: "Open mail app", href: method.href },
+				{ copy: method.copy, label: "Copy address" },
+				{ href: method.href, label: "Open mail app" },
 			]
 		: undefined,
 	description: method.description,
@@ -37,36 +37,43 @@ const cards = CONTACT_METHODS.map((method) => ({
 ---
 
 <BaseLayout description={META_DESCRIPTION} path="/contact" title={TITLE}>
-  <Main>
-    <PageHeading description={CONTACT_DESCRIPTION} title={TITLE} />
+	<Main>
+		<PageHeading description={CONTACT_DESCRIPTION} title={TITLE} />
 
-    <Section cta={{ label: "Go back", href: "/" }} title="Messages">
-      <LinkCardList items={cards} />
-    </Section>
+		<Section cta={{ href: "/", label: "Go back" }} title="Messages">
+			<LinkCardList items={cards} />
+		</Section>
 
-    <Section title="Encrypted email">
-      <div class="space-y-4 text-neutral-500 text-sm dark:text-neutral-400">
-        <p class="text-pretty">
-          You can encrypt email to me with my PGP key. Before you use it, check
-          that its fingerprint matches this one.
-        </p>
-        <div class="group -mx-4 flex items-center justify-between gap-2 rounded-xl bg-neutral-100 px-4 py-3 dark:bg-neutral-900">
-          <code class="font-mono text-neutral-950 text-xs dark:text-neutral-50">
-            {PGP_FINGERPRINT_GROUPED}
-          </code>
-          <CopyButton label="Copy PGP fingerprint" value={PGP.fingerprint} />
-        </div>
-        <p class="text-pretty">
-          <Anchor className={textLinkClass} href={PGP.href}>Download the key</Anchor><span class="max-sm:hidden">, or fetch it in a terminal:</span><span class="sm:hidden">.</span>
-        </p>
-        {/* Nobody runs gpg on a phone, so the command is desktop only. */}
-        <div class="group -mx-4 flex items-center justify-between gap-2 rounded-xl bg-neutral-100 px-4 py-3 max-sm:hidden dark:bg-neutral-900">
-          <code class="font-mono text-neutral-950 text-xs dark:text-neutral-50">
-            {locateCommand}
-          </code>
-          <CopyButton label="Copy gpg command" value={locateCommand} />
-        </div>
-      </div>
-    </Section>
-  </Main>
+		<Section title="Encrypted email">
+			<div class="space-y-4 text-neutral-500 text-sm dark:text-neutral-400">
+				<p class="text-pretty">
+					You can encrypt email to me with my PGP key. Before you use it, check
+					that its fingerprint matches this one.
+				</p>
+				<div
+					class="group -mx-4 flex items-center justify-between gap-2 rounded-xl bg-neutral-100 px-4 py-3 dark:bg-neutral-900"
+				>
+					<code class="font-mono text-neutral-950 text-xs dark:text-neutral-50">
+						{PGP_FINGERPRINT_GROUPED}
+					</code>
+					<CopyButton label="Copy PGP fingerprint" value={PGP.fingerprint} />
+				</div>
+				<p class="text-pretty">
+					<Anchor className={textLinkClass} href={PGP.href}
+						>Download the key</Anchor
+					><span class="max-sm:hidden">, or fetch it in a terminal:</span
+					><span class="sm:hidden">.</span>
+				</p>
+				{/* Nobody runs gpg on a phone, so the command is desktop only. */}
+				<div
+					class="group -mx-4 flex items-center justify-between gap-2 rounded-xl bg-neutral-100 px-4 py-3 max-sm:hidden dark:bg-neutral-900"
+				>
+					<code class="font-mono text-neutral-950 text-xs dark:text-neutral-50">
+						{locateCommand}
+					</code>
+					<CopyButton label="Copy gpg command" value={locateCommand} />
+				</div>
+			</div>
+		</Section>
+	</Main>
 </BaseLayout>

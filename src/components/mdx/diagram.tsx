@@ -189,17 +189,17 @@ const BOX_VARIANTS: Record<
 	BoxVariant,
 	{ rect: string; label: string; sub: string; dashArray?: string }
 > = {
-	solid: {
-		rect: "fill-neutral-900 dark:fill-neutral-100",
-		label: "fill-neutral-50 dark:fill-neutral-900",
-		sub: "fill-neutral-400 dark:fill-neutral-500",
-	},
-	outline: { rect: OUTLINE_RECT, label: FG, sub: MUTED },
 	dashed: {
-		rect: OUTLINE_RECT,
-		label: MUTED,
-		sub: MUTED,
 		dashArray: "4 3",
+		label: MUTED,
+		rect: OUTLINE_RECT,
+		sub: MUTED,
+	},
+	outline: { label: FG, rect: OUTLINE_RECT, sub: MUTED },
+	solid: {
+		label: "fill-neutral-50 dark:fill-neutral-900",
+		rect: "fill-neutral-900 dark:fill-neutral-100",
+		sub: "fill-neutral-400 dark:fill-neutral-500",
 	},
 };
 
@@ -263,8 +263,8 @@ export function Box({
 type LineVariant = "solid" | "dashed";
 
 const DASH_ARRAY: Record<LineVariant, string | undefined> = {
-	solid: undefined,
 	dashed: "4 3",
+	solid: undefined,
 };
 
 export function Arrow({
@@ -330,14 +330,14 @@ type LabelAnchor = "start" | "middle" | "end";
 
 /** Left edge of the knockout rect, per text anchor. */
 const LABEL_RECT_X: Record<LabelAnchor, (x: number, w: number) => number> = {
-	start: (x) => x - 4,
-	middle: (x, w) => x - w / 2,
 	end: (x, w) => x - w + 4,
+	middle: (x, w) => x - w / 2,
+	start: (x) => x - 4,
 };
 
-const LABEL_TONES = { muted: MUTED, fg: FG } as const;
+const LABEL_TONES = { fg: FG, muted: MUTED } as const;
 
-export function Label({
+export function Annotation({
 	x,
 	y,
 	children,

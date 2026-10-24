@@ -15,8 +15,8 @@ export async function getWriteups() {
 	return entries
 		.map((entry) => ({
 			entry,
-			slug: entry.id,
 			href: `/writing/${entry.id}`,
+			slug: entry.id,
 			...entry.data,
 		}))
 		.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));

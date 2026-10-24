@@ -31,12 +31,12 @@ export function Tooltip({
 	hideZero?: boolean;
 }) {
 	const chart = useCommonChart();
-	const show = chart.ready && chart.hoverIndex != null;
+	const show = chart.ready && chart.hoverIndex !== null;
 
 	// Retain the last hovered index so the card keeps its content while fading
 	// out — adjust-state-during-render (no refs in render).
 	const [lastIndex, setLastIndex] = useState(0);
-	if (chart.hoverIndex != null && chart.hoverIndex !== lastIndex) {
+	if (chart.hoverIndex !== null && chart.hoverIndex !== lastIndex) {
 		setLastIndex(chart.hoverIndex);
 	}
 	const index = chart.hoverIndex ?? lastIndex;

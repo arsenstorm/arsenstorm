@@ -1,4 +1,4 @@
-import { Arrow, Box, Diagram, Label } from "#/components/mdx/diagram.tsx";
+import { Annotation, Arrow, Box, Diagram } from "#/components/mdx/diagram.tsx";
 
 /** Control plane vs data plane: bytes skip the coordinator. */
 export function OlosArchitecture() {
@@ -17,21 +17,21 @@ export function OlosArchitecture() {
 			<Arrow x1={130} x2={223} y1={152} y2={202} />
 			<Arrow x1={357} x2={448} y1={202} y2={152} />
 
-			<Label x={177} y={100}>
+			<Annotation x={177} y={100}>
 				slots · commits
-			</Label>
-			<Label x={290} y={143}>
+			</Annotation>
+			<Annotation x={290} y={143}>
 				observe
-			</Label>
-			<Label x={402} y={100}>
+			</Annotation>
+			<Annotation x={402} y={100}>
 				manifest
-			</Label>
-			<Label x={177} y={180}>
+			</Annotation>
+			<Annotation x={177} y={180}>
 				bytes
-			</Label>
-			<Label x={402} y={180}>
+			</Annotation>
+			<Annotation x={402} y={180}>
 				media
-			</Label>
+			</Annotation>
 
 			<Box h={56} label="Streamer" w={110} x={20} y={112} />
 			<Box h={52} label="Coordinator" variant="solid" w={134} x={223} y={44} />
@@ -47,9 +47,9 @@ export function OlosArchitecture() {
 				y1={262}
 				y2={262}
 			/>
-			<Label anchor="start" x={50} y={265}>
+			<Annotation anchor="start" x={50} y={265}>
 				bytes
-			</Label>
+			</Annotation>
 			<line
 				className="stroke-neutral-400 dark:stroke-neutral-600"
 				strokeDasharray="4 3"
@@ -59,9 +59,9 @@ export function OlosArchitecture() {
 				y1={262}
 				y2={262}
 			/>
-			<Label anchor="start" x={134} y={265}>
+			<Annotation anchor="start" x={134} y={265}>
 				control
-			</Label>
+			</Annotation>
 		</Diagram>
 	);
 }

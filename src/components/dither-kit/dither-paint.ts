@@ -63,7 +63,7 @@ export function paintColumn(
 		return;
 	}
 	const bias = (variant === "dotted" ? 0.12 : 0) + (stacked ? 0.2 : 0);
-	for (let y = t; y < f; y++) {
+	for (let y = t; y < f; y += 1) {
 		// Inverted falloff: 0 at the top line, 1 at the floor — dense at the
 		// bottom, thinning as it rises toward the outline.
 		let density = (y - t) / depth;
@@ -128,9 +128,9 @@ export interface BloomConfig {
 export type BloomInput = BloomLevel | BloomConfig;
 
 const PRESET: Record<Exclude<BloomLevel, "off">, BloomConfig> = {
-	low: { blur: 3, brightness: 1.35, opacity: 0.7, saturate: 1.4 },
-	high: { blur: 5, brightness: 1.5, opacity: 0.78, saturate: 1.5 },
 	aura: { blur: 15, brightness: 2.9, opacity: 0.1, saturate: 3 },
+	high: { blur: 5, brightness: 1.5, opacity: 0.78, saturate: 1.5 },
+	low: { blur: 3, brightness: 1.35, opacity: 0.7, saturate: 1.4 },
 };
 
 export interface BloomStyle {
@@ -151,9 +151,9 @@ export function bloomLayerStyle(
 	const cfg = typeof input === "string" ? PRESET[input] : input;
 	return {
 		filter: `blur(${cfg.blur}px) brightness(${cfg.brightness}) saturate(${cfg.saturate ?? 1})`,
-		opacity: cfg.opacity,
-		mixBlendMode: cfg.blend ?? "plus-lighter",
 		imageRendering: "auto",
+		mixBlendMode: cfg.blend ?? "plus-lighter",
+		opacity: cfg.opacity,
 	};
 }
 

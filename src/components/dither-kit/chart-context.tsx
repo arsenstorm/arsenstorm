@@ -154,9 +154,9 @@ export { ChartContext };
  * the revision is derived purely from render inputs, so it stays consistent
  * across the memoized values below rather than lagging a render behind. */
 export function useRevision(data: unknown, token: number) {
-	const [prev, setPrev] = useState({ data, token, revision: 0 });
+	const [prev, setPrev] = useState({ data, revision: 0, token });
 	if (prev.data !== data || prev.token !== token) {
-		const next = { data, token, revision: prev.revision + 1 };
+		const next = { data, revision: prev.revision + 1, token };
 		setPrev(next);
 		return next.revision;
 	}

@@ -21,35 +21,35 @@ const META_DESCRIPTION =
 const PERSON_JSON_LD = JSON.stringify({
 	"@context": "https://schema.org",
 	"@type": "Person",
-	name: TITLE,
-	url: "https://arsenstorm.com",
+	address: {
+		"@type": "PostalAddress",
+		addressCountry: "GB",
+		addressLocality: "London",
+	},
+	email: "mailto:arsen@shkrumelyak.com",
 	jobTitle: "Software Engineer",
+	name: TITLE,
+	sameAs: [
+		"https://www.linkedin.com/in/arsenstorm",
+		"https://github.com/arsenstorm",
+	],
+	url: "https://arsenstorm.com",
 	worksFor: {
 		"@type": "Organization",
 		name: "Better Stack",
 		url: "https://betterstack.com",
 	},
-	address: {
-		"@type": "PostalAddress",
-		addressLocality: "London",
-		addressCountry: "GB",
-	},
-	email: "mailto:arsen@shkrumelyak.com",
-	sameAs: [
-		"https://www.linkedin.com/in/arsenstorm",
-		"https://github.com/arsenstorm",
-	],
 });
 
 const ELSEWHERE: { label: string; href: string; copy?: string }[] = [
-	{ label: "LinkedIn", href: "https://www.linkedin.com/in/arsenstorm" },
-	{ label: "GitHub", href: "https://github.com/arsenstorm" },
+	{ href: "https://www.linkedin.com/in/arsenstorm", label: "LinkedIn" },
+	{ href: "https://github.com/arsenstorm", label: "GitHub" },
 	{
-		label: "Email",
-		href: "mailto:arsen@shkrumelyak.com",
 		copy: "arsen@shkrumelyak.com",
+		href: "mailto:arsen@shkrumelyak.com",
+		label: "Email",
 	},
-	{ label: "Other", href: "/contact" },
+	{ href: "/contact", label: "Other" },
 ];
 
 const writeups = await getWriteups();
@@ -61,43 +61,42 @@ const experience = (await getExperience()).filter(
 const featuredProjects = PROJECTS.filter((project) => project.featured);
 ---
 
-<BaseLayout description={META_DESCRIPTION} jsonLd={PERSON_JSON_LD} title={TITLE}>
-  <Main>
-    <PageHeading description={SITE_DESCRIPTION} title={TITLE} />
+<BaseLayout
+	description={META_DESCRIPTION}
+	jsonLd={PERSON_JSON_LD}
+	title={TITLE}
+>
+	<Main>
+		<PageHeading description={SITE_DESCRIPTION} title={TITLE} />
 
-    <Section
-      cta={experience.length > 2
-        ? { label: "View all", href: "/experience" }
-        : undefined}
-      title="Experience"
-    >
-      <ExperienceList items={experience} />
-    </Section>
+		<Section
+			cta={experience.length > 2
+				? { href: "/experience", label: "View all" }
+				: undefined}
+			title="Experience"
+		>
+			<ExperienceList items={experience} />
+		</Section>
 
-    <Section cta={{ label: "View all", href: "/projects" }} title="Projects">
-      <ItemGroup id="projects-list" items={featuredProjects} showAll={false} />
-    </Section>
+		<Section cta={{ href: "/projects", label: "View all" }} title="Projects">
+			<ItemGroup id="projects-list" items={featuredProjects} showAll={false} />
+		</Section>
 
-    <Writing items={writeups} />
+		<Writing items={writeups} />
 
-    <Section title="Elsewhere">
-      <ul class="flex flex-col gap-2">
-        {
-          ELSEWHERE.map((item) => {
-            return (
-              <li class="group flex items-center gap-0.5 text-sm">
-                <Anchor className={textLinkClass} href={item.href}>
-                  {item.label}
-                </Anchor>
-                {item.copy ? (
-                  <CopyButton label={`Copy ${item.copy}`} value={item.copy} />
-                ) : null}
-              </li>
-            );
-          })
-        }
-      </ul>
-    </Section>
-  </Main>
+		<Section title="Elsewhere">
+			<ul class="flex flex-col gap-2">
+				{ELSEWHERE.map((item) => (
+					<li class="group flex items-center gap-0.5 text-sm">
+						<Anchor class={textLinkClass} href={item.href}>
+							{item.label}
+						</Anchor>
+						{item.copy ? (
+							<CopyButton label={`Copy ${item.copy}`} value={item.copy} />
+						) : null}
+					</li>
+				))}
+			</ul>
+		</Section>
+	</Main>
 </BaseLayout>
-

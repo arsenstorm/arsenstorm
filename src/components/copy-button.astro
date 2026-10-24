@@ -11,87 +11,93 @@ const { label, value } = Astro.props;
 ---
 
 <button
-  aria-label={label}
-  class="group/copy relative flex size-5 translate-y-px items-center justify-center rounded-md text-neutral-400 opacity-0 transition-[color,opacity] before:absolute before:-inset-x-0.5 before:-inset-y-3 pointer-coarse:opacity-100 hover:text-neutral-950 active:text-neutral-950 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 group-hover:opacity-100 data-copied:opacity-100 dark:text-neutral-500 dark:focus-visible:ring-white/30 dark:hover:text-neutral-50 dark:active:text-neutral-50"
-  data-copy={value}
-  type="button"
+	aria-label={label}
+	class="group/copy relative flex size-5 translate-y-px items-center justify-center rounded-md text-neutral-400 opacity-0 transition-[color,opacity] before:absolute before:-inset-x-0.5 before:-inset-y-3 pointer-coarse:opacity-100 hover:text-neutral-950 active:text-neutral-950 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 group-hover:opacity-100 data-copied:opacity-100 dark:text-neutral-500 dark:focus-visible:ring-white/30 dark:hover:text-neutral-50 dark:active:text-neutral-50"
+	data-copy={value}
+	type="button"
 >
-  <Clipboard aria-hidden="true" className="size-3 group-data-copied/copy:hidden" />
-  <ClipboardCheck aria-hidden="true" className="hidden size-3 group-data-copied/copy:block" />
+	<Clipboard
+		aria-hidden="true"
+		className="size-3 group-data-copied/copy:hidden"
+	/>
+	<ClipboardCheck
+		aria-hidden="true"
+		className="hidden size-3 group-data-copied/copy:block"
+	/>
 </button>
 
 <script>
-  const RESET_DELAY = 2000;
-  const WIDTH_DURATION = 200;
-  const WIDTH_EASING = "cubic-bezier(0.32, 0.72, 0, 1)";
-  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+	const RESET_DELAY = 2000;
+	const WIDTH_DURATION = 200;
+	const WIDTH_EASING = "cubic-bezier(0.32, 0.72, 0, 1)";
+	const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 
-  // A button whose labels differ in width marks them with data-copy-labels.
-  // CSS cannot animate between two content widths, so measure both and animate
-  // the change, letting centred content glide instead of jump.
-  function setCopied(button: HTMLButtonElement, copied: boolean) {
-    const labels = button.querySelector<HTMLElement>("[data-copy-labels]");
-    const from = labels?.getBoundingClientRect().width;
-    for (const animation of labels?.getAnimations() ?? []) {
-      animation.cancel();
-    }
-    button.toggleAttribute("data-copied", copied);
-    if (!labels || reducedMotion.matches) {
-      return;
-    }
-    const to = labels.getBoundingClientRect().width;
-    labels.animate(
-      { width: [`${from}px`, `${to}px`] },
-      { duration: WIDTH_DURATION, easing: WIDTH_EASING },
-    );
-  }
+	// A button whose labels differ in width marks them with data-copy-labels.
+	// CSS cannot animate between two content widths, so measure both and animate
+	// the change, letting centred content glide instead of jump.
+	function setCopied(button: HTMLButtonElement, copied: boolean) {
+		const labels = button.querySelector<HTMLElement>("[data-copy-labels]");
+		const from = labels?.getBoundingClientRect().width;
+		for (const animation of labels?.getAnimations() ?? []) {
+			animation.cancel();
+		}
+		button.toggleAttribute("data-copied", copied);
+		if (!labels || reducedMotion.matches) {
+			return;
+		}
+		const to = labels.getBoundingClientRect().width;
+		labels.animate(
+			{ width: [`${from}px`, `${to}px`] },
+			{ duration: WIDTH_DURATION, easing: WIDTH_EASING }
+		);
+	}
 
-  // Touch browsers can leave :hover stuck after a tap, so only real hover holds.
-  const canHover = matchMedia("(hover: hover)");
+	// Touch browsers can leave :hover stuck after a tap, so only real hover holds.
+	const canHover = matchMedia("(hover: hover)");
 
-  for (const button of document.querySelectorAll<HTMLButtonElement>(
-    "[data-copy]",
-  )) {
-    // The reset countdown pauses while the pointer is on the button, so
-    // "Copied" stays while the user is still on it, and resumes on leave.
-    let timeout: ReturnType<typeof setTimeout> | undefined;
-    let remaining = 0;
-    let startedAt = 0;
-    const resume = () => {
-      clearTimeout(timeout);
-      startedAt = performance.now();
-      timeout = setTimeout(() => {
-        timeout = undefined;
-        setCopied(button, false);
-      }, remaining);
-    };
-    const pause = () => {
-      if (timeout === undefined) {
-        return;
-      }
-      clearTimeout(timeout);
-      timeout = undefined;
-      remaining = Math.max(0, remaining - (performance.now() - startedAt));
-    };
-    button.addEventListener("click", async () => {
-      await navigator.clipboard.writeText(button.dataset.copy ?? "");
-      setCopied(button, true);
-      clearTimeout(timeout);
-      timeout = undefined;
-      remaining = RESET_DELAY;
-      if (!(canHover.matches && button.matches(":hover"))) {
-        resume();
-      }
-    });
-    button.addEventListener("pointerenter", () => {
-      if (canHover.matches && button.hasAttribute("data-copied")) {
-        pause();
-      }
-    });
-    button.addEventListener("pointerleave", () => {
-      if (button.hasAttribute("data-copied") && timeout === undefined) {
-        resume();
-      }
-    });
-  }
+	for (const button of document.querySelectorAll<HTMLButtonElement>(
+		"[data-copy]"
+	)) {
+		// The reset countdown pauses while the pointer is on the button, so
+		// "Copied" stays while the user is still on it, and resumes on leave.
+		let timeout: ReturnType<typeof setTimeout> | undefined;
+		let remaining = 0;
+		let startedAt = 0;
+		const resume = () => {
+			clearTimeout(timeout);
+			startedAt = performance.now();
+			timeout = setTimeout(() => {
+				timeout = undefined;
+				setCopied(button, false);
+			}, remaining);
+		};
+		const pause = () => {
+			if (timeout === undefined) {
+				return;
+			}
+			clearTimeout(timeout);
+			timeout = undefined;
+			remaining = Math.max(0, remaining - (performance.now() - startedAt));
+		};
+		button.addEventListener("click", async () => {
+			await navigator.clipboard.writeText(button.dataset.copy ?? "");
+			setCopied(button, true);
+			clearTimeout(timeout);
+			timeout = undefined;
+			remaining = RESET_DELAY;
+			if (!(canHover.matches && button.matches(":hover"))) {
+				resume();
+			}
+		});
+		button.addEventListener("pointerenter", () => {
+			if (canHover.matches && button.hasAttribute("data-copied")) {
+				pause();
+			}
+		});
+		button.addEventListener("pointerleave", () => {
+			if (button.hasAttribute("data-copied") && timeout === undefined) {
+				resume();
+			}
+		});
+	}
 </script>

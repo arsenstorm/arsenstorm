@@ -265,17 +265,16 @@ function seekAnimations(page: Page, timeMs: number): Promise<void> {
 async function ogVideoHash(page: Page): Promise<string> {
 	const { css, html, images } = await page.evaluate(() => {
 		const pseudoElements = [null, "::before", "::after"];
-		const styles = [...document.body.querySelectorAll("*")].flatMap(
-			(element) =>
-				pseudoElements.map((pseudo) => {
-					const style = getComputedStyle(element, pseudo);
-					// Custom properties come back in a different order on every run,
-					// and their values already show in the properties that use them.
-					return [...style]
-						.filter((name) => !name.startsWith("--"))
-						.map((name) => `${name}:${style.getPropertyValue(name)}`)
-						.join(";");
-				})
+		const styles = [...document.body.querySelectorAll("*")].flatMap((element) =>
+			pseudoElements.map((pseudo) => {
+				const style = getComputedStyle(element, pseudo);
+				// Custom properties come back in a different order on every run,
+				// and their values already show in the properties that use them.
+				return [...style]
+					.filter((name) => !name.startsWith("--"))
+					.map((name) => `${name}:${style.getPropertyValue(name)}`)
+					.join(";");
+			})
 		);
 		const animationNames = new Set(
 			document
@@ -314,11 +313,14 @@ async function ogVideoHash(page: Page): Promise<string> {
 		.update(await readFile(fileURLToPath(import.meta.url)))
 		.update(html)
 		.update(css);
-	for (const image of images) {
-		const file = resolveAsset(image);
-		if (file) {
-			hash.update(await readFile(file));
-		}
+	const files = images
+		.map((image) => resolveAsset(image))
+		.filter((file) => file !== null);
+	// Read in parallel, hash in order: Promise.all keeps the order.
+	for (const contents of await Promise.all(
+		files.map((file) => readFile(file))
+	)) {
+		hash.update(contents);
 	}
 	return hash.digest("hex");
 }
@@ -330,6 +332,7 @@ async function recordOgVideo(page: Page, outPath: string): Promise<void> {
 		stdin: "pipe",
 	});
 	for (let frame = 0; frame < OG_VIDEO_FRAMES; frame += 1) {
+		// biome-ignore lint/performance/noAwaitInLoops: each frame seeks the one page, then screenshots it
 		await seekAnimations(page, (frame * 1000) / OG_VIDEO_FPS);
 		ffmpeg.stdin.write(
 			await page.screenshot({ optimizeForSpeed: true, type: "png" })
@@ -364,11 +367,11 @@ async function writeOgVideo(
 }
 
 async function pruneOgVideoCache(usedCacheFiles: Set<string>): Promise<void> {
-	for (const file of readdirSync(OG_VIDEO_CACHE_DIRECTORY)) {
-		if (!usedCacheFiles.has(file)) {
-			await rm(join(OG_VIDEO_CACHE_DIRECTORY, file));
-		}
-	}
+	await Promise.all(
+		readdirSync(OG_VIDEO_CACHE_DIRECTORY)
+			.filter((file) => !usedCacheFiles.has(file))
+			.map((file) => rm(join(OG_VIDEO_CACHE_DIRECTORY, file)))
+	);
 }
 
 async function renderOgAssets(
@@ -453,6 +456,7 @@ async function main(): Promise<void> {
 		const usedCacheFiles = new Set<string>();
 		const ogPage = await browser.newPage();
 		for (const route of discoverRoutes()) {
+			// biome-ignore lint/performance/noAwaitInLoops: routes share one page, so they render one at a time
 			await renderOgAssets(ogPage, origin, route, usedCacheFiles);
 		}
 		await ogPage.close();

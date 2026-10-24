@@ -13,9 +13,9 @@ import { getWriteups } from "#/lib/writeups";
 
 export async function getStaticPaths() {
 	const writeups = await getWriteups();
-	return writeups.map((writeup) => ({
-		params: { slug: writeup.slug },
-		props: { writeup },
+	return writeups.map((item) => ({
+		params: { slug: item.slug },
+		props: { writeup: item },
 	}));
 }
 
@@ -38,13 +38,11 @@ const others = (await getWriteups()).filter((w) => w.slug !== writeup.slug);
 			<Content components={writeupComponents} />
 		</article>
 
-		{
-			others.length > 0 && (
-				<KeepReading>
-					<WriteupList items={others} />
-				</KeepReading>
-			)
-		}
+		{others.length > 0 && (
+			<KeepReading>
+				<WriteupList items={others} />
+			</KeepReading>
+		)}
 	</Main>
 	<script>
 		import "#/scripts/code-blocks";

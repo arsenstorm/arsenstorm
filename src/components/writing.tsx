@@ -33,7 +33,7 @@ export function Writing({ items }: { items: WriteupSummary[] }) {
 	return (
 		<Section
 			cta={
-				items.length > 3 ? { label: "View all", href: "/writing" } : undefined
+				items.length > 3 ? { href: "/writing", label: "View all" } : undefined
 			}
 			title="Technical Writing"
 		>

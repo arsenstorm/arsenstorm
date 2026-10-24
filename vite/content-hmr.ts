@@ -16,16 +16,16 @@ const DATA_STORE_FILE_REGEX = /[\\/]data-store\.json$/;
 // throws "Invalid hook call". See withastro/astro#16248.
 export function contentHmr(): AstroIntegration {
 	return {
-		name: "content-hmr",
 		hooks: {
 			"astro:server:setup": ({ server }) => {
 				server.watcher.on("change", (path) => {
 					if (!DATA_STORE_FILE_REGEX.test(path)) {
 						return;
 					}
-					server.environments.ssr?.hot.send({ type: "full-reload", path: "*" });
+					server.environments.ssr?.hot.send({ path: "*", type: "full-reload" });
 				});
 			},
 		},
+		name: "content-hmr",
 	};
 }

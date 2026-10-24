@@ -4,6 +4,7 @@ import {
 	type ComponentType,
 	isValidElement,
 	type ReactNode,
+	useCallback,
 } from "react";
 import {
 	type ChartConfig,
@@ -23,10 +24,10 @@ import { useChartDimensions } from "./use-chart-dimensions";
 type Row = object;
 
 const DEFAULT_MARGINS: Margins = {
-	top: 10,
-	right: 12,
 	bottom: 22,
 	left: 36,
+	right: 12,
+	top: 10,
 };
 
 export interface CartesianChartProps<TData extends Row> {
@@ -128,21 +129,21 @@ export function CartesianRoot<TData extends Row>({
 	const margins = { ...DEFAULT_MARGINS, ...marginsProp };
 
 	const ctx = useChartController({
-		chartType,
-		// Safe: the controller only reads row[key] for the configured series keys.
-		data: data as Record<string, unknown>[],
-		config,
-		stackType,
-		dimensions: size,
-		margins,
 		animate,
 		animationDuration,
-		replayToken,
-		hovered,
 		bloom,
 		bloomOnHover,
+		chartType,
+		config,
+		// Safe: the controller only reads row[key] for the configured series keys.
+		data: data as Record<string, unknown>[],
 		defaultSelectedDataKey,
+		dimensions: size,
+		hovered,
+		margins,
 		onSelectionChange,
+		replayToken,
+		stackType,
 	});
 
 	const backChildren: ReactNode[] = [];
@@ -158,6 +159,17 @@ export function CartesianRoot<TData extends Row>({
 			svgChildren.push(child);
 		}
 	});
+
+	const { setHoverIndex, setMouseInChart } = ctx;
+	const onPointerEnter = useCallback(
+		() => setMouseInChart(true),
+		[setMouseInChart]
+	);
+	const onPointerLeave = useCallback(() => {
+		setMouseInChart(false);
+		setHoverIndex(null);
+		onHoverChange?.(null);
+	}, [setMouseInChart, setHoverIndex, onHoverChange]);
 
 	const onMove = (clientX: number) => {
 		const el = ref.current;
@@ -177,22 +189,18 @@ export function CartesianRoot<TData extends Row>({
 			<CommonChartContext value={ctx.common}>
 				<div
 					className={cn("relative h-full w-full", className)}
-					onPointerEnter={() => ctx.setMouseInChart(true)}
-					onPointerLeave={() => {
-						ctx.setMouseInChart(false);
-						ctx.setHoverIndex(null);
-						onHoverChange?.(null);
-					}}
+					onPointerEnter={onPointerEnter}
+					onPointerLeave={onPointerLeave}
 					onPointerMove={interactive ? (e) => onMove(e.clientX) : undefined}
 					ref={ref}
 				>
-					{ctx.ready && backChildren.length > 0 && (
+					{ctx.ready && backChildren.length > 0 ? (
 						<Layer height={size.height} margins={margins} width={size.width}>
 							{backChildren}
 						</Layer>
-					)}
+					) : null}
 					<Canvas />
-					{ctx.ready && (
+					{ctx.ready ? (
 						<Layer
 							height={size.height}
 							label="Chart"
@@ -201,7 +209,7 @@ export function CartesianRoot<TData extends Row>({
 						>
 							{svgChildren}
 						</Layer>
-					)}
+					) : null}
 					{domChildren}
 				</div>
 			</CommonChartContext>

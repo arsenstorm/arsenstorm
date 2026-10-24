@@ -35,7 +35,7 @@ function extractExplicitHeadingId(node: HastNode): string | null {
 		return null;
 	}
 
-	for (let index = node.children.length - 1; index >= 0; index--) {
+	for (let index = node.children.length - 1; index >= 0; index -= 1) {
 		const child = node.children[index];
 
 		if (child.type === "text") {

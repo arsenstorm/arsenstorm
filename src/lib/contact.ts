@@ -4,23 +4,23 @@ export const CONTACT_DESCRIPTION = "Here's how to reach me.";
 
 export const CONTACT_METHODS = [
 	{
-		label: "Email",
-		handle: "arsen@shkrumelyak.com",
-		href: "mailto:arsen@shkrumelyak.com",
 		copy: "arsen@shkrumelyak.com",
 		description: "The most direct way to reach me, about anything.",
+		handle: "arsen@shkrumelyak.com",
+		href: "mailto:arsen@shkrumelyak.com",
+		label: "Email",
 	},
 	{
-		label: "LinkedIn",
+		description: "For work, roles and anything career related.",
 		handle: "in/arsenstorm",
 		href: "https://www.linkedin.com/in/arsenstorm",
-		description: "For work, roles and anything career related.",
+		label: "LinkedIn",
 	},
 	{
-		label: "GitHub",
+		description: "For issues and pull requests on my open source projects.",
 		handle: "@arsenstorm",
 		href: "https://github.com/arsenstorm",
-		description: "For issues and pull requests on my open source projects.",
+		label: "GitHub",
 	},
 ];
 

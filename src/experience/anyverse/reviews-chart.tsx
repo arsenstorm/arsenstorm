@@ -19,7 +19,7 @@ const MONTHS = [
 ];
 
 const CONFIG: ChartConfig = {
-	statements: { label: "Statements reviewed", color: "blue" },
+	statements: { color: "blue", label: "Statements reviewed" },
 };
 
 export function ReviewsChart() {

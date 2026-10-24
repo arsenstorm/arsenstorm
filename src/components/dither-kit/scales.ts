@@ -56,14 +56,14 @@ export function computeBands(
 	let max = 0;
 	let min = 0;
 	for (const layer of series) {
-		bands[layer.key] = layer.map((point) => {
-			if (point[1] > max) {
-				max = point[1];
+		bands[layer.key] = layer.map(([low, high]) => {
+			if (high > max) {
+				max = high;
 			}
-			if (point[0] < min) {
-				min = point[0];
+			if (low < min) {
+				min = low;
 			}
-			return [point[0], point[1]];
+			return [low, high];
 		});
 	}
 	const flat = max === 0 && min === 0;

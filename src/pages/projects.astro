@@ -15,11 +15,11 @@ const META_DESCRIPTION =
 ---
 
 <BaseLayout description={META_DESCRIPTION} path="/projects" title={TITLE}>
-  <Main>
-    <PageHeading description={DESCRIPTION} title={TITLE} />
+	<Main>
+		<PageHeading description={DESCRIPTION} title={TITLE} />
 
-    <Section cta={{ label: "Go back", href: "/" }} title="Projects">
-      <ItemGroup id="projects-list" items={PROJECTS} />
-    </Section>
-  </Main>
+		<Section cta={{ href: "/", label: "Go back" }} title="Projects">
+			<ItemGroup id="projects-list" items={PROJECTS} />
+		</Section>
+	</Main>
 </BaseLayout>
