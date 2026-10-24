@@ -1,11 +1,13 @@
 export const USERNAME = "arsenstorm";
 
+// Light mode runs dark mode's ramp in reverse: busy days deepen to ember here
+// where they glow there.
 export const LIGHT_COLORS = {
 	bg0: "#ebedf0",
-	bg1: "#ffee4a",
-	bg2: "#ffc501",
-	bg3: "#fe9600",
-	bg4: "#03001c",
+	bg1: "#fddf68",
+	bg2: "#fa7a18",
+	bg3: "#bd561d",
+	bg4: "#631c03",
 	border: "rgb(0 0 0 / 0.06)",
 	text: "#000",
 };
