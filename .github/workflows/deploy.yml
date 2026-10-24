@@ -18,7 +18,7 @@ jobs:
     # Each run is recorded as a deployment: production shows on the repo page,
     # and a pull request's preview link shows in its timeline.
     environment:
-      name: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+      name: ${{ github.event_name == 'push' && 'arsenstorm.com' || 'preview' }}
       url: ${{ github.event_name == 'push' && 'https://arsenstorm.com' || steps.preview.outputs.url }}
     steps:
       - uses: actions/checkout@v4
