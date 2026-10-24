@@ -113,18 +113,30 @@ export default defineConfig({
 			// new island packages here. Scoped to "ssr" only: extending it to
 			// other environments (prerender) hangs dev startup.
 			// See withastro/astro#16248.
+			//
+			// Skipped during Astro's sync step, which the adapter marks with
+			// noDiscovery: sync runs its own Vite server on the same cache folder,
+			// and pre-bundling there overwrites the dev server's deps_ssr and
+			// deletes chunks it still imports. Runs after the adapter to see it.
 			{
 				name: "optimize-ssr-deps",
-				configEnvironment(name: string) {
-					if (name !== "ssr") {
+				enforce: "post",
+				configEnvironment(
+					name: string,
+					options: { optimizeDeps?: { noDiscovery?: boolean } }
+				) {
+					if (name !== "ssr" || options.optimizeDeps?.noDiscovery) {
 						return;
 					}
 					return {
 						optimizeDeps: {
 							include: [
+								"@astrojs/preact/server.js",
 								"preact",
 								"preact/compat",
+								"preact/devtools",
 								"preact/hooks",
+								"preact/jsx-dev-runtime",
 								"preact/jsx-runtime",
 								"preact-render-to-string",
 								"astro/zod",
