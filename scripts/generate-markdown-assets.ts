@@ -20,7 +20,7 @@ import {
 import { PROJECTS } from "../src/lib/projects";
 import { SITE_URL } from "../src/lib/seo";
 
-const DIST_CLIENT = fileURLToPath(new URL("../dist/client/", import.meta.url));
+const DIST = fileURLToPath(new URL("../dist/", import.meta.url));
 const WRITEUPS_DIRECTORY = fileURLToPath(
 	new URL("../src/writeups/", import.meta.url)
 );
@@ -608,7 +608,7 @@ function llmsTxt(writeups: Writeup[]): string {
 // -- Entry point -------------------------------------------------------------
 
 async function write(relativePath: string, contents: string): Promise<void> {
-	const outPath = join(DIST_CLIENT, relativePath);
+	const outPath = join(DIST, relativePath);
 	mkdirSync(dirname(outPath), { recursive: true });
 	await writeFile(
 		outPath,
@@ -635,9 +635,9 @@ async function writeEntries(
 }
 
 async function main(): Promise<void> {
-	if (!existsSync(DIST_CLIENT)) {
+	if (!existsSync(DIST)) {
 		throw new Error(
-			"dist/client not found — run `astro build` before `bun run generate:markdown-assets`."
+			"dist not found — run `astro build` before `bun run generate:markdown-assets`."
 		);
 	}
 

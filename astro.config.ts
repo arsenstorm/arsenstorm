@@ -1,4 +1,3 @@
-import cloudflare from "@astrojs/cloudflare";
 import { unified } from "@astrojs/markdown-remark";
 import mdx from "@astrojs/mdx";
 import preact from "@astrojs/preact";
@@ -14,7 +13,6 @@ import {
 	preserveCodeMeta,
 	restoreCodeMeta,
 } from "./vite/code-block-options";
-import { contentHmr } from "./vite/content-hmr";
 import { addHeadingSectionIds } from "./vite/heading-ids";
 
 const prettyCodeOptions = {
@@ -26,15 +24,6 @@ const prettyCodeOptions = {
 } satisfies RehypePrettyCodeOptions;
 
 export default defineConfig({
-	adapter: cloudflare({
-		// No `astro:assets` image transforms are used, so skip the Cloudflare
-		// Images binding the adapter would otherwise inject.
-		imageService: "passthrough",
-		// Prerender pages in Node, not workerd: the site is fully static and needs
-		// no Cloudflare bindings at build time, and the workerd prerenderer chokes
-		// on `createRequire` in the rolldown runtime chunk.
-		prerenderEnvironment: "node",
-	}),
 	// Emit `work.html` instead of `work/index.html`: links are slashless, so
 	// directory output made every internal navigation pay a 307 redirect to the
 	// trailing-slash form before the page was served.
@@ -57,7 +46,6 @@ export default defineConfig({
 					page.endsWith("/a-lil-note")
 				),
 		}),
-		contentHmr(),
 	],
 	// Astro 7 renders Markdown with its native Sätteri pipeline by default.
 	// Opt back into the unified (remark/rehype) processor so our plugin chain
@@ -76,19 +64,11 @@ export default defineConfig({
 		}),
 		syntaxHighlight: false,
 	},
-	// With the Cloudflare adapter, Astro splits outDir into client/ + server/
-	// subdirectories. outDir "./dist" therefore emits the static assets to
-	// ./dist/client, matching wrangler.jsonc `assets.directory`.
+	// A fully static build; src/index.ts serves it through the ASSETS binding.
 	outDir: "./dist",
-	// Every page sets `export const prerender = true`, so all HTML is still
-	// generated at build time. `output: "server"` is required so the adapter
-	// emits the server bundle that our custom Worker's `handle()` fallback
-	// imports; `output: "static"` produces an assets-only, no-op-worker deploy.
-	output: "server",
 	// Prefetch every internal link as it enters the viewport — unlike hover,
 	// this also covers touch devices, which never fire hover at all.
 	prefetch: { defaultStrategy: "viewport", prefetchAll: true },
-	redirects: { "/work": "/projects" },
 	site: "https://arsenstorm.com",
 	trailingSlash: "ignore",
 	vite: {
@@ -116,51 +96,6 @@ export default defineConfig({
 					};
 				},
 				name: "bundle-react-consumers",
-			},
-			// The Cloudflare adapter's SSR environment discovers island deps
-			// lazily; each discovery re-runs the optimizer and reloads the
-			// program, and preact/compat and preact/hooks can land in different
-			// optimize passes — two Preact instances, broken hooks. Pre-bundle every SSR dep in one startup pass instead. Add
-			// new island packages here. Scoped to "ssr" only: extending it to
-			// other environments (prerender) hangs dev startup.
-			// See withastro/astro#16248.
-			//
-			// Skipped during Astro's sync step, which the adapter marks with
-			// noDiscovery: sync runs its own Vite server on the same cache folder,
-			// and pre-bundling there overwrites the dev server's deps_ssr and
-			// deletes chunks it still imports. Runs after the adapter to see it.
-			{
-				configEnvironment(
-					name: string,
-					options: { optimizeDeps?: { noDiscovery?: boolean } }
-				) {
-					if (name !== "ssr" || options.optimizeDeps?.noDiscovery) {
-						return;
-					}
-					return {
-						optimizeDeps: {
-							include: [
-								"@astrojs/preact/server.js",
-								"preact",
-								"preact/compat",
-								"preact/devtools",
-								"preact/hooks",
-								"preact/jsx-dev-runtime",
-								"preact/jsx-runtime",
-								"preact-render-to-string",
-								"astro/zod",
-								"astro/assets/services/noop",
-								"cnfast",
-								"d3-scale",
-								"d3-shape",
-								"hls-video-element/react",
-								"media-chrome/react",
-							],
-						},
-					};
-				},
-				enforce: "post",
-				name: "optimize-ssr-deps",
 			},
 		],
 	},

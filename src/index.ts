@@ -1,4 +1,3 @@
-import { handle } from "@astrojs/cloudflare/handler";
 import { ogImagePath } from "#/lib/seo";
 import { refreshGitHubStats } from "#/worker/github";
 import {
@@ -15,7 +14,7 @@ const GITHUB_STATS_REFRESH_CRON = "0 */6 * * *";
 const OG_PATH = "/og";
 
 export default {
-	async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+	async fetch(request: Request, env: Env) {
 		const url = new URL(request.url);
 
 		if (url.pathname === "/readme") {
@@ -43,10 +42,10 @@ export default {
 			return markdown;
 		}
 		if (isContentPath(url.pathname)) {
-			return withVaryAccept(await handle(request, env, ctx));
+			return withVaryAccept(await env.ASSETS.fetch(request));
 		}
 
-		return await handle(request, env, ctx);
+		return await env.ASSETS.fetch(request);
 	},
 
 	async scheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionContext) {

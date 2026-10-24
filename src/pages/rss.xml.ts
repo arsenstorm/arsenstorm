@@ -2,8 +2,6 @@ import rss from "@astrojs/rss";
 import { SITE_URL } from "#/lib/seo";
 import { getWriteups } from "#/lib/writeups";
 
-export const prerender = true;
-
 export async function GET() {
 	const writeups = await getWriteups();
 	return rss({
