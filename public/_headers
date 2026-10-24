@@ -9,8 +9,10 @@
 # Iframe demo documents are not pages. Markdown twins get noindex from the worker.
 /writeup-demos/*
   X-Robots-Tag: noindex
-# Browsers show the key as text instead of downloading an unknown file.
+# Browsers show these as text instead of downloading an unknown file.
 /pgp.asc
+  Content-Type: text/plain; charset=utf-8
+/.well-known/security.txt
   Content-Type: text/plain; charset=utf-8
 # Web Key Directory. Web mail clients fetch the key cross-origin.
 /.well-known/openpgpkey/*

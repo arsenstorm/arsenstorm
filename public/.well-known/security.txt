@@ -1,0 +1,6 @@
+Contact: mailto:arsen@shkrumelyak.com
+Contact: https://arsenstorm.com/contact
+Expires: 2027-10-24T00:00:00.000Z
+Encryption: https://arsenstorm.com/pgp.asc
+Preferred-Languages: en
+Canonical: https://arsenstorm.com/.well-known/security.txt
