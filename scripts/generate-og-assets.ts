@@ -7,8 +7,8 @@ import { fileURLToPath } from "node:url";
 import puppeteer, { type Browser, type Page } from "puppeteer";
 import { ogImagePath, ogVideoPath } from "../src/lib/seo";
 
-const DIST_CLIENT = fileURLToPath(new URL("../dist/client/", import.meta.url));
-const OG_OUTPUT_DIRECTORY = join(DIST_CLIENT, "og");
+const DIST = fileURLToPath(new URL("../dist/", import.meta.url));
+const OG_OUTPUT_DIRECTORY = join(DIST, "og");
 // Kept between CI runs by actions/cache, so unchanged templates skip recording.
 const OG_VIDEO_CACHE_DIRECTORY = fileURLToPath(
 	new URL("../.cache/og-videos/", import.meta.url)
@@ -72,8 +72,8 @@ function resolveAsset(pathname: string): string | null {
 			: [decoded, `${decoded}.html`, `${decoded}/index.html`];
 
 	for (const candidate of candidates) {
-		const resolved = join(DIST_CLIENT, candidate);
-		const rel = relative(DIST_CLIENT, resolved);
+		const resolved = join(DIST, candidate);
+		const rel = relative(DIST, resolved);
 		if (rel.startsWith("..") || isAbsolute(rel)) {
 			continue;
 		}
@@ -105,7 +105,7 @@ function discoverRoutes(): string[] {
 	const walk = (directory: string) => {
 		for (const entry of readdirSync(directory, { withFileTypes: true })) {
 			const full = join(directory, entry.name);
-			const rel = relative(DIST_CLIENT, full);
+			const rel = relative(DIST, full);
 			if (entry.isDirectory()) {
 				if (rel !== "og") {
 					walk(full);
@@ -119,7 +119,7 @@ function discoverRoutes(): string[] {
 		}
 	};
 
-	walk(DIST_CLIENT);
+	walk(DIST);
 	return routes.sort();
 }
 
@@ -359,7 +359,7 @@ async function writeOgVideo(
 	}
 	usedCacheFiles.add(cacheFile);
 
-	const outPath = join(DIST_CLIENT, ogVideoPath(route));
+	const outPath = join(DIST, ogVideoPath(route));
 	await copyFile(cachePath, outPath);
 	stdout.write(
 		`${cached ? "reused" : "recorded"} ${relative(process.cwd(), outPath)}\n`
@@ -417,7 +417,7 @@ async function renderOgAssets(
 	await seekAnimations(page, 0);
 
 	const screenshot = await page.screenshot({ type: "png" });
-	const outPath = join(DIST_CLIENT, ogImagePath(route));
+	const outPath = join(DIST, ogImagePath(route));
 	await writeFile(outPath, screenshot);
 	stdout.write(`generated ${relative(process.cwd(), outPath)}\n`);
 
@@ -425,9 +425,9 @@ async function renderOgAssets(
 }
 
 async function main(): Promise<void> {
-	if (!existsSync(DIST_CLIENT)) {
+	if (!existsSync(DIST)) {
 		throw new Error(
-			"dist/client not found — run `bun run build` before `bun run generate:og`."
+			"dist not found — run `bun run build` before `bun run generate:og`."
 		);
 	}
 
