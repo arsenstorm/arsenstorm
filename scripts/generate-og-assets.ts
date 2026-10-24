@@ -258,18 +258,58 @@ function seekAnimations(page: Page, timeMs: number): Promise<void> {
 	}, timeMs);
 }
 
-// Everything the frames are drawn from: the template, the CSS, the images it
-// shows, and this script (which owns the timing and encoder settings).
+// Everything the frames are drawn from: the template, the styles and keyframes
+// it uses, its fonts and images, and this script (which owns the timing and
+// encoder settings). Not the whole stylesheet: Tailwind builds one for the
+// site, so a new class on any page would re-record every video.
 async function ogVideoHash(page: Page): Promise<string> {
-	const { css, html, images } = await page.evaluate(() => ({
-		css: [...document.styleSheets]
-			.flatMap((sheet) => [...sheet.cssRules].map((rule) => rule.cssText))
-			.join("\n"),
-		html: document.body.innerHTML,
-		images: [...document.images].map(
-			(image) => new URL(image.currentSrc || image.src).pathname
-		),
-	}));
+	const { css, html, images } = await page.evaluate(() => {
+		const pseudoElements = [null, "::before", "::after"];
+		const styles = [...document.body.querySelectorAll("*")].flatMap(
+			(element) =>
+				pseudoElements.map((pseudo) => {
+					const style = getComputedStyle(element, pseudo);
+					// Custom properties come back in a different order on every run,
+					// and their values already show in the properties that use them.
+					return [...style]
+						.filter((name) => !name.startsWith("--"))
+						.map((name) => `${name}:${style.getPropertyValue(name)}`)
+						.join(";");
+				})
+		);
+		const animationNames = new Set(
+			document
+				.getAnimations()
+				.map((animation) =>
+					animation instanceof CSSAnimation ? animation.animationName : ""
+				)
+		);
+		const keyframes: string[] = [];
+		const collectKeyframes = (rules: CSSRuleList) => {
+			for (const rule of rules) {
+				if (rule instanceof CSSKeyframesRule) {
+					if (animationNames.has(rule.name)) {
+						keyframes.push(rule.cssText);
+					}
+				} else if (rule instanceof CSSGroupingRule) {
+					collectKeyframes(rule.cssRules);
+				}
+			}
+		};
+		for (const sheet of document.styleSheets) {
+			collectKeyframes(sheet.cssRules);
+		}
+		const fonts = [...document.fonts]
+			.filter((font) => font.status === "loaded")
+			.map((font) => `${font.family} ${font.weight} ${font.style}`);
+		return {
+			css: [...styles, ...keyframes, ...fonts].join("\n"),
+			html: document.body.innerHTML,
+			images: [...document.images].map(
+				(image) => new URL(image.currentSrc || image.src).pathname
+			),
+		};
+	});
 	const hash = createHash("sha256")
 		.update(await readFile(fileURLToPath(import.meta.url)))
 		.update(html)
