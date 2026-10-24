@@ -1,0 +1,59 @@
+---
+export const prerender = true;
+
+import CopyButton from "#/components/copy-button.astro";
+import { Anchor, textLinkClass } from "#/components/link.tsx";
+import { LinkCardList } from "#/components/link-card.tsx";
+import Main from "#/components/main.astro";
+import { PageHeading } from "#/components/page-heading.tsx";
+import { Section } from "#/components/section.tsx";
+import BaseLayout from "#/layouts/base-layout.astro";
+import {
+	CONTACT_DESCRIPTION,
+	CONTACT_METHODS,
+	PGP,
+	PGP_FINGERPRINT_GROUPED,
+} from "#/lib/contact.ts";
+
+const TITLE = "Contact";
+const META_DESCRIPTION =
+	"How to contact Arsen Shkrumelyak: email, LinkedIn, GitHub, and a PGP key for encrypted email.";
+
+const cards = CONTACT_METHODS.map((method) => ({
+	description: method.description,
+	href: method.href,
+	key: method.label,
+	meta: method.handle,
+	title: method.label,
+}));
+---
+
+<BaseLayout description={META_DESCRIPTION} path="/contact" title={TITLE}>
+  <Main>
+    <PageHeading description={CONTACT_DESCRIPTION} title={TITLE} />
+
+    <Section cta={{ label: "Go back", href: "/" }} title="Messages">
+      <LinkCardList items={cards} />
+    </Section>
+
+    <Section title="Encrypted email">
+      <div class="space-y-4 text-neutral-500 text-sm dark:text-neutral-400">
+        <p class="text-pretty">
+          You can encrypt email to me with my PGP key. Before you use it, check
+          that its fingerprint matches this one.
+        </p>
+        <div class="group -mx-4 flex items-center justify-between gap-2 rounded-xl bg-neutral-100 px-4 py-3 dark:bg-neutral-900">
+          <code class="font-mono text-neutral-950 text-xs dark:text-neutral-50">
+            {PGP_FINGERPRINT_GROUPED}
+          </code>
+          <CopyButton label="Copy PGP fingerprint" value={PGP.fingerprint} />
+        </div>
+        <p class="text-pretty">
+          <Anchor className={textLinkClass} href={PGP.href}>Download the key</Anchor>,
+          or fetch it with
+          <code class="rounded bg-neutral-100 px-1 py-0.5 text-neutral-950 text-xs dark:bg-neutral-900 dark:text-neutral-50">gpg --locate-keys {PGP.email}</code>.
+        </p>
+      </div>
+    </Section>
+  </Main>
+</BaseLayout>
