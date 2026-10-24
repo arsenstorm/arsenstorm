@@ -1,39 +1,28 @@
 "use client";
 
-import { cn } from "cnfast";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import {
 	CELL,
 	paintColumn,
 	prefersReducedMotion,
 	staggeredProgress,
 } from "./dither-paint";
-import { type DitherColor, seedOfColor } from "./palette";
+import { type DitherColor, PALETTE } from "./palette";
 import { useChartDimensions } from "./use-chart-dimensions";
 
 export interface BarListItem {
-	/** Per-item hue override — e.g. `grey` for an "everything else" bucket. */
+	/** Hue for this row — e.g. `grey` for an "everything else" bucket. */
 	color?: DitherColor;
 	label: string;
 	value: number;
 }
 
-interface BarListProps {
-	className?: string;
-	/** Series hue for items without their own `color`. */
-	color?: DitherColor;
-	/** Set false for a static list: no hover lift/dim. */
-	interactive?: boolean;
-	items: BarListItem[];
-}
-
+const DEFAULT_COLOR: DitherColor = "blue";
 const ENTRANCE_MS = 900;
 const TRACK_HEIGHT = 16; // css px — 8 dither cells tall
 
 /** The offscreen bar canvas and the row-independent geometry it is painted with. */
 interface RowPaint {
-	color: DitherColor;
-	hoverIndex: number | null;
 	lenCells: number;
 	max: number;
 	octx: CanvasRenderingContext2D;
@@ -44,7 +33,7 @@ interface RowPaint {
 /** Paints one row's bar vertically offscreen, then blits it rotated into place. */
 function paintRow(
 	p: RowPaint,
-	canvas: HTMLCanvasElement | null,
+	canvas: HTMLCanvasElement | undefined,
 	item: BarListItem,
 	i: number,
 	count: number,
@@ -61,17 +50,14 @@ function paintRow(
 	if (grown <= 0) {
 		return;
 	}
-	const active = p.hoverIndex === i;
-	const dim = p.hoverIndex !== null && !active ? 0.5 : 1;
 	p.octx.clearRect(0, 0, p.thickCells, p.lenCells);
 	const top = (1 - grown) * p.lenCells;
-	const seed = seedOfColor(item.color ?? p.color);
+	const fill = PALETTE[item.color ?? DEFAULT_COLOR];
 	for (let x = 0; x < p.thickCells; x += 1) {
-		paintColumn(p.octx, x, top, p.lenCells, seed, {
-			dim,
-			intensity: active ? 1 : 0,
+		paintColumn(p.octx, x, top, p.lenCells, fill, {
+			dim: 1,
+			intensity: 0,
 			stacked: false,
-			variant: "gradient",
 		});
 	}
 	// Rotate the vertically-painted bar 90° clockwise: offscreen (x, y) lands at
@@ -85,27 +71,15 @@ function paintRow(
 
 /**
  * Horizontal dither **bar list** — one labelled row per item, values always
- * visible, longest bar = the max. The cartesian roots are vertical-only, so
- * this paints each bar with the shared {@link paintColumn} dither on an
- * offscreen canvas (as a vertical bar) and blits it rotated 90°: the baseline
- * lands on the left and the soft border outline on the value end. Rows grow in
- * a staggered top-to-bottom wave; hovering a row lifts it and dims the rest.
+ * visible, longest bar = the max. Each bar is painted with the shared
+ * {@link paintColumn} dither on an offscreen canvas (as a vertical bar) and
+ * blitted rotated 90°, so the baseline lands on the left. Rows grow in a
+ * staggered top-to-bottom wave.
  */
-export function BarList({
-	items,
-	color = "blue",
-	interactive = true,
-	className,
-}: BarListProps) {
+export function BarList({ items }: { items: BarListItem[] }) {
 	const { ref: trackRef, size } = useChartDimensions<HTMLDivElement>();
 	const { width } = size;
 	const listRef = useRef<HTMLDivElement>(null);
-	const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-	const hoverRef = useRef(hoverIndex);
-	const progressRef = useRef(0);
-	const paintRef = useRef<(prog: number) => void>(() => {
-		// replaced once the paint effect runs
-	});
 
 	useEffect(() => {
 		if (width <= 0 || items.length === 0) {
@@ -122,27 +96,17 @@ export function BarList({
 			return;
 		}
 
+		const paint: RowPaint = { lenCells, max, octx, off, thickCells };
 		const paintAll = (prog: number) => {
-			const p: RowPaint = {
-				color,
-				hoverIndex: hoverRef.current,
-				lenCells,
-				max,
-				octx,
-				off,
-				thickCells,
-			};
 			// One canvas per row, in row order.
 			const canvases =
 				listRef.current?.querySelectorAll<HTMLCanvasElement>("canvas") ?? [];
 			for (const [i, item] of items.entries()) {
-				paintRow(p, canvases[i] ?? null, item, i, items.length, prog);
+				paintRow(paint, canvases[i], item, i, items.length, prog);
 			}
 		};
-		paintRef.current = paintAll;
 
 		if (prefersReducedMotion()) {
-			progressRef.current = 1;
 			paintAll(1);
 			return;
 		}
@@ -153,7 +117,6 @@ export function BarList({
 				startTime = now;
 			}
 			const prog = Math.min(1, (now - startTime) / ENTRANCE_MS);
-			progressRef.current = prog;
 			paintAll(prog);
 			if (prog < 1) {
 				raf = requestAnimationFrame(tick);
@@ -161,28 +124,16 @@ export function BarList({
 		};
 		raf = requestAnimationFrame(tick);
 		return () => cancelAnimationFrame(raf);
-	}, [width, items, color]);
-
-	// Hover lifts/dims are a repaint at the current progress, not a re-entrance.
-	useEffect(() => {
-		hoverRef.current = hoverIndex;
-		paintRef.current(progressRef.current);
-	}, [hoverIndex]);
+	}, [width, items]);
 
 	return (
 		// biome-ignore lint/a11y/useSemanticElements: <ul> would need list-style:none, which drops the list role in Safari VoiceOver
-		<div
-			className={cn("flex flex-col gap-2", className)}
-			ref={listRef}
-			role="list"
-		>
+		<div className="flex flex-col gap-2" ref={listRef} role="list">
 			{items.map((item, i) => (
 				// biome-ignore lint/a11y/useSemanticElements: matches the role="list" container above
 				<div
 					className="grid grid-cols-[8.5rem_1fr_auto] items-center gap-x-3"
 					key={item.label}
-					onPointerEnter={interactive ? () => setHoverIndex(i) : undefined}
-					onPointerLeave={interactive ? () => setHoverIndex(null) : undefined}
 					role="listitem"
 				>
 					<span className="truncate text-neutral-500 text-sm dark:text-neutral-400">

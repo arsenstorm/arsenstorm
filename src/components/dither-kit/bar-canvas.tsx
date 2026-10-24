@@ -1,17 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import type { AreaVariant, ChartContextValue } from "./chart-context";
+import type { ChartContextValue } from "./chart-context";
 import { useChart } from "./chart-context";
 import {
 	backingSize,
-	bloomLayerStyle,
 	paintColumn,
 	prefersReducedMotion,
 	staggeredProgress,
 } from "./dither-paint";
-import type { DitherColor, Seed } from "./palette";
-import { seedOfColor } from "./palette";
+
+const ENTRANCE_MS = 900;
 
 /** Per data index, in backing rows. */
 interface Bars {
@@ -29,19 +28,7 @@ interface Frame {
 	prog: number; // 0–1 entrance progress
 	rows: number;
 	s: ChartContextValue;
-	stacked: boolean;
 	targets: Record<string, Bars>;
-}
-
-/** One series' paint recipe within a frame. */
-interface SeriesPaint {
-	colors?: Partial<Record<number, DitherColor>>;
-	count: number; // series in this chart — drives the slot split
-	index: number; // this series' position among them
-	seed: Seed;
-	selDim: number; // selection/legend dim multiplier
-	targets: Bars;
-	variant: AreaVariant;
 }
 
 /** Mutable RAF-loop state — what the last frame painted, so the next can skip. */
@@ -49,79 +36,57 @@ interface Loop {
 	animStart: number;
 	intensity: number;
 	lastHover: number | null | undefined;
-	lastPaintSig: string;
 	lastProg: number;
-	lastRevision: number;
-	lastSelected: string | null | undefined;
 	needsFill: boolean;
 }
 
-/** Whether the bloom layer should be mirroring the crisp canvas right now. */
-function bloomActive(s: ChartContextValue) {
-	return (
-		s.bloom !== "off" && (!s.bloomOnHover || s.isMouseInChart || s.hovered)
-	);
-}
-
-function paintBar(frame: Frame, series: SeriesPaint, i: number) {
-	const { c, s, rows, fx, stacked } = frame;
-	const t = series.targets;
-	const bp = frame.animate ? staggeredProgress(i, s.dataLength, frame.prog) : 1;
-	const base = t.base[i] ?? rows - 1;
+function paintBar(
+	frame: Frame,
+	key: string,
+	seriesIndex: number,
+	targets: Bars,
+	i: number
+) {
+	const { c, s, rows, fx } = frame;
+	const bp = frame.animate
+		? staggeredProgress(i, s.data.length, frame.prog)
+		: 1;
+	const base = targets.base[i] ?? rows - 1;
 	// A zero-value segment in a stack would still paint its 1px highlight edge on
 	// top of the series below — skip it entirely.
-	if (stacked && t.top[i] === base) {
+	if (s.stacked && targets.top[i] === base) {
 		return;
 	}
-	const grown = base + ((t.top[i] ?? base) - base) * bp;
-	// Bars grow from the zero baseline toward the value. Positive values sit above
-	// the baseline (smaller pixel), negative ones below it — paintColumn wants the
+	const grown = base + ((targets.top[i] ?? base) - base) * bp;
+	// Bars grow from the zero baseline toward the value; paintColumn wants the
 	// higher edge first, so order the pair.
 	const top = Math.min(grown, base);
 	const bottom = Math.max(grown, base);
 	const active = s.hoverIndex === i;
-	const hoverDim =
-		s.hoverIndex !== null && !active && s.isMouseInChart ? 0.5 : 1;
-	const slot = s.barSlot(i, series.index, series.count);
+	const dim = s.hoverIndex !== null && !active && s.isMouseInChart ? 0.5 : 1;
+	const slot = s.barSlot(i, seriesIndex, s.configKeys.length);
 	const c0 = Math.round(slot.x * fx);
 	const c1 = Math.round((slot.x + slot.width) * fx);
-	const override = series.colors?.[i];
-	const barSeed = override ? seedOfColor(override) : series.seed;
 	for (let x = c0; x < c1; x += 1) {
-		paintColumn(c, x, top, bottom, barSeed, {
-			dim: series.selDim * hoverDim,
+		paintColumn(c, x, top, bottom, s.colorOf(key), {
+			dim,
 			intensity: frame.intensity + (active ? 0.4 : 0),
-			stacked,
-			variant: series.variant,
+			stacked: s.stacked,
 		});
-	}
-}
-
-function paintSeries(frame: Frame, series: SeriesPaint) {
-	for (let i = 0; i < frame.s.dataLength; i += 1) {
-		paintBar(frame, series, i);
 	}
 }
 
 function paintFrame(frame: Frame) {
 	const { c, s, cols, rows } = frame;
 	c.clearRect(0, 0, cols, rows);
-	const keys = s.configKeys;
-	const emphasis = s.selectedDataKey ?? s.focusDataKey;
-	for (const [si, key] of keys.entries()) {
+	for (const [seriesIndex, key] of s.configKeys.entries()) {
 		const targets = frame.targets[key];
 		if (!targets) {
 			continue;
 		}
-		paintSeries(frame, {
-			colors: s.seriesSpecs[key]?.colors,
-			count: keys.length,
-			index: si,
-			seed: s.seedOf(key),
-			selDim: emphasis !== null && emphasis !== key ? 0.3 : 1,
-			targets,
-			variant: s.seriesSpecs[key]?.variant ?? "gradient",
-		});
+		for (let i = 0; i < s.data.length; i += 1) {
+			paintBar(frame, key, seriesIndex, targets, i);
+		}
 	}
 }
 
@@ -136,53 +101,35 @@ function markDirty(
 		loop.lastProg = prog;
 		loop.needsFill = true;
 	}
-	const emphasisNow = s.selectedDataKey ?? s.focusDataKey;
-	if (emphasisNow !== loop.lastSelected) {
-		loop.lastSelected = emphasisNow;
-		loop.needsFill = true;
-	}
 	if (s.hoverIndex !== loop.lastHover) {
 		loop.lastHover = s.hoverIndex;
 		loop.needsFill = true;
 	}
-	const itTarget = s.isMouseInChart || s.hovered ? 1 : 0;
-	if (Math.abs(loop.intensity - itTarget) > 0.001) {
-		loop.intensity += (itTarget - loop.intensity) * (reduce ? 1 : 0.16);
+	const target = s.isMouseInChart ? 1 : 0;
+	if (Math.abs(loop.intensity - target) > 0.001) {
+		loop.intensity += (target - loop.intensity) * (reduce ? 1 : 0.16);
 		loop.needsFill = true;
 	} else {
-		loop.intensity = itTarget;
-	}
-
-	// Live tweak repaint (variant, stacking) without replaying the wave.
-	const paintSig = `${s.stackType}|${s.configKeys
-		.map((k) => s.seriesSpecs[k]?.variant ?? "")
-		.join(",")}`;
-	if (paintSig !== loop.lastPaintSig) {
-		loop.lastPaintSig = paintSig;
-		loop.needsFill = true;
+		loop.intensity = target;
 	}
 }
 
 /**
  * Dither canvas for bar charts. Each category owns a band; grouped series split
  * it into side-by-side bars, stacked series share its full width and pile in y.
- * Every bar is filled with the shared {@link paintColumn} ordered dither. Bars
- * grow up from their base in a staggered left-to-right wave (eased), and the
+ * Bars grow up from their base in a staggered left-to-right wave, and the
  * hovered category lifts while the rest dim.
  */
 export function BarCanvas() {
-	const ctx = useChart();
+	const ctx = useChart("BarCanvas");
 	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const bloomRef = useRef<HTMLCanvasElement>(null);
 
 	const { width, height } = ctx.plot;
 	const { cols, rows } = backingSize(width, height);
 	const { ready, configKeys, bands, y } = ctx;
 
-	// Memoized: per-series bar tops/bases (backing rows) over the data indices.
-	// The canvas re-renders on every hover/cursor tick, so pin this map to the
-	// exact ctx fields it reads plus the backing geometry — a bar hover must not
-	// rebuild every band's geometry.
+	// Memoized: the canvas re-renders on every hover tick, which must not rebuild
+	// every band's geometry.
 	const targets = useMemo(() => {
 		const out: Record<string, Bars> = {};
 		if (!ready) {
@@ -203,8 +150,8 @@ export function BarCanvas() {
 	}, [ready, configKeys, bands, y, height, rows]);
 
 	// The RAF loop reads these through refs so it always sees the latest values;
-	// refs are written in an effect (never during render) — mutating a ref
-	// mid-render tears under Strict Mode / concurrent rendering.
+	// refs are written in an effect (never during render), since mutating a ref
+	// mid-render tears under Strict Mode and concurrent rendering.
 	const state = useRef(ctx);
 	const targetsRef = useRef(targets);
 	useEffect(() => {
@@ -224,29 +171,18 @@ export function BarCanvas() {
 		canvas.width = cols;
 		canvas.height = rows;
 
-		const bloomCanvas = bloomRef.current;
-		const bloomCtx = bloomCanvas?.getContext("2d") ?? null;
-		if (bloomCanvas) {
-			bloomCanvas.width = cols;
-			bloomCanvas.height = rows;
-		}
-
 		const reduce = prefersReducedMotion();
-		const animate = state.current.animate && !reduce;
-		const duration = state.current.animationDuration;
+		const animate = !reduce;
 		const fx = cols / Math.max(width, 1);
 
 		let raf = 0;
 		const loop: Loop = {
 			animStart: 0,
 			intensity: 0,
-			// Sentinels no real emphasis / hover index can equal, so the first frame
-			// always records its starting values.
+			// A sentinel no real hover index can equal, so the first frame always
+			// records its starting value.
 			lastHover: Symbol("unset") as never,
-			lastPaintSig: "",
 			lastProg: -1,
-			lastRevision: state.current.revision,
-			lastSelected: Symbol("unset") as never,
 			needsFill: true,
 		};
 
@@ -256,19 +192,12 @@ export function BarCanvas() {
 			if (!s.ready) {
 				return;
 			}
-			if (bloomCtx && bloomActive(s)) {
-				bloomCtx.clearRect(0, 0, cols, rows);
-				bloomCtx.drawImage(canvas, 0, 0);
-			}
-			if (s.revision !== loop.lastRevision) {
-				loop.lastRevision = s.revision;
-				loop.animStart = 0; // re-play the wave on data change / replay
-				loop.lastProg = -1;
-			}
 			if (!loop.animStart) {
 				loop.animStart = now;
 			}
-			const prog = animate ? Math.min(1, (now - loop.animStart) / duration) : 1;
+			const prog = animate
+				? Math.min(1, (now - loop.animStart) / ENTRANCE_MS)
+				: 1;
 			markDirty(loop, s, prog, reduce);
 
 			if (!loop.needsFill) {
@@ -283,7 +212,6 @@ export function BarCanvas() {
 				prog,
 				rows,
 				s,
-				stacked: s.stackType === "stacked" || s.stackType === "percent",
 				targets: targetsRef.current,
 			});
 			loop.needsFill = false;
@@ -293,30 +221,17 @@ export function BarCanvas() {
 		return () => cancelAnimationFrame(raf);
 	}, [cols, rows, width]);
 
-	const bloom = bloomLayerStyle(ctx.bloom, bloomActive(ctx));
-	const pos = {
-		height,
-		left: ctx.margins.left,
-		top: ctx.margins.top,
-		width,
-	} as const;
-
 	return (
-		<>
-			<canvas
-				className="pointer-events-none absolute"
-				ref={canvasRef}
-				style={{ ...pos, imageRendering: "pixelated" }}
-			/>
-			<canvas
-				className="pointer-events-none absolute"
-				ref={bloomRef}
-				style={{
-					...pos,
-					transition: "opacity 220ms ease",
-					...(bloom ?? { opacity: 0 }),
-				}}
-			/>
-		</>
+		<canvas
+			className="pointer-events-none absolute"
+			ref={canvasRef}
+			style={{
+				height,
+				imageRendering: "pixelated",
+				left: ctx.margins.left,
+				top: ctx.margins.top,
+				width,
+			}}
+		/>
 	);
 }

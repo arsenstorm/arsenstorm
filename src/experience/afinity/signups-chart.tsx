@@ -1,4 +1,3 @@
-import { Bar } from "#/components/dither-kit/bar";
 import { BarChart } from "#/components/dither-kit/bar-chart";
 import type { ChartConfig } from "#/components/dither-kit/chart-context";
 import { Grid } from "#/components/dither-kit/grid";
@@ -29,7 +28,6 @@ export function SignupsChart() {
 					<XAxis dataKey="month" maxTicks={12} />
 					<YAxis />
 					<Tooltip labelKey="month" />
-					<Bar dataKey="signups" />
 				</BarChart>
 			</div>
 			<figcaption className="text-neutral-500 text-xs dark:text-neutral-400">

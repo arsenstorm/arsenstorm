@@ -1,33 +1,28 @@
 "use client";
 
-import { useChartPart } from "./chart-context";
+import { useChart } from "./chart-context";
 
-export function YAxis({
-	tickFormatter,
-	tickCount = 4,
-	tickMargin = 8,
-}: {
-	tickFormatter?: (value: number) => string;
-	tickCount?: number;
-	tickMargin?: number;
-}) {
-	const ctx = useChartPart("YAxis");
+const TICK_COUNT = 4;
+const TICK_MARGIN = 8;
+
+export function YAxis() {
+	const ctx = useChart("YAxis");
 	if (!ctx.ready) {
 		return null;
 	}
 
 	return (
 		<g className="fill-current font-mono text-[10px] text-muted-foreground">
-			{ctx.y.ticks(tickCount).map((t) => (
+			{ctx.y.ticks(TICK_COUNT).map((t) => (
 				<text
 					dominantBaseline="central"
 					fill="currentColor"
 					key={t}
 					textAnchor="end"
-					x={-tickMargin}
+					x={-TICK_MARGIN}
 					y={ctx.y(t)}
 				>
-					{tickFormatter ? tickFormatter(t) : String(t)}
+					{String(t)}
 				</text>
 			))}
 		</g>
