@@ -11,11 +11,15 @@ concurrency:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Each run is recorded as a deployment: production shows on the repo page,
+    # and a pull request's preview link shows in its timeline.
+    environment:
+      name: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+      url: ${{ github.event_name == 'push' && 'https://arsenstorm.com' || steps.preview.outputs.url }}
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -42,13 +46,14 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Upload preview version
+        id: preview
         if: github.event_name == 'pull_request'
         run: |
           # Best-effort: until the v2 Durable Object deletion migration has been
           # applied by a production deploy, version uploads are rejected (10211).
           bunx wrangler versions upload 2>&1 | tee version-upload.log || true
           PREVIEW_URL="$(grep -Eo 'https://[a-z0-9-]+\.[a-z0-9-]+\.workers\.dev' version-upload.log | head -1)"
-          echo "PREVIEW_URL=$PREVIEW_URL" >> "$GITHUB_ENV"
+          echo "url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
           {
             echo "### Preview"
             echo "${PREVIEW_URL:-_No preview URL was generated for this version._}"
@@ -56,22 +61,3 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      - name: Comment preview on pull request
-        if: github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          MARKER='<!-- deploy-preview -->'
-          printf '%s\n\n### Preview\n\n%s\n\nBuilt from %s.\n' \
-            "$MARKER" \
-            "${PREVIEW_URL:-_No preview URL was generated for this version._}" \
-            "$HEAD_SHA" > comment-body.md
-          COMMENT_ID="$(gh api "repos/${{ github.repository }}/issues/$PR_NUMBER/comments" --paginate \
-            --jq "[.[] | select(.body | startswith(\"$MARKER\"))][0].id // empty")"
-          if [ -n "$COMMENT_ID" ]; then
-            gh api --method PATCH "repos/${{ github.repository }}/issues/comments/$COMMENT_ID" -F body=@comment-body.md > /dev/null
-          else
-            gh api --method POST "repos/${{ github.repository }}/issues/$PR_NUMBER/comments" -F body=@comment-body.md > /dev/null
-          fi
