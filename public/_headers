@@ -1,3 +1,10 @@
+# Every response: stay on HTTPS, trust declared content types, and only be
+# framed by this site (writeups embed /writeup-demos/*). No includeSubDomains or
+# preload yet: both are hard to undo once browsers cache them.
+/*
+  Strict-Transport-Security: max-age=31536000
+  X-Content-Type-Options: nosniff
+  Content-Security-Policy: frame-ancestors 'self'
 # Fonts are versioned by filename, so they can be cached like /_astro/*.
 /fonts/*
   Cache-Control: public, max-age=31536000, immutable
