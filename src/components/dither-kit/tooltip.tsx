@@ -96,7 +96,7 @@ export function Tooltip({
 						/>
 						<span className="text-muted-foreground">{item.label}</span>
 						<span className="ml-auto pl-2 text-foreground">
-							{item.value.toLocaleString()}
+							{item.value.toLocaleString("en-GB")}
 						</span>
 					</div>
 				))}
