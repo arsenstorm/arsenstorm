@@ -1,5 +1,4 @@
 import { scaleBand, scaleLinear } from "d3-scale";
-import { stack as d3Stack } from "d3-shape";
 
 type Row = Record<string, unknown>;
 
@@ -8,8 +7,8 @@ const num = (v: unknown) =>
 
 /**
  * Per-series [y0, y1] bands for every row. Unstacked, every series sits on the
- * zero baseline (y0 = 0); stacked, they pile on top of each other via d3's
- * stack layout. `max`/`min` bound the value range for the y-scale.
+ * zero baseline (y0 = 0); stacked, each series starts where the one before it
+ * ends, in config order. `max`/`min` bound the value range for the y-scale.
  */
 export function computeBands(
 	data: Row[],
@@ -20,11 +19,12 @@ export function computeBands(
 	let max = 0;
 	let min = 0;
 	if (stacked) {
-		const layers = d3Stack<Row>()
-			.keys(keys)
-			.value((row, key) => num(row[key]))(data);
-		for (const layer of layers) {
-			bands[layer.key] = layer.map(([low, high]) => {
+		const totals = data.map(() => 0);
+		for (const key of keys) {
+			bands[key] = data.map((row, i) => {
+				const low = totals[i] ?? 0;
+				const high = low + num(row[key]);
+				totals[i] = high;
 				max = Math.max(max, high);
 				min = Math.min(min, low);
 				return [low, high];
