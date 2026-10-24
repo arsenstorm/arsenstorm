@@ -154,9 +154,12 @@ export function BarCanvas() {
 	// mid-render tears under Strict Mode and concurrent rendering.
 	const state = useRef(ctx);
 	const targetsRef = useRef(targets);
+	// Restarts the loop, which stops itself once nothing is moving.
+	const wakeRef = useRef<(() => void) | null>(null);
 	useEffect(() => {
 		state.current = ctx;
 		targetsRef.current = targets;
+		wakeRef.current?.();
 	});
 
 	useEffect(() => {
@@ -187,7 +190,7 @@ export function BarCanvas() {
 		};
 
 		const draw = (now: number) => {
-			raf = requestAnimationFrame(draw);
+			raf = 0;
 			const s = state.current;
 			if (!s.ready) {
 				return;
@@ -200,25 +203,40 @@ export function BarCanvas() {
 				: 1;
 			markDirty(loop, s, prog, reduce);
 
-			if (!loop.needsFill) {
-				return;
+			if (loop.needsFill) {
+				paintFrame({
+					animate,
+					c,
+					cols,
+					fx,
+					intensity: loop.intensity,
+					prog,
+					rows,
+					s,
+					targets: targetsRef.current,
+				});
+				loop.needsFill = false;
 			}
-			paintFrame({
-				animate,
-				c,
-				cols,
-				fx,
-				intensity: loop.intensity,
-				prog,
-				rows,
-				s,
-				targets: targetsRef.current,
-			});
-			loop.needsFill = false;
+			// Keep going only while the entrance plays or the hover lift eases;
+			// otherwise sleep until the chart's state changes.
+			const settled =
+				prog >= 1 && loop.intensity === (s.isMouseInChart ? 1 : 0);
+			if (!settled) {
+				raf = requestAnimationFrame(draw);
+			}
 		};
 
-		raf = requestAnimationFrame(draw);
-		return () => cancelAnimationFrame(raf);
+		const wake = () => {
+			if (!raf) {
+				raf = requestAnimationFrame(draw);
+			}
+		};
+		wakeRef.current = wake;
+		wake();
+		return () => {
+			cancelAnimationFrame(raf);
+			wakeRef.current = null;
+		};
 	}, [cols, rows, width]);
 
 	return (
