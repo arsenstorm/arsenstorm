@@ -11,6 +11,12 @@ import remarkMdx from "remark-mdx";
 import remarkParse from "remark-parse";
 import remarkStringify from "remark-stringify";
 import { unified } from "unified";
+import {
+	CONTACT_DESCRIPTION,
+	CONTACT_METHODS,
+	PGP,
+	PGP_FINGERPRINT_GROUPED,
+} from "../src/lib/contact";
 import { PROJECTS } from "../src/lib/projects";
 import { SITE_URL } from "../src/lib/seo";
 
@@ -20,6 +26,9 @@ const WRITEUPS_DIRECTORY = fileURLToPath(
 );
 const EXPERIENCE_DIRECTORY = fileURLToPath(
 	new URL("../src/experience/", import.meta.url)
+);
+const NOTE_FILE = fileURLToPath(
+	new URL("../src/pages/_a-lil-note.mdx", import.meta.url)
 );
 
 const FRONTMATTER_REGEX = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
@@ -527,6 +536,7 @@ function indexPage(): string {
 			`- [Writing](${SITE_URL}/writing)`,
 			`- [Projects](${SITE_URL}/projects)`,
 			`- [Experience](${SITE_URL}/experience)`,
+			`- [Contact](${SITE_URL}/contact)`,
 		].join("\n"),
 	].join("\n\n");
 }
@@ -552,6 +562,26 @@ function projectsPage(): string {
 	return `# Projects\n\n${items.join("\n")}`;
 }
 
+function contactPage(): string {
+	const methods = CONTACT_METHODS.map(
+		(method) =>
+			`- [${method.label}](${method.href}) (${method.handle}) — ${method.description}`
+	);
+	return [
+		"# Contact",
+		CONTACT_DESCRIPTION,
+		methods.join("\n"),
+		"## Encrypted email",
+		`Encrypt email to me with my [PGP key](${SITE_URL}${PGP.href}), or fetch it with \`gpg --locate-keys ${PGP.email}\`. Check that its fingerprint matches:`,
+		`\`${PGP_FINGERPRINT_GROUPED}\``,
+	].join("\n\n");
+}
+
+// The note is plain markdown with no frontmatter, so it only needs its title.
+function notePage(): string {
+	return `# a lil' note about outreach\n\n${readFileSync(NOTE_FILE, "utf8")}`;
+}
+
 function llmsTxt(writeups: Writeup[]): string {
 	const writing = writeups.map(
 		(writeup) =>
@@ -567,6 +597,7 @@ function llmsTxt(writeups: Writeup[]): string {
 			`- [Writing index](${SITE_URL}/writing.md)`,
 			`- [Projects](${SITE_URL}/projects.md)`,
 			`- [Experience](${SITE_URL}/experience.md)`,
+			`- [Contact](${SITE_URL}/contact.md)`,
 		].join("\n"),
 	].join("\n\n");
 }
@@ -613,6 +644,8 @@ async function main(): Promise<void> {
 	await write("writing.md", writingPage(writeups));
 	await write("projects.md", projectsPage());
 	await write("experience.md", `# Experience\n\n${body}`);
+	await write("contact.md", contactPage());
+	await write("a-lil-note.md", notePage());
 	await writeEntries(
 		WRITEUPS_DIRECTORY,
 		"writing",

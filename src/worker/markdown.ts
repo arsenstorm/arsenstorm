@@ -11,7 +11,13 @@ const TXT_HEADERS = {
 	...MD_HEADERS,
 	"content-type": "text/plain; charset=utf-8",
 };
-const CONTENT_BASES = ["/writing", "/projects", "/experience"];
+const CONTENT_BASES = [
+	"/writing",
+	"/projects",
+	"/experience",
+	"/contact",
+	"/a-lil-note",
+];
 /** Paths whose markdown lives under a different asset name (aliases + root). */
 const MARKDOWN_ALIASES: Record<string, string> = {
 	"/": "/index.md",

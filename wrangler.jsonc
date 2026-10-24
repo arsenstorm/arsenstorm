@@ -28,6 +28,10 @@
       "/experience/*",
       "/work",
       "/work.md",
+      "/contact",
+      "/contact.md",
+      "/a-lil-note",
+      "/a-lil-note.md",
       "/llms.txt"
     ]
   },

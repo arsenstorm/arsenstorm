@@ -40,6 +40,8 @@ describe("isContentPath", () => {
 		"/work",
 		"/work.md",
 		"/index.md",
+		"/contact",
+		"/a-lil-note.md",
 	])("returns true for %s", (pathname) => {
 		expect(isContentPath(pathname)).toBe(true);
 	});
