@@ -56,6 +56,11 @@
       "pattern": "arsenstorm.com",
       "zone_name": "arsenstorm.com",
       "custom_domain": true
+    },
+    // Web Key Directory for arsen@shkrumelyak.com. The rest of that zone redirects here.
+    {
+      "pattern": "openpgpkey.shkrumelyak.com/.well-known/openpgpkey/*",
+      "zone_name": "shkrumelyak.com"
     }
   ],
   "triggers": {
