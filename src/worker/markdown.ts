@@ -11,13 +11,6 @@ const TXT_HEADERS = {
 	...MD_HEADERS,
 	"content-type": "text/plain; charset=utf-8",
 };
-const CONTENT_BASES = [
-	"/writing",
-	"/projects",
-	"/experience",
-	"/contact",
-	"/a-lil-note",
-];
 /** Paths whose markdown lives under a different asset name (aliases + root). */
 const MARKDOWN_ALIASES: Record<string, string> = {
 	"/": "/index.md",
@@ -40,18 +33,6 @@ export function acceptsMarkdown(accept: string | null): boolean {
 		return q ? Number.parseFloat(q.slice(2)) > 0 : true;
 	}
 	return false;
-}
-
-export function isContentPath(pathname: string): boolean {
-	if (pathname === "/index.md" || pathname in MARKDOWN_ALIASES) {
-		return true;
-	}
-	return CONTENT_BASES.some(
-		(base) =>
-			pathname === base ||
-			pathname === `${base}.md` ||
-			pathname.startsWith(`${base}/`)
-	);
 }
 
 export function markdownAssetPath(pathname: string): string {
@@ -99,9 +80,6 @@ export async function handleMarkdown(
 
 	const direct = pathname.endsWith(".md");
 	if (!(direct || acceptsMarkdown(request.headers.get("accept")))) {
-		return null;
-	}
-	if (!isContentPath(pathname)) {
 		return null;
 	}
 
