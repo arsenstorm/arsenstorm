@@ -1,0 +1,5 @@
+# Formatting-only commits, skipped by `git blame` and GitHub blame.
+# Locally: git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# chore: switch indentation from tabs to spaces
+d71b43444a6ffb236eb1be06347d61cd7fac50e6
