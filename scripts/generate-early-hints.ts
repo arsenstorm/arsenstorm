@@ -3,8 +3,9 @@ import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // Cloudflare turns a cached `Link` header into a 103 Early Hints response, so
-// the stylesheet and font start downloading before the Worker has answered.
-// The stylesheet name is hashed per build, so the rule is written after it.
+// the font starts downloading before the Worker has answered. Only the font:
+// the stylesheet's name changes every build, and Cloudflare keeps serving the
+// cached hint after a deploy, so a hinted stylesheet would preload a 404.
 const DIST_CLIENT = fileURLToPath(new URL("../dist/client/", import.meta.url));
 const HTML_EXTENSION_REGEX = /\.html$/;
 
@@ -17,11 +18,8 @@ function htmlRoutes(directory: string): string[] {
 		.map((route) => (route === "/index" ? "/" : route));
 }
 
-const stylesheets = readdirSync(join(DIST_CLIENT, "_astro"))
-	.filter((file) => file.endsWith(".css"))
-	.map((file) => `</_astro/${file}>; rel=preload; as=style`);
-const font = "</fonts/InterVariable-latin.woff2>; rel=preload; as=font; crossorigin";
-const link = [...stylesheets, font].join(", ");
+const link =
+	"</fonts/InterVariable-latin.woff2>; rel=preload; as=font; crossorigin";
 
 const rules = htmlRoutes(DIST_CLIENT)
 	.map((route) => `${route}\n  Link: ${link}\n`)
