@@ -8,7 +8,15 @@ const DEFAULT_OG_HEIGHT = "630";
 const LEADING_SLASH_REGEX = /^\//;
 const PATH_SEPARATOR_REGEX = /\//g;
 
+const PUBLISHED_DATE_FORMAT: Intl.DateTimeFormatOptions = {
+	day: "numeric",
+	month: "long",
+	timeZone: "UTC",
+	year: "numeric",
+};
+
 interface PageMetaOptions {
+	article?: { publishedAt: string; readingTime: number };
 	type?: "article" | "website";
 }
 
@@ -38,8 +46,43 @@ function getOgImageUrl(path: string) {
 	return getAbsoluteUrl(ogImagePath(path));
 }
 
-export function pageLinks(path = "/") {
-	return [{ href: getAbsoluteUrl(path), rel: "canonical" }];
+/** The page's markdown copy, which src/worker/markdown.ts serves. */
+function markdownPath(path: string): string {
+	return path === "/" ? "/index.md" : `${path}.md`;
+}
+
+export function pageLinks(path = "/", { markdown = true } = {}) {
+	const links: { href: string; rel: string; type?: string }[] = [
+		{ href: getAbsoluteUrl(path), rel: "canonical" },
+	];
+	if (markdown) {
+		links.push({
+			href: getAbsoluteUrl(markdownPath(path)),
+			rel: "alternate",
+			type: "text/markdown",
+		});
+	}
+	return links;
+}
+
+// Slack and Discord show twitter:label/data pairs as fields under the preview.
+function articleMeta({
+	publishedAt,
+	readingTime,
+}: NonNullable<PageMetaOptions["article"]>) {
+	return [
+		{ content: publishedAt, property: "article:published_time" },
+		{ content: "Reading time", name: "twitter:label1" },
+		{ content: `${readingTime} min`, name: "twitter:data1" },
+		{ content: "Published", name: "twitter:label2" },
+		{
+			content: new Date(publishedAt).toLocaleDateString(
+				"en-GB",
+				PUBLISHED_DATE_FORMAT
+			),
+			name: "twitter:data2",
+		},
+	];
 }
 
 export function pageMeta(
@@ -72,6 +115,7 @@ export function pageMeta(
 		{ content: pageTitle, name: "twitter:title" },
 		{ content: description, name: "twitter:description" },
 		{ content: imageUrl, name: "twitter:image" },
+		...(options.article ? articleMeta(options.article) : []),
 	];
 }
 

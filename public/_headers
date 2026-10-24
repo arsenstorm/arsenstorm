@@ -17,3 +17,6 @@
 # Web Key Directory. Web mail clients fetch the key cross-origin.
 /.well-known/openpgpkey/*
   Access-Control-Allow-Origin: *
+# Lets Chrome's private prefetch proxy prefetch pages from Google results.
+/.well-known/traffic-advice
+  Content-Type: application/trafficadvice+json

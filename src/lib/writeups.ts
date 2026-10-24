@@ -5,6 +5,7 @@ export interface WriteupSummary {
 	href: string;
 	metaDescription?: string;
 	publishedAt: string;
+	readingTime: number;
 	slug: string;
 	tags: string[];
 	title: string;

@@ -11,6 +11,7 @@ const writeups = defineCollection({
 		description: z.string(),
 		metaDescription: z.string().optional(),
 		publishedAt: z.string(),
+		readingTime: z.number(),
 		tags: z.array(z.string()),
 		title: z.string(),
 	}),
