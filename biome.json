@@ -1,60 +1,29 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "vcs": {
-    "enabled": false,
-    "clientKind": "git",
-    "useIgnoreFile": false
-  },
+  "extends": [
+    "ultracite/biome/core",
+    "ultracite/biome/react",
+    "ultracite/biome/astro"
+  ],
   "files": {
-    "ignoreUnknown": false,
-    "includes": [
-      "**/src/**/*",
-      "**/.vscode/**/*",
-      "**/index.html",
-      "**/vite.config.ts",
-      "!**/dist",
-      "!**/src/routeTree.gen.ts",
-      "!**/src/styles.css"
-    ]
+    "includes": ["!!**/workers.d.ts"]
   },
   "formatter": {
-    "enabled": true,
     "indentStyle": "tab"
   },
-  "assist": {
-    "actions": {
-      "source": {
-        "organizeImports": "on"
-      }
-    }
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true
-    }
+  "javascript": {
+    "globals": ["Bun"]
   },
   "overrides": [
     {
       "includes": ["**/*.astro"],
       "linter": {
         "rules": {
-          "correctness": {
-            "noUnusedImports": "off",
-            "noUnusedVariables": "off"
+          "suspicious": {
+            "noUnknownAttribute": "off"
           }
         }
       }
     }
-  ],
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "double"
-    }
-  },
-  "extends": [
-    "ultracite/biome/core",
-    "ultracite/biome/react",
-    "ultracite/biome/remix"
   ]
 }
