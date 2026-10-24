@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
 	acceptsMarkdown,
 	handleMarkdown,
-	isContentPath,
 	markdownAssetPath,
 	withVaryAccept,
 } from "./markdown";
@@ -22,35 +21,6 @@ describe("acceptsMarkdown", () => {
 			expect(acceptsMarkdown(accept)).toBe(false);
 		}
 	);
-});
-
-describe("isContentPath", () => {
-	it.each([
-		"/",
-		"/writing",
-		"/writing/foo",
-		"/writing/foo.md",
-		"/projects",
-		"/experience/afinity",
-		"/experience.md",
-		"/work",
-		"/work.md",
-		"/index.md",
-		"/contact",
-		"/a-lil-note.md",
-	])("returns true for %s", (pathname) => {
-		expect(isContentPath(pathname)).toBe(true);
-	});
-
-	it.each([
-		"/readme/preview",
-		"/readme",
-		"/og",
-		"/fonts/InterVariable-latin.woff2",
-		"/404",
-	])("returns false for %s", (pathname) => {
-		expect(isContentPath(pathname)).toBe(false);
-	});
 });
 
 describe("withVaryAccept", () => {
@@ -121,6 +91,13 @@ describe("handleMarkdown", () => {
 		const response = await get("/experience", "text/markdown");
 		expect(response?.status).toBe(200);
 		expect(await response?.text()).toBe("# Experience");
+	});
+
+	it("serves markdown for any page with a markdown file", async () => {
+		expect(await (await get("/projects", "text/markdown"))?.text()).toBe(
+			"# Projects"
+		);
+		expect(await (await get("/projects.md"))?.text()).toBe("# Projects");
 	});
 
 	it("aliases /work to the projects markdown", async () => {

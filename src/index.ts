@@ -1,10 +1,6 @@
 import { ogImagePath } from "#/lib/seo";
 import { refreshGitHubStats } from "#/worker/github";
-import {
-	handleMarkdown,
-	isContentPath,
-	withVaryAccept,
-} from "#/worker/markdown";
+import { handleMarkdown, withVaryAccept } from "#/worker/markdown";
 import { handleOgVideo, isOgVideoPath } from "#/worker/og-video";
 import { handleReadmePreview } from "#/worker/readme-preview";
 import { handleSvg } from "#/worker/readme-svg";
@@ -41,11 +37,13 @@ export default {
 		if (markdown) {
 			return markdown;
 		}
-		if (isContentPath(url.pathname)) {
-			return withVaryAccept(await env.ASSETS.fetch(request));
-		}
 
-		return await env.ASSETS.fetch(request);
+		// Pages answer with HTML or markdown depending on Accept, so caches must
+		// key on it.
+		const response = await env.ASSETS.fetch(request);
+		return response.headers.get("content-type")?.startsWith("text/html")
+			? withVaryAccept(response)
+			: response;
 	},
 
 	async scheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionContext) {
