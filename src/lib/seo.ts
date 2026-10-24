@@ -46,8 +46,23 @@ function getOgImageUrl(path: string) {
 	return getAbsoluteUrl(ogImagePath(path));
 }
 
-export function pageLinks(path = "/") {
-	return [{ href: getAbsoluteUrl(path), rel: "canonical" }];
+/** The page's markdown copy, which src/worker/markdown.ts serves. */
+function markdownPath(path: string): string {
+	return path === "/" ? "/index.md" : `${path}.md`;
+}
+
+export function pageLinks(path = "/", { markdown = true } = {}) {
+	const links: { href: string; rel: string; type?: string }[] = [
+		{ href: getAbsoluteUrl(path), rel: "canonical" },
+	];
+	if (markdown) {
+		links.push({
+			href: getAbsoluteUrl(markdownPath(path)),
+			rel: "alternate",
+			type: "text/markdown",
+		});
+	}
+	return links;
 }
 
 // Slack and Discord show twitter:label/data pairs as fields under the preview.

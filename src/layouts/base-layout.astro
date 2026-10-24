@@ -8,6 +8,8 @@ interface Props {
 	article?: { publishedAt: string; readingTime: number };
 	description: string;
 	jsonLd?: string;
+	/** Whether the page has a markdown copy to link to. */
+	markdown?: boolean;
 	noindex?: boolean;
 	path?: string;
 	title: string;
@@ -21,11 +23,12 @@ const {
 	path = "/",
 	type,
 	jsonLd,
+	markdown = true,
 	noindex,
 } = Astro.props;
 
 const meta = pageMeta(title, description, path, { article, type });
-const links = pageLinks(path);
+const links = pageLinks(path, { markdown });
 ---
 
 <html class="[scrollbar-gutter:stable_both-edges]" lang="en">
