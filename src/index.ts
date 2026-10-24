@@ -38,12 +38,13 @@ export default {
 			return markdown;
 		}
 
-		// Pages answer with HTML or markdown depending on Accept, so caches must
-		// key on it.
+		// Pages, and the redirects in front of them, answer differently when
+		// markdown is asked for, so caches must key on Accept.
 		const response = await env.ASSETS.fetch(request);
-		return response.headers.get("content-type")?.startsWith("text/html")
-			? withVaryAccept(response)
-			: response;
+		const isPage =
+			response.headers.get("content-type")?.startsWith("text/html") ||
+			(response.status >= 300 && response.status < 400);
+		return isPage ? withVaryAccept(response) : response;
 	},
 
 	async scheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionContext) {
