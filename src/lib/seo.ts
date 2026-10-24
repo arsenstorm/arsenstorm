@@ -17,6 +17,8 @@ const PUBLISHED_DATE_FORMAT: Intl.DateTimeFormatOptions = {
 
 interface PageMetaOptions {
 	article?: { publishedAt: string; readingTime: number };
+	/** False for pages with no URL of their own, like the 404 page. */
+	canonical?: boolean;
 	type?: "article" | "website";
 }
 
@@ -51,10 +53,13 @@ function markdownPath(path: string): string {
 	return path === "/" ? "/index.md" : `${path}.md`;
 }
 
-export function pageLinks(path = "/", { markdown = true } = {}) {
-	const links: { href: string; rel: string; type?: string }[] = [
-		{ href: getAbsoluteUrl(path), rel: "canonical" },
-	];
+export function pageLinks(
+	path = "/",
+	{ canonical = true, markdown = true } = {}
+) {
+	const links: { href: string; rel: string; type?: string }[] = canonical
+		? [{ href: getAbsoluteUrl(path), rel: "canonical" }]
+		: [];
 	if (markdown) {
 		links.push({
 			href: getAbsoluteUrl(markdownPath(path)),
@@ -103,7 +108,9 @@ export function pageMeta(
 		{ content: pageTitle, property: "og:title" },
 		{ content: description, property: "og:description" },
 		{ content: type, property: "og:type" },
-		{ content: pageUrl, property: "og:url" },
+		...(options.canonical === false
+			? []
+			: [{ content: pageUrl, property: "og:url" }]),
 		{ content: imageUrl, property: "og:image" },
 		{ content: DEFAULT_OG_WIDTH, property: "og:image:width" },
 		{ content: DEFAULT_OG_HEIGHT, property: "og:image:height" },
