@@ -98,28 +98,6 @@ html {
 	}
 }
 
-/* Page transitions without client-side routing; browsers without
- * cross-document view transitions just navigate as before. The browser's own
- * whole-page crossfade: one viewport-sized snapshot, cheap even on long
- * writeups. Both halves share one curve so their opacities always sum to 1 and
- * the unchanged background and corner mark never flicker. */
-@media (prefers-reduced-motion: no-preference) {
-	@view-transition {
-		navigation: auto;
-	}
-
-	::view-transition-old(root),
-	::view-transition-new(root) {
-		animation-duration: 200ms;
-		animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
-		/* When only one page scrolls, one snapshot leaves out the scrollbar and
-		 * Chrome stretches it to fit, nudging content sideways mid-fade. Pinned
-		 * unscaled to the top left, both line up with the reserved gutter. */
-		object-fit: none;
-		object-position: left top;
-	}
-}
-
 ::selection {
 	background-color: oklch(0.145 0 0 / 12%);
 }
