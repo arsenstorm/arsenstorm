@@ -7,6 +7,7 @@ export const CONTACT_METHODS = [
 		label: "Email",
 		handle: "arsen@shkrumelyak.com",
 		href: "mailto:arsen@shkrumelyak.com",
+		copy: "arsen@shkrumelyak.com",
 		description: "The most direct way to reach me, about anything.",
 	},
 	{

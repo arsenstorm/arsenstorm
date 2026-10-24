@@ -22,6 +22,12 @@ const META_DESCRIPTION =
 const locateCommand = `gpg --locate-keys ${PGP.email}`;
 
 const cards = CONTACT_METHODS.map((method) => ({
+	actions: method.copy
+		? [
+				{ label: "Copy address", copy: method.copy },
+				{ label: "Open mail app", href: method.href },
+			]
+		: undefined,
 	description: method.description,
 	href: method.href,
 	key: method.label,

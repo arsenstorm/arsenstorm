@@ -22,18 +22,76 @@ const { label, value } = Astro.props;
 
 <script>
   const RESET_DELAY = 2000;
+  const WIDTH_DURATION = 200;
+  const WIDTH_EASING = "cubic-bezier(0.32, 0.72, 0, 1)";
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+  // A button whose labels differ in width marks them with data-copy-labels.
+  // CSS cannot animate between two content widths, so measure both and animate
+  // the change, letting centred content glide instead of jump.
+  function setCopied(button: HTMLButtonElement, copied: boolean) {
+    const labels = button.querySelector<HTMLElement>("[data-copy-labels]");
+    const from = labels?.getBoundingClientRect().width;
+    for (const animation of labels?.getAnimations() ?? []) {
+      animation.cancel();
+    }
+    button.toggleAttribute("data-copied", copied);
+    if (!labels || reducedMotion.matches) {
+      return;
+    }
+    const to = labels.getBoundingClientRect().width;
+    labels.animate(
+      { width: [`${from}px`, `${to}px`] },
+      { duration: WIDTH_DURATION, easing: WIDTH_EASING },
+    );
+  }
+
+  // Touch browsers can leave :hover stuck after a tap, so only real hover holds.
+  const canHover = matchMedia("(hover: hover)");
 
   for (const button of document.querySelectorAll<HTMLButtonElement>(
     "[data-copy]",
   )) {
+    // The reset countdown pauses while the pointer is on the button, so
+    // "Copied" stays while the user is still on it, and resumes on leave.
     let timeout: ReturnType<typeof setTimeout> | undefined;
+    let remaining = 0;
+    let startedAt = 0;
+    const resume = () => {
+      clearTimeout(timeout);
+      startedAt = performance.now();
+      timeout = setTimeout(() => {
+        timeout = undefined;
+        setCopied(button, false);
+      }, remaining);
+    };
+    const pause = () => {
+      if (timeout === undefined) {
+        return;
+      }
+      clearTimeout(timeout);
+      timeout = undefined;
+      remaining = Math.max(0, remaining - (performance.now() - startedAt));
+    };
     button.addEventListener("click", async () => {
       await navigator.clipboard.writeText(button.dataset.copy ?? "");
-      button.dataset.copied = "";
+      setCopied(button, true);
       clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        delete button.dataset.copied;
-      }, RESET_DELAY);
+      timeout = undefined;
+      remaining = RESET_DELAY;
+      if (!(canHover.matches && button.matches(":hover"))) {
+        resume();
+      }
+    });
+    button.addEventListener("pointerenter", () => {
+      if (canHover.matches && button.hasAttribute("data-copied")) {
+        pause();
+      }
+    });
+    button.addEventListener("pointerleave", () => {
+      if (button.hasAttribute("data-copied") && timeout === undefined) {
+        resume();
+      }
     });
   }
 </script>
