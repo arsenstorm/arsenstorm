@@ -23,6 +23,10 @@ const others = (await getWriteups()).filter((w) => w.slug !== writeup.slug);
 ---
 
 <BaseLayout
+	article={{
+		publishedAt: writeup.publishedAt,
+		readingTime: writeup.readingTime,
+	}}
 	description={writeup.metaDescription ?? writeup.description}
 	jsonLd={technicalWriteupJsonLd(writeup)}
 	path={writeup.href}

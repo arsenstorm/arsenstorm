@@ -4,6 +4,8 @@ import { pageLinks, pageMeta } from "#/lib/seo";
 import "#/styles.css";
 
 interface Props {
+	/** Writeups only: adds the publish date and reading time to link previews. */
+	article?: { publishedAt: string; readingTime: number };
 	description: string;
 	jsonLd?: string;
 	noindex?: boolean;
@@ -12,9 +14,17 @@ interface Props {
 	type?: "article" | "website";
 }
 
-const { title, description, path = "/", type, jsonLd, noindex } = Astro.props;
+const {
+	article,
+	title,
+	description,
+	path = "/",
+	type,
+	jsonLd,
+	noindex,
+} = Astro.props;
 
-const meta = pageMeta(title, description, path, type ? { type } : {});
+const meta = pageMeta(title, description, path, { article, type });
 const links = pageLinks(path);
 ---
 
