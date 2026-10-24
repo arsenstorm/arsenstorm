@@ -2,17 +2,8 @@ import type { Root } from "hast";
 import type { HastNode } from "./mdx-types";
 import { asHastNode, isHastElement } from "./mdx-types";
 
-const CODE_BLOCK_ALWAYS_EXPANDED_FLAGS = new Set([
-	"always-expanded",
-	"alwaysExpanded",
-	"expanded",
-]);
-const CODE_BLOCK_HIDE_HEADER_FLAGS = new Set([
-	"hide-header",
-	"hideHeader",
-	"no-header",
-	"noHeader",
-]);
+const CODE_BLOCK_EXPANDED_FLAG = "expanded";
+const CODE_BLOCK_HIDE_HEADER_FLAG = "noHeader";
 const METADATA_WHITESPACE_PATTERN = /\s/;
 
 function splitCodeBlockMeta(meta: string) {
@@ -49,15 +40,11 @@ function splitCodeBlockMeta(meta: string) {
 }
 
 function codeBlockShouldAlwaysExpand(meta: string) {
-	return splitCodeBlockMeta(meta).some((token) =>
-		CODE_BLOCK_ALWAYS_EXPANDED_FLAGS.has(token)
-	);
+	return splitCodeBlockMeta(meta).includes(CODE_BLOCK_EXPANDED_FLAG);
 }
 
 function codeBlockShouldHideHeader(meta: string) {
-	return splitCodeBlockMeta(meta).some((token) =>
-		CODE_BLOCK_HIDE_HEADER_FLAGS.has(token)
-	);
+	return splitCodeBlockMeta(meta).includes(CODE_BLOCK_HIDE_HEADER_FLAG);
 }
 
 function getCodeBlockMeta(pre: HastNode) {
@@ -128,7 +115,9 @@ export function restoreCodeMeta() {
 				if (typeof metastring === "string") {
 					node.data ??= {};
 					node.data.meta ??= metastring;
-					delete node.properties?.metastring;
+					if (node.properties) {
+						node.properties.metastring = undefined;
+					}
 				}
 			}
 			for (const child of node.children ?? []) {
