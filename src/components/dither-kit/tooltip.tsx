@@ -2,86 +2,100 @@
 
 import { cn } from "cnfast";
 import { useState } from "react";
-import { useCommonChart } from "./common-context";
+import type { ChartContextValue } from "./chart-context";
+import { useChart } from "./chart-context";
 import { rgb } from "./palette";
 
-export type TooltipVariant = "default" | "frosted-glass";
-
-const VARIANT: Record<TooltipVariant, string> = {
-	default: "bg-popover",
-	"frosted-glass": "bg-popover/70 backdrop-blur-sm",
-};
+/** Top px for the card: follows the highest hovered bar, floored so the
+ * upward-lifted card never clips the plot's top. */
+function tooltipTop(ctx: ChartContextValue, index: number) {
+	const floor = ctx.margins.top + 44;
+	if (ctx.hoverIndex === null) {
+		return floor;
+	}
+	let minY = Number.POSITIVE_INFINITY;
+	for (const key of ctx.configKeys) {
+		const band = ctx.bands[key]?.[index];
+		if (band) {
+			minY = Math.min(minY, ctx.y(band[1]));
+		}
+	}
+	return Number.isFinite(minY)
+		? Math.max(floor, ctx.margins.top + minY)
+		: floor;
+}
 
 /**
- * Floating hover tooltip. Reads the shared common context so it works in every
- * chart family. It glides between points and fades in/out via CSS transitions,
- * staying mounted so the fade-out keeps its last content, and dims unselected
- * series/slices.
+ * Floating hover tooltip. It glides between bars and fades in and out via CSS
+ * transitions, staying mounted so the fade-out keeps its last content.
  */
 export function Tooltip({
-	labelKey,
-	valueFormatter,
-	variant = "default",
 	hideZero = false,
 }: {
-	labelKey?: string;
-	valueFormatter?: (value: number, name: string) => string;
-	variant?: TooltipVariant;
 	/** Omit zero-value series — for stacks where series take turns being absent. */
 	hideZero?: boolean;
 }) {
-	const chart = useCommonChart();
-	const show = chart.ready && chart.hoverIndex !== null;
+	const ctx = useChart("Tooltip");
+	const show = ctx.ready && ctx.hoverIndex !== null;
 
 	// Retain the last hovered index so the card keeps its content while fading
 	// out — adjust-state-during-render (no refs in render).
 	const [lastIndex, setLastIndex] = useState(0);
-	if (chart.hoverIndex !== null && chart.hoverIndex !== lastIndex) {
-		setLastIndex(chart.hoverIndex);
+	if (ctx.hoverIndex !== null && ctx.hoverIndex !== lastIndex) {
+		setLastIndex(ctx.hoverIndex);
 	}
-	const index = chart.hoverIndex ?? lastIndex;
+	const index = ctx.hoverIndex ?? lastIndex;
+	const row = ctx.data[index];
 
-	const heading = chart.heading(index, labelKey);
-	const allItems = chart.itemsAt(index);
-	const items = hideZero
-		? allItems.filter((item) => item.value !== 0)
-		: allItems;
+	const items = ctx.configKeys
+		.map((key) => {
+			const raw = row?.[key];
+			return {
+				key,
+				label: ctx.config[key]?.label ?? key,
+				value: typeof raw === "number" ? raw : 0,
+			};
+		})
+		.filter((item) => !(hideZero && item.value === 0));
 
 	if (items.length === 0) {
 		return null;
 	}
 
+	const heading = String(row?.[ctx.labelKey] ?? "");
+	const left = Math.max(
+		48,
+		Math.min(ctx.plot.width + ctx.margins.left - 48, ctx.cursorX)
+	);
+
 	return (
 		<div
-			aria-hidden={!show}
+			// The chart's hidden table already carries these values.
+			aria-hidden="true"
 			className={cn(
-				"pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-[115%] rounded-md border border-border px-2 py-1 shadow-sm transition-[top,left,opacity] duration-200 ease-out",
-				show ? "opacity-100" : "opacity-0",
-				VARIANT[variant]
+				"pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-[115%] rounded-md border border-border bg-popover px-2 py-1 shadow-sm transition-[top,left,opacity] duration-200 ease-out",
+				show ? "opacity-100" : "opacity-0"
 			)}
-			style={{ left: chart.tooltipLeft, top: chart.tooltipTop }}
+			style={{ left, top: tooltipTop(ctx, index) }}
 		>
-			{heading && (
+			{heading ? (
 				<div className="mb-0.5 font-mono text-[10px] text-muted-foreground">
 					{heading}
 				</div>
-			)}
+			) : null}
 			<div className="flex flex-col gap-0.5">
 				{items.map((item) => (
 					<div
 						className="flex items-center gap-1.5 font-mono text-[11px] text-popover-foreground tabular-nums"
-						key={item.name}
-						style={{ opacity: item.dimmed ? 0.4 : 1 }}
+						key={item.key}
 					>
 						<span
 							className="size-2 rounded-[1px]"
-							style={{ backgroundColor: rgb(item.seed.fill) }}
+							style={{ backgroundColor: rgb(ctx.colorOf(item.key)) }}
 						/>
 						<span className="text-muted-foreground">{item.label}</span>
 						<span className="ml-auto pl-2 text-foreground">
-							{valueFormatter
-								? valueFormatter(item.value, item.name)
-								: item.value.toLocaleString()}
+							{item.value.toLocaleString("en-GB")}
 						</span>
 					</div>
 				))}

@@ -1,4 +1,3 @@
-import { Bar } from "#/components/dither-kit/bar";
 import { BarChart } from "#/components/dither-kit/bar-chart";
 import type { ChartConfig } from "#/components/dither-kit/chart-context";
 import { Grid } from "#/components/dither-kit/grid";
@@ -26,12 +25,11 @@ export function ReviewsChart() {
 	return (
 		<figure className="my-8 flex flex-col gap-4">
 			<div className="h-56">
-				<BarChart config={CONFIG} data={MONTHS}>
+				<BarChart config={CONFIG} data={MONTHS} labelKey="month">
 					<Grid />
 					<XAxis dataKey="month" maxTicks={12} />
 					<YAxis />
-					<Tooltip labelKey="month" />
-					<Bar dataKey="statements" />
+					<Tooltip />
 				</BarChart>
 			</div>
 			<figcaption className="text-neutral-500 text-xs dark:text-neutral-400">

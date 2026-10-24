@@ -1,23 +1,21 @@
-import { useChartPart } from "./chart-context";
+import { useChart } from "./chart-context";
+
+const TICK_MARGIN = 8;
 
 export function XAxis({
 	dataKey,
-	tickFormatter,
-	tickMargin = 8,
 	maxTicks = 8,
 }: {
-	dataKey?: string;
-	tickFormatter?: (value: unknown, index: number) => string;
-	tickMargin?: number;
+	dataKey: string;
 	maxTicks?: number;
 }) {
-	const ctx = useChartPart("XAxis");
+	const ctx = useChart("XAxis");
 	if (!ctx.ready) {
 		return null;
 	}
 
-	const step = Math.max(1, Math.ceil(ctx.dataLength / maxTicks));
-	const y = ctx.plot.height + tickMargin;
+	const step = Math.max(1, Math.ceil(ctx.data.length / maxTicks));
+	const y = ctx.plot.height + TICK_MARGIN;
 
 	return (
 		<g className="fill-current font-mono text-[10px] text-muted-foreground">
@@ -25,8 +23,6 @@ export function XAxis({
 				if (i % step !== 0) {
 					return null;
 				}
-				const raw = dataKey ? row[dataKey] : i;
-				const label = tickFormatter ? tickFormatter(raw, i) : String(raw ?? "");
 				return (
 					<text
 						dominantBaseline="hanging"
@@ -37,7 +33,7 @@ export function XAxis({
 						x={ctx.xCenter(i)}
 						y={y}
 					>
-						{label}
+						{String(row[dataKey] ?? "")}
 					</text>
 				);
 			})}

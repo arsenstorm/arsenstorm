@@ -20,7 +20,7 @@ const NATIONALITIES: BarListItem[] = [
 export function NationalityChart() {
 	return (
 		<figure className="my-8 flex flex-col gap-4">
-			<BarList interactive={false} items={NATIONALITIES} />
+			<BarList items={NATIONALITIES} />
 			<figcaption className="text-neutral-500 text-xs dark:text-neutral-400">
 				Students by self-reported nationality — the top nine, with 88 more
 				nationalities grouped under “everywhere else” (506 students didn’t say).
