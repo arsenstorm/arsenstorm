@@ -19,6 +19,8 @@ const TITLE = "Contact";
 const META_DESCRIPTION =
 	"How to contact Arsen Shkrumelyak: email, LinkedIn, GitHub, and a PGP key for encrypted email.";
 
+const locateCommand = `gpg --locate-keys ${PGP.email}`;
+
 const cards = CONTACT_METHODS.map((method) => ({
 	description: method.description,
 	href: method.href,
@@ -49,10 +51,15 @@ const cards = CONTACT_METHODS.map((method) => ({
           <CopyButton label="Copy PGP fingerprint" value={PGP.fingerprint} />
         </div>
         <p class="text-pretty">
-          <Anchor className={textLinkClass} href={PGP.href}>Download the key</Anchor>,
-          or fetch it with
-          <code class="rounded bg-neutral-100 px-1 py-0.5 text-neutral-950 text-xs dark:bg-neutral-900 dark:text-neutral-50">gpg --locate-keys {PGP.email}</code>.
+          <Anchor className={textLinkClass} href={PGP.href}>Download the key</Anchor><span class="max-sm:hidden">, or fetch it in a terminal:</span><span class="sm:hidden">.</span>
         </p>
+        {/* Nobody runs gpg on a phone, so the command is desktop only. */}
+        <div class="group -mx-4 flex items-center justify-between gap-2 rounded-xl bg-neutral-100 px-4 py-3 max-sm:hidden dark:bg-neutral-900">
+          <code class="font-mono text-neutral-950 text-xs dark:text-neutral-50">
+            {locateCommand}
+          </code>
+          <CopyButton label="Copy gpg command" value={locateCommand} />
+        </div>
       </div>
     </Section>
   </Main>
