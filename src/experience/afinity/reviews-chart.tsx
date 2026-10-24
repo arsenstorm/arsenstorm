@@ -39,12 +39,12 @@ export function ReviewsChart() {
 	return (
 		<figure className="my-8 flex flex-col gap-4">
 			<div className="h-56">
-				<BarChart config={CONFIG} data={WEEKS} stacked>
+				<BarChart config={CONFIG} data={WEEKS} labelKey="period" stacked>
 					<Grid />
 					<XAxis dataKey="week" maxTicks={5} />
 					<YAxis />
 					<Legend />
-					<Tooltip hideZero labelKey="period" />
+					<Tooltip hideZero />
 				</BarChart>
 			</div>
 			<figcaption className="text-neutral-500 text-xs dark:text-neutral-400">

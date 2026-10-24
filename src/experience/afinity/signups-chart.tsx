@@ -23,11 +23,11 @@ export function SignupsChart() {
 	return (
 		<figure className="my-8 flex flex-col gap-4">
 			<div className="h-56">
-				<BarChart config={CONFIG} data={MONTHS}>
+				<BarChart config={CONFIG} data={MONTHS} labelKey="month">
 					<Grid />
 					<XAxis dataKey="month" maxTicks={12} />
 					<YAxis />
-					<Tooltip labelKey="month" />
+					<Tooltip />
 				</BarChart>
 			</div>
 			<figcaption className="text-neutral-500 text-xs dark:text-neutral-400">

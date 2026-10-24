@@ -31,30 +31,76 @@ const MARGINS: Margins = {
 };
 
 /** One absolutely-positioned SVG layer, its contents shifted into the plot rect.
- * With a `label` it is the chart's announced image; without one it is decorative
- * chrome hidden from assistive tech. */
+ * Hidden from assistive tech: the chart's table carries the data. */
 function Layer({
 	children,
 	height,
-	label,
 	width,
 }: {
 	children: ReactNode;
 	height: number;
-	label?: string;
 	width: number;
 }) {
 	return (
 		<svg
-			aria-hidden={label ? undefined : true}
-			aria-label={label}
+			aria-hidden="true"
 			className="absolute inset-0 overflow-visible"
 			height={height}
-			role={label ? "img" : "presentation"}
 			width={width}
 		>
 			<g transform={`translate(${MARGINS.left},${MARGINS.top})`}>{children}</g>
 		</svg>
+	);
+}
+
+/** The chart's values as a table for screen readers, and for anyone without
+ * JavaScript: the canvas, axes and tooltip are all visual only. */
+function DataTable({
+	config,
+	configKeys,
+	data,
+	labelKey,
+}: {
+	config: ChartConfig;
+	configKeys: string[];
+	data: Row[];
+	labelKey: string;
+}) {
+	return (
+		<table className="sr-only">
+			<thead>
+				<tr>
+					<th scope="col">
+						{labelKey.charAt(0).toUpperCase() + labelKey.slice(1)}
+					</th>
+					{configKeys.map((key) => (
+						<th key={key} scope="col">
+							{config[key]?.label ?? key}
+						</th>
+					))}
+				</tr>
+			</thead>
+			<tbody>
+				{data.map((row) => {
+					const label = String(row[labelKey] ?? "");
+					return (
+						<tr key={label}>
+							<th scope="row">{label}</th>
+							{configKeys.map((key) => {
+								const value = row[key];
+								return (
+									<td key={key}>
+										{(typeof value === "number" ? value : 0).toLocaleString(
+											"en-GB"
+										)}
+									</td>
+								);
+							})}
+						</tr>
+					);
+				})}
+			</tbody>
+		</table>
 	);
 }
 
@@ -78,11 +124,14 @@ export function BarChart<TData extends object>({
 	children,
 	config,
 	data: rows,
+	labelKey,
 	stacked = false,
 }: {
 	children: ReactNode;
 	config: ChartConfig;
 	data: TData[];
+	/** The row field that names each category, e.g. "month". */
+	labelKey: string;
 	stacked?: boolean;
 }) {
 	// Safe: the chart only reads row[key] for configured keys and label keys.
@@ -146,6 +195,7 @@ export function BarChart<TData extends object>({
 			data,
 			hoverIndex,
 			isMouseInChart,
+			labelKey,
 			margins: MARGINS,
 			plot: { height: plotHeight, width: plotWidth },
 			ready,
@@ -163,6 +213,7 @@ export function BarChart<TData extends object>({
 			data,
 			hoverIndex,
 			isMouseInChart,
+			labelKey,
 			plotHeight,
 			plotWidth,
 			ready,
@@ -214,6 +265,12 @@ export function BarChart<TData extends object>({
 				onPointerMove={onPointerMove}
 				ref={ref}
 			>
+				<DataTable
+					config={config}
+					configKeys={configKeys}
+					data={data}
+					labelKey={labelKey}
+				/>
 				{ready && backChildren.length > 0 ? (
 					<Layer height={size.height} width={size.width}>
 						{backChildren}
@@ -221,7 +278,7 @@ export function BarChart<TData extends object>({
 				) : null}
 				<BarCanvas />
 				{ready ? (
-					<Layer height={size.height} label="Chart" width={size.width}>
+					<Layer height={size.height} width={size.width}>
 						{svgChildren}
 					</Layer>
 				) : null}

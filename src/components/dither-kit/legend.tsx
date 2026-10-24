@@ -9,7 +9,10 @@ export function Legend() {
 	const ctx = useChart("Legend");
 
 	return (
-		<div className="pointer-events-none absolute inset-x-0 top-0 flex flex-wrap justify-end gap-3 px-1">
+		<div
+			aria-hidden="true"
+			className="pointer-events-none absolute inset-x-0 top-0 flex flex-wrap justify-end gap-3 px-1"
+		>
 			{ctx.configKeys.map((key) => (
 				<span
 					className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground"

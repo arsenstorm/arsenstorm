@@ -32,6 +32,7 @@ export interface ChartContextValue {
 	data: Row[];
 	hoverIndex: number | null;
 	isMouseInChart: boolean;
+	labelKey: string; // row column that names each category (tooltip, table)
 	margins: Margins;
 	plot: { width: number; height: number }; // inner drawing area
 	ready: boolean; // true once measured (width > 0)

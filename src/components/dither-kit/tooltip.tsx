@@ -30,10 +30,8 @@ function tooltipTop(ctx: ChartContextValue, index: number) {
  * transitions, staying mounted so the fade-out keeps its last content.
  */
 export function Tooltip({
-	labelKey,
 	hideZero = false,
 }: {
-	labelKey: string;
 	/** Omit zero-value series — for stacks where series take turns being absent. */
 	hideZero?: boolean;
 }) {
@@ -64,7 +62,7 @@ export function Tooltip({
 		return null;
 	}
 
-	const heading = String(row?.[labelKey] ?? "");
+	const heading = String(row?.[ctx.labelKey] ?? "");
 	const left = Math.max(
 		48,
 		Math.min(ctx.plot.width + ctx.margins.left - 48, ctx.cursorX)
@@ -72,7 +70,8 @@ export function Tooltip({
 
 	return (
 		<div
-			aria-hidden={!show}
+			// The chart's hidden table already carries these values.
+			aria-hidden="true"
 			className={cn(
 				"pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-[115%] rounded-md border border-border bg-popover px-2 py-1 shadow-sm transition-[top,left,opacity] duration-200 ease-out",
 				show ? "opacity-100" : "opacity-0"
