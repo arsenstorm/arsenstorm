@@ -1,6 +1,17 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
 Contact: mailto:arsen@shkrumelyak.com
 Contact: https://arsenstorm.com/contact
 Expires: 2027-10-24T00:00:00.000Z
 Encryption: https://arsenstorm.com/pgp.asc
 Preferred-Languages: en
 Canonical: https://arsenstorm.com/.well-known/security.txt
+-----BEGIN PGP SIGNATURE-----
+
+iJEEARYKADkWIQTUQOoEhUglgtZe9lwFzRoV8Ab/NQUCatycrBsUgAAAAAAEAA5t
+YW51MiwyLjUrMS4xMiwwLDMACgkQBc0aFfAG/zU0ZwD/cbN8XPMX5EzvmH/dwrt1
+X06lRsRTsfS1R9CE1Pr0mB0A/inM8cp/KsqM0OeqFnBN/3GGc/tk2c6ek6X1GWQz
+qXYJ
+=OkLp
+-----END PGP SIGNATURE-----
