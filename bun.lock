@@ -36,7 +36,7 @@
         "husky": "^9.1.7",
         "jsdom": "^28.1.0",
         "prettier": "^3.8.3",
-        "puppeteer": "latest",
+        "puppeteer": "25.3.0",
         "rehype-pretty-code": "^0.14.3",
         "remark-gfm": "^4.0.1",
         "remark-mdx": "^3.1.1",
