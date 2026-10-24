@@ -7,71 +7,71 @@ import { PageHeading } from "#/components/page-heading.tsx";
 import { Section } from "#/components/section.tsx";
 import BaseLayout from "#/layouts/base-layout.astro";
 import {
-	CONTACT_DESCRIPTION,
-	CONTACT_METHODS,
-	PGP,
-	PGP_FINGERPRINT_GROUPED,
+  CONTACT_DESCRIPTION,
+  CONTACT_METHODS,
+  PGP,
+  PGP_FINGERPRINT_GROUPED,
 } from "#/lib/contact.ts";
 
 const TITLE = "Contact";
 const META_DESCRIPTION =
-	"How to contact Arsen Shkrumelyak: email, LinkedIn, GitHub, and a PGP key for encrypted email.";
+  "How to contact Arsen Shkrumelyak: email, LinkedIn, GitHub, and a PGP key for encrypted email.";
 
 const locateCommand = `gpg --locate-keys ${PGP.email}`;
 
 const cards = CONTACT_METHODS.map((method) => ({
-	actions: method.copy
-		? [
-				{ copy: method.copy, label: "Copy address" },
-				{ href: method.href, label: "Open mail app" },
-			]
-		: undefined,
-	description: method.description,
-	href: method.href,
-	key: method.label,
-	meta: method.handle,
-	title: method.label,
+  actions: method.copy
+    ? [
+        { copy: method.copy, label: "Copy address" },
+        { href: method.href, label: "Open mail app" },
+      ]
+    : undefined,
+  description: method.description,
+  href: method.href,
+  key: method.label,
+  meta: method.handle,
+  title: method.label,
 }));
 ---
 
 <BaseLayout description={META_DESCRIPTION} path="/contact" title={TITLE}>
-	<Main>
-		<PageHeading description={CONTACT_DESCRIPTION} title={TITLE} />
+  <Main>
+    <PageHeading description={CONTACT_DESCRIPTION} title={TITLE} />
 
-		<Section cta={{ href: "/", label: "Go back" }} title="Messages">
-			<LinkCardList items={cards} />
-		</Section>
+    <Section cta={{ href: "/", label: "Go back" }} title="Messages">
+      <LinkCardList items={cards} />
+    </Section>
 
-		<Section title="Encrypted email">
-			<div class="space-y-4 text-neutral-500 text-sm dark:text-neutral-400">
-				<p class="text-pretty">
-					You can encrypt email to me with my PGP key. Before you use it, check
-					that its fingerprint matches this one.
-				</p>
-				<div
-					class="group -mx-4 flex items-center justify-between gap-2 rounded-xl bg-neutral-100 px-4 py-3 dark:bg-neutral-900"
-				>
-					<code class="font-mono text-neutral-950 text-xs dark:text-neutral-50">
-						{PGP_FINGERPRINT_GROUPED}
-					</code>
-					<CopyButton label="Copy PGP fingerprint" value={PGP.fingerprint} />
-				</div>
-				<p class="text-pretty">
-					<Anchor className={textLinkClass} href={PGP.href}
-						>Download the key</Anchor
-					><span class="max-sm:hidden">, or fetch it in a terminal:</span
-					><span class="sm:hidden">.</span>
-				</p>
-				{/* Nobody runs gpg on a phone, so the command is desktop only. */}
-				<div
-					class="group -mx-4 flex items-center justify-between gap-2 rounded-xl bg-neutral-100 px-4 py-3 max-sm:hidden dark:bg-neutral-900"
-				>
-					<code class="font-mono text-neutral-950 text-xs dark:text-neutral-50">
-						{locateCommand}
-					</code>
-					<CopyButton label="Copy gpg command" value={locateCommand} />
-				</div>
-			</div>
-		</Section>
-	</Main>
+    <Section title="Encrypted email">
+      <div class="space-y-4 text-neutral-500 text-sm dark:text-neutral-400">
+        <p class="text-pretty">
+          You can encrypt email to me with my PGP key. Before you use it, check
+          that its fingerprint matches this one.
+        </p>
+        <div
+          class="group -mx-4 flex items-center justify-between gap-2 rounded-xl bg-neutral-100 px-4 py-3 dark:bg-neutral-900"
+        >
+          <code class="font-mono text-neutral-950 text-xs dark:text-neutral-50">
+            {PGP_FINGERPRINT_GROUPED}
+          </code>
+          <CopyButton label="Copy PGP fingerprint" value={PGP.fingerprint} />
+        </div>
+        <p class="text-pretty">
+          <Anchor className={textLinkClass} href={PGP.href}
+            >Download the key</Anchor
+          ><span class="max-sm:hidden">, or fetch it in a terminal:</span
+          ><span class="sm:hidden">.</span>
+        </p>
+        {/* Nobody runs gpg on a phone, so the command is desktop only. */}
+        <div
+          class="group -mx-4 flex items-center justify-between gap-2 rounded-xl bg-neutral-100 px-4 py-3 max-sm:hidden dark:bg-neutral-900"
+        >
+          <code class="font-mono text-neutral-950 text-xs dark:text-neutral-50">
+            {locateCommand}
+          </code>
+          <CopyButton label="Copy gpg command" value={locateCommand} />
+        </div>
+      </div>
+    </Section>
+  </Main>
 </BaseLayout>

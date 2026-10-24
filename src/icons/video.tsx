@@ -16,90 +16,90 @@ import VolumeXmark from "#/icons/volume-xmark.tsx";
 const videoIconClass = "mdx-video-icon size-5 shrink-0 hidden";
 
 const iconStackClass =
-	"inline-grid place-items-center [&_svg]:col-start-1 [&_svg]:row-start-1";
+  "inline-grid place-items-center [&_svg]:col-start-1 [&_svg]:row-start-1";
 
 function VideoPlayButtonIcons() {
-	return (
-		<span className={iconStackClass} slot="icon">
-			<MediaPlay
-				aria-hidden="true"
-				className={cn(videoIconClass, "mdx-video-play-icon")}
-			/>
-			<MediaPause
-				aria-hidden="true"
-				className={cn(videoIconClass, "mdx-video-pause-icon")}
-			/>
-		</span>
-	);
+  return (
+    <span className={iconStackClass} slot="icon">
+      <MediaPlay
+        aria-hidden="true"
+        className={cn(videoIconClass, "mdx-video-play-icon")}
+      />
+      <MediaPause
+        aria-hidden="true"
+        className={cn(videoIconClass, "mdx-video-pause-icon")}
+      />
+    </span>
+  );
 }
 
 function VideoMuteButtonIcons() {
-	return (
-		<span className={iconStackClass} slot="icon">
-			<VolumeXmark
-				aria-hidden="true"
-				className={cn(videoIconClass, "mdx-video-mute-off")}
-			/>
-			<VolumeDown
-				aria-hidden="true"
-				className={cn(videoIconClass, "mdx-video-mute-low")}
-			/>
-			<Volume
-				aria-hidden="true"
-				className={cn(videoIconClass, "mdx-video-mute-medium")}
-			/>
-			<VolumeUp
-				aria-hidden="true"
-				className={cn(videoIconClass, "mdx-video-mute-high")}
-			/>
-		</span>
-	);
+  return (
+    <span className={iconStackClass} slot="icon">
+      <VolumeXmark
+        aria-hidden="true"
+        className={cn(videoIconClass, "mdx-video-mute-off")}
+      />
+      <VolumeDown
+        aria-hidden="true"
+        className={cn(videoIconClass, "mdx-video-mute-low")}
+      />
+      <Volume
+        aria-hidden="true"
+        className={cn(videoIconClass, "mdx-video-mute-medium")}
+      />
+      <VolumeUp
+        aria-hidden="true"
+        className={cn(videoIconClass, "mdx-video-mute-high")}
+      />
+    </span>
+  );
 }
 
 function VideoPipButtonIcons() {
-	return (
-		<span className={iconStackClass} slot="icon">
-			<MinimizeWindow
-				aria-hidden="true"
-				className={cn(videoIconClass, "mdx-video-pip-enter")}
-			/>
-			<MaximizeWindow
-				aria-hidden="true"
-				className={cn(videoIconClass, "mdx-video-pip-exit")}
-			/>
-		</span>
-	);
+  return (
+    <span className={iconStackClass} slot="icon">
+      <MinimizeWindow
+        aria-hidden="true"
+        className={cn(videoIconClass, "mdx-video-pip-enter")}
+      />
+      <MaximizeWindow
+        aria-hidden="true"
+        className={cn(videoIconClass, "mdx-video-pip-exit")}
+      />
+    </span>
+  );
 }
 
 function VideoFullscreenButtonIcons() {
-	return (
-		<span className={iconStackClass} slot="icon">
-			<ArrowsExpandDiagonal
-				aria-hidden="true"
-				className={cn(videoIconClass, "mdx-video-fullscreen-enter")}
-			/>
-			<ArrowsReduceDiagonal
-				aria-hidden="true"
-				className={cn(videoIconClass, "mdx-video-fullscreen-exit")}
-			/>
-		</span>
-	);
+  return (
+    <span className={iconStackClass} slot="icon">
+      <ArrowsExpandDiagonal
+        aria-hidden="true"
+        className={cn(videoIconClass, "mdx-video-fullscreen-enter")}
+      />
+      <ArrowsReduceDiagonal
+        aria-hidden="true"
+        className={cn(videoIconClass, "mdx-video-fullscreen-exit")}
+      />
+    </span>
+  );
 }
 
 function VideoLoadingIcon() {
-	return (
-		<Loader
-			aria-hidden="true"
-			className="mdx-video-icon mdx-video-loading-icon size-5 shrink-0 animate-spin"
-			slot="icon"
-		/>
-	);
+  return (
+    <Loader
+      aria-hidden="true"
+      className="mdx-video-icon mdx-video-loading-icon size-5 shrink-0 animate-spin"
+      slot="icon"
+    />
+  );
 }
 
 export {
-	VideoFullscreenButtonIcons,
-	VideoLoadingIcon,
-	VideoMuteButtonIcons,
-	VideoPipButtonIcons,
-	VideoPlayButtonIcons,
+  VideoFullscreenButtonIcons,
+  VideoLoadingIcon,
+  VideoMuteButtonIcons,
+  VideoPipButtonIcons,
+  VideoPlayButtonIcons,
 };

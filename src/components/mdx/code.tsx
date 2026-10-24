@@ -7,174 +7,174 @@ import ClipboardCheck from "#/icons/clipboard-check.tsx";
 import { Frame } from "./frame.tsx";
 
 const codeBlockActionClass =
-	"relative flex size-5 items-center justify-center rounded-md text-neutral-500 transition-colors before:absolute before:-inset-x-0.5 before:-inset-y-3 hover:text-neutral-950 active:text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 dark:text-neutral-400 dark:focus-visible:ring-white/30 dark:hover:text-neutral-50 dark:active:text-neutral-50";
+  "relative flex size-5 items-center justify-center rounded-md text-neutral-500 transition-colors before:absolute before:-inset-x-0.5 before:-inset-y-3 hover:text-neutral-950 active:text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 dark:text-neutral-400 dark:focus-visible:ring-white/30 dark:hover:text-neutral-50 dark:active:text-neutral-50";
 
 const LANGUAGE_LABELS: Record<string, string> = {
-	bash: "Shell",
-	css: "CSS",
-	diff: "Diff",
-	html: "HTML",
-	js: "JavaScript",
-	json: "JSON",
-	jsx: "JSX",
-	md: "Markdown",
-	mdx: "MDX",
-	rb: "Ruby",
-	sh: "Shell",
-	sql: "SQL",
-	ts: "TypeScript",
-	tsx: "TSX",
-	yaml: "YAML",
-	yml: "YAML",
-	zsh: "Shell",
+  bash: "Shell",
+  css: "CSS",
+  diff: "Diff",
+  html: "HTML",
+  js: "JavaScript",
+  json: "JSON",
+  jsx: "JSX",
+  md: "Markdown",
+  mdx: "MDX",
+  rb: "Ruby",
+  sh: "Shell",
+  sql: "SQL",
+  ts: "TypeScript",
+  tsx: "TSX",
+  yaml: "YAML",
+  yml: "YAML",
+  zsh: "Shell",
 };
 
 type CodeBlockProps = ComponentPropsWithoutRef<"pre"> & {
-	"data-expanded"?: string;
-	"data-hide-header"?: string;
-	"data-language"?: string;
-	// rehype-pretty-code emits the lowercase HTML attribute; remapped to
-	// React's tabIndex below to silence the invalid-DOM-property warning.
-	tabindex?: number | string;
+  "data-expanded"?: string;
+  "data-hide-header"?: string;
+  "data-language"?: string;
+  // rehype-pretty-code emits the lowercase HTML attribute; remapped to
+  // React's tabIndex below to silence the invalid-DOM-property warning.
+  tabindex?: number | string;
 };
 
 type CodeProps = ComponentPropsWithoutRef<"code"> & {
-	"data-language"?: string;
+  "data-language"?: string;
 };
 
 function formatLanguageLabel(language: string | null): string {
-	if (!language) {
-		return "Code";
-	}
+  if (!language) {
+    return "Code";
+  }
 
-	const normalized = language.toLowerCase();
-	return LANGUAGE_LABELS[normalized] ?? normalized.toUpperCase();
+  const normalized = language.toLowerCase();
+  return LANGUAGE_LABELS[normalized] ?? normalized.toUpperCase();
 }
 
 function MdxInlineCode({
-	className,
-	"data-language": language,
-	...props
+  className,
+  "data-language": language,
+  ...props
 }: CodeProps) {
-	if (language) {
-		return (
-			<code
-				className={cn("font-mono text-inherit text-xs leading-6", className)}
-				data-language={language}
-				{...props}
-			/>
-		);
-	}
+  if (language) {
+    return (
+      <code
+        className={cn("font-mono text-inherit text-xs leading-6", className)}
+        data-language={language}
+        {...props}
+      />
+    );
+  }
 
-	return (
-		<code
-			className="rounded bg-neutral-100 px-1 py-0.5 text-neutral-950 text-xs dark:bg-neutral-900 dark:text-neutral-50"
-			{...props}
-		/>
-	);
+  return (
+    <code
+      className="rounded bg-neutral-100 px-1 py-0.5 text-neutral-950 text-xs dark:bg-neutral-900 dark:text-neutral-50"
+      {...props}
+    />
+  );
 }
 
 function MdxCodeBlock({
-	children,
-	className: _className,
-	"data-expanded": expandedAttribute,
-	"data-hide-header": hideHeaderAttribute,
-	"data-language": language,
-	style,
-	tabindex,
-	...props
+  children,
+  className: _className,
+  "data-expanded": expandedAttribute,
+  "data-hide-header": hideHeaderAttribute,
+  "data-language": language,
+  style,
+  tabindex,
+  ...props
 }: CodeBlockProps) {
-	const alwaysExpanded = expandedAttribute !== undefined;
-	const hideHeader = hideHeaderAttribute !== undefined;
-	const codeBlockId = useId();
+  const alwaysExpanded = expandedAttribute !== undefined;
+  const hideHeader = hideHeaderAttribute !== undefined;
+  const codeBlockId = useId();
 
-	return (
-		<Frame
-			className="group/code my-4"
-			data-code-block=""
-			header={
-				hideHeader ? null : (
-					<div className="my-1 flex items-center justify-between gap-2 pr-2 pl-4">
-						<p className="font-medium text-neutral-950 text-xs tracking-tight dark:text-neutral-50">
-							{formatLanguageLabel(language ?? null)}
-						</p>
-						<div className="flex items-center gap-1">
-							{alwaysExpanded ? null : (
-								<button
-									aria-controls={codeBlockId}
-									aria-expanded="false"
-									aria-label="Expand code"
-									className={cn(
-										codeBlockActionClass,
-										"hidden group-data-can-expand/code:flex"
-									)}
-									data-code-action="toggle"
-									type="button"
-								>
-									<ChevronExpandY
-										aria-hidden="true"
-										className="size-3.5 group-data-open/code:hidden"
-									/>
-									<ChevronReduceY
-										aria-hidden="true"
-										className="hidden size-3.5 group-data-open/code:block"
-									/>
-								</button>
-							)}
-							<button
-								aria-label="Copy code"
-								className={codeBlockActionClass}
-								data-code-action="copy"
-								type="button"
-							>
-								<Clipboard
-									aria-hidden="true"
-									className="size-3.5 group-data-copied/code:hidden"
-								/>
-								<ClipboardCheck
-									aria-hidden="true"
-									className="hidden size-3.5 group-data-copied/code:block"
-								/>
-							</button>
-						</div>
-					</div>
-				)
-			}
-			surfaceClassName="relative"
-			{...(alwaysExpanded ? { "data-open": "" } : {})}
-		>
-			<pre
-				className="overflow-x-auto p-4 text-neutral-700 text-xs leading-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 focus-visible:ring-inset dark:text-neutral-300 dark:focus-visible:ring-white/30"
-				data-language={language}
-				id={codeBlockId}
-				style={
-					alwaysExpanded
-						? style
-						: { maxHeight: 192, overflow: "hidden", ...style }
-				}
-				tabIndex={tabindex === undefined ? undefined : Number(tabindex)}
-				{...props}
-			>
-				{children}
-			</pre>
-			{alwaysExpanded ? null : (
-				<div
-					className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-20 items-end justify-center rounded-b-xl bg-linear-to-b from-neutral-100/0 via-neutral-100/90 to-neutral-100 pb-3 group-data-can-expand/code:group-not-data-open/code:flex dark:via-neutral-900/90 dark:to-neutral-900"
-					data-code-overlay=""
-				>
-					<button
-						aria-controls={codeBlockId}
-						aria-expanded="false"
-						className="pointer-events-auto h-6 rounded-md px-3 font-medium text-neutral-600 text-xs transition-colors hover:bg-neutral-950/2.5 hover:text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 active:bg-neutral-950/2.5 active:text-neutral-950 dark:text-neutral-400 dark:focus-visible:ring-white/30 dark:hover:bg-white/5 dark:hover:text-neutral-50"
-						data-code-action="toggle"
-						type="button"
-					>
-						Click to Expand
-					</button>
-				</div>
-			)}
-		</Frame>
-	);
+  return (
+    <Frame
+      className="group/code my-4"
+      data-code-block=""
+      header={
+        hideHeader ? null : (
+          <div className="my-1 flex items-center justify-between gap-2 pr-2 pl-4">
+            <p className="font-medium text-neutral-950 text-xs tracking-tight dark:text-neutral-50">
+              {formatLanguageLabel(language ?? null)}
+            </p>
+            <div className="flex items-center gap-1">
+              {alwaysExpanded ? null : (
+                <button
+                  aria-controls={codeBlockId}
+                  aria-expanded="false"
+                  aria-label="Expand code"
+                  className={cn(
+                    codeBlockActionClass,
+                    "hidden group-data-can-expand/code:flex"
+                  )}
+                  data-code-action="toggle"
+                  type="button"
+                >
+                  <ChevronExpandY
+                    aria-hidden="true"
+                    className="size-3.5 group-data-open/code:hidden"
+                  />
+                  <ChevronReduceY
+                    aria-hidden="true"
+                    className="hidden size-3.5 group-data-open/code:block"
+                  />
+                </button>
+              )}
+              <button
+                aria-label="Copy code"
+                className={codeBlockActionClass}
+                data-code-action="copy"
+                type="button"
+              >
+                <Clipboard
+                  aria-hidden="true"
+                  className="size-3.5 group-data-copied/code:hidden"
+                />
+                <ClipboardCheck
+                  aria-hidden="true"
+                  className="hidden size-3.5 group-data-copied/code:block"
+                />
+              </button>
+            </div>
+          </div>
+        )
+      }
+      surfaceClassName="relative"
+      {...(alwaysExpanded ? { "data-open": "" } : {})}
+    >
+      <pre
+        className="overflow-x-auto p-4 text-neutral-700 text-xs leading-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 focus-visible:ring-inset dark:text-neutral-300 dark:focus-visible:ring-white/30"
+        data-language={language}
+        id={codeBlockId}
+        style={
+          alwaysExpanded
+            ? style
+            : { maxHeight: 192, overflow: "hidden", ...style }
+        }
+        tabIndex={tabindex === undefined ? undefined : Number(tabindex)}
+        {...props}
+      >
+        {children}
+      </pre>
+      {alwaysExpanded ? null : (
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-20 items-end justify-center rounded-b-xl bg-linear-to-b from-neutral-100/0 via-neutral-100/90 to-neutral-100 pb-3 group-data-can-expand/code:group-not-data-open/code:flex dark:via-neutral-900/90 dark:to-neutral-900"
+          data-code-overlay=""
+        >
+          <button
+            aria-controls={codeBlockId}
+            aria-expanded="false"
+            className="pointer-events-auto h-6 rounded-md px-3 font-medium text-neutral-600 text-xs transition-colors hover:bg-neutral-950/2.5 hover:text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/30 active:bg-neutral-950/2.5 active:text-neutral-950 dark:text-neutral-400 dark:focus-visible:ring-white/30 dark:hover:bg-white/5 dark:hover:text-neutral-50"
+            data-code-action="toggle"
+            type="button"
+          >
+            Click to Expand
+          </button>
+        </div>
+      )}
+    </Frame>
+  );
 }
 
 export { MdxCodeBlock, MdxInlineCode };

@@ -4,30 +4,30 @@ import { pageLinks, pageMeta } from "#/lib/seo";
 import "#/styles.css";
 
 interface Props {
-	/** Writeups only: adds the publish date and reading time to link previews. */
-	article?: { publishedAt: string; readingTime: number };
-	/** False for pages with no URL of their own, like the 404 page. */
-	canonical?: boolean;
-	description: string;
-	jsonLd?: string;
-	/** Whether the page has a markdown copy to link to. */
-	markdown?: boolean;
-	noindex?: boolean;
-	path?: string;
-	title: string;
-	type?: "article" | "website";
+  /** Writeups only: adds the publish date and reading time to link previews. */
+  article?: { publishedAt: string; readingTime: number };
+  /** False for pages with no URL of their own, like the 404 page. */
+  canonical?: boolean;
+  description: string;
+  jsonLd?: string;
+  /** Whether the page has a markdown copy to link to. */
+  markdown?: boolean;
+  noindex?: boolean;
+  path?: string;
+  title: string;
+  type?: "article" | "website";
 }
 
 const {
-	article,
-	title,
-	description,
-	path = "/",
-	type,
-	jsonLd,
-	canonical = true,
-	markdown = true,
-	noindex,
+  article,
+  title,
+  description,
+  path = "/",
+  type,
+  jsonLd,
+  canonical = true,
+  markdown = true,
+  noindex,
 } = Astro.props;
 
 const meta = pageMeta(title, description, path, { article, canonical, type });
@@ -35,60 +35,60 @@ const links = pageLinks(path, { canonical, markdown });
 ---
 
 <html class="[scrollbar-gutter:stable_both-edges]" lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta content="width=device-width, initial-scale=1" name="viewport">
-		<meta content="light dark" name="color-scheme">
-		<meta
-			content="#ffffff"
-			media="(prefers-color-scheme: light)"
-			name="theme-color"
-		>
-		<meta
-			content="#09090b"
-			media="(prefers-color-scheme: dark)"
-			name="theme-color"
-		>
-		{meta.map((entry) =>
-			"title" in entry ? <title>{entry.title}</title> : <meta {...entry} />
-		)}
-		{links.map((l) => <link {...l} />)}
-		<link
-			as="font"
-			crossorigin
-			href="/fonts/InterVariable-latin.woff2"
-			rel="preload"
-			type="font/woff2"
-		>
-		<link href="/manifest.json" rel="manifest">
-		{CONTACT_METHODS.map((method) => <link href={method.href} rel="me" />)}
-		<link href={PGP.href} rel="pgpkey">
-		<link
-			href="/rss.xml"
-			rel="alternate"
-			title="Technical Writing | Arsen Shkrumelyak"
-			type="application/rss+xml"
-		>
-		{jsonLd && <script set:html={jsonLd} type="application/ld+json" />}
-		{noindex && <meta content="noindex" name="robots" />}
-	</head>
-	<body>
-		<div
-			class="isolate min-h-dvh bg-white font-sans text-neutral-950 antialiased dark:bg-neutral-950 dark:text-neutral-50"
-		>
-			<a
-				class="fixed top-6 left-6 z-10 block size-6 rounded-md outline-neutral-950/30 outline-offset-2 transition-opacity after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-x-1/2 after:-translate-y-1/2 hover:opacity-70 focus-visible:outline-2 active:opacity-70 print:hidden dark:outline-white/30"
-				href="/"
-			>
-				<img
-					alt="Home"
-					class="size-full rounded-md"
-					height="24"
-					src="/apple-touch-icon.png"
-					width="24"
-				>
-			</a>
-			<slot />
-		</div>
-	</body>
+  <head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="light dark" name="color-scheme">
+    <meta
+      content="#ffffff"
+      media="(prefers-color-scheme: light)"
+      name="theme-color"
+    >
+    <meta
+      content="#09090b"
+      media="(prefers-color-scheme: dark)"
+      name="theme-color"
+    >
+    {meta.map((entry) =>
+      "title" in entry ? <title>{entry.title}</title> : <meta {...entry} />
+    )}
+    {links.map((l) => <link {...l} />)}
+    <link
+      as="font"
+      crossorigin
+      href="/fonts/InterVariable-latin.woff2"
+      rel="preload"
+      type="font/woff2"
+    >
+    <link href="/manifest.json" rel="manifest">
+    {CONTACT_METHODS.map((method) => <link href={method.href} rel="me" />)}
+    <link href={PGP.href} rel="pgpkey">
+    <link
+      href="/rss.xml"
+      rel="alternate"
+      title="Technical Writing | Arsen Shkrumelyak"
+      type="application/rss+xml"
+    >
+    {jsonLd && <script set:html={jsonLd} type="application/ld+json" />}
+    {noindex && <meta content="noindex" name="robots" />}
+  </head>
+  <body>
+    <div
+      class="isolate min-h-dvh bg-white font-sans text-neutral-950 antialiased dark:bg-neutral-950 dark:text-neutral-50"
+    >
+      <a
+        class="fixed top-6 left-6 z-10 block size-6 rounded-md outline-neutral-950/30 outline-offset-2 transition-opacity after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-x-1/2 after:-translate-y-1/2 hover:opacity-70 focus-visible:outline-2 active:opacity-70 print:hidden dark:outline-white/30"
+        href="/"
+      >
+        <img
+          alt="Home"
+          class="size-full rounded-md"
+          height="24"
+          src="/apple-touch-icon.png"
+          width="24"
+        >
+      </a>
+      <slot />
+    </div>
+  </body>
 </html>

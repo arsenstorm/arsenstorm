@@ -1,115 +1,115 @@
 import { describe, expect, it } from "vitest";
 import {
-	acceptsMarkdown,
-	handleMarkdown,
-	markdownAssetPath,
-	withVaryAccept,
+  acceptsMarkdown,
+  handleMarkdown,
+  markdownAssetPath,
+  withVaryAccept,
 } from "./markdown";
 import type { Env } from "./types";
 
 describe("acceptsMarkdown", () => {
-	it.each(["text/markdown", "text/html, text/markdown;q=0.9", "TEXT/MARKDOWN"])(
-		"returns true for %s",
-		(accept) => {
-			expect(acceptsMarkdown(accept)).toBe(true);
-		}
-	);
+  it.each(["text/markdown", "text/html, text/markdown;q=0.9", "TEXT/MARKDOWN"])(
+    "returns true for %s",
+    (accept) => {
+      expect(acceptsMarkdown(accept)).toBe(true);
+    }
+  );
 
-	it.each([null, "*/*", "text/*", "text/html", "text/markdown;q=0"])(
-		"returns false for %s",
-		(accept) => {
-			expect(acceptsMarkdown(accept)).toBe(false);
-		}
-	);
+  it.each([null, "*/*", "text/*", "text/html", "text/markdown;q=0"])(
+    "returns false for %s",
+    (accept) => {
+      expect(acceptsMarkdown(accept)).toBe(false);
+    }
+  );
 });
 
 describe("withVaryAccept", () => {
-	it("sets vary: Accept when absent", () => {
-		const response = withVaryAccept(new Response("body"));
-		expect(response.headers.get("vary")).toBe("Accept");
-	});
+  it("sets vary: Accept when absent", () => {
+    const response = withVaryAccept(new Response("body"));
+    expect(response.headers.get("vary")).toBe("Accept");
+  });
 
-	it("appends when an unrelated Vary exists", () => {
-		const response = withVaryAccept(
-			new Response("body", { headers: { vary: "Origin" } })
-		);
-		expect(response.headers.get("vary")).toBe("Origin, Accept");
-	});
+  it("appends when an unrelated Vary exists", () => {
+    const response = withVaryAccept(
+      new Response("body", { headers: { vary: "Origin" } })
+    );
+    expect(response.headers.get("vary")).toBe("Origin, Accept");
+  });
 
-	it("leaves an existing Accept untouched", () => {
-		const response = withVaryAccept(
-			new Response("body", { headers: { vary: "Accept" } })
-		);
-		expect(response.headers.get("vary")).toBe("Accept");
-	});
+  it("leaves an existing Accept untouched", () => {
+    const response = withVaryAccept(
+      new Response("body", { headers: { vary: "Accept" } })
+    );
+    expect(response.headers.get("vary")).toBe("Accept");
+  });
 });
 
 describe("markdownAssetPath", () => {
-	it.each([
-		["/", "/index.md"],
-		["/work", "/projects.md"],
-		["/work.md", "/projects.md"],
-		["/experience", "/experience.md"],
-		["/experience.md", "/experience.md"],
-		["/writing/foo/", "/writing/foo.md"],
-	])("maps %s to %s", (pathname, expected) => {
-		expect(markdownAssetPath(pathname)).toBe(expected);
-	});
+  it.each([
+    ["/", "/index.md"],
+    ["/work", "/projects.md"],
+    ["/work.md", "/projects.md"],
+    ["/experience", "/experience.md"],
+    ["/experience.md", "/experience.md"],
+    ["/writing/foo/", "/writing/foo.md"],
+  ])("maps %s to %s", (pathname, expected) => {
+    expect(markdownAssetPath(pathname)).toBe(expected);
+  });
 });
 
 describe("handleMarkdown", () => {
-	const assets = new Map([
-		["/experience.md", "# Experience"],
-		["/projects.md", "# Projects"],
-	]);
-	const env = {
-		ASSETS: {
-			fetch: (input: URL | Request) => {
-				const { pathname } = new URL(
-					input instanceof Request ? input.url : input.toString()
-				);
-				const body = assets.get(pathname);
-				return Promise.resolve(
-					body ? new Response(body) : new Response(null, { status: 404 })
-				);
-			},
-		},
-	} as unknown as Env;
-	const get = (path: string, accept?: string) =>
-		handleMarkdown(
-			new Request(`https://example.com${path}`, {
-				headers: accept ? { accept } : {},
-			}),
-			env
-		);
+  const assets = new Map([
+    ["/experience.md", "# Experience"],
+    ["/projects.md", "# Projects"],
+  ]);
+  const env = {
+    ASSETS: {
+      fetch: (input: URL | Request) => {
+        const { pathname } = new URL(
+          input instanceof Request ? input.url : input.toString()
+        );
+        const body = assets.get(pathname);
+        return Promise.resolve(
+          body ? new Response(body) : new Response(null, { status: 404 })
+        );
+      },
+    },
+  } as unknown as Env;
+  const get = (path: string, accept?: string) =>
+    handleMarkdown(
+      new Request(`https://example.com${path}`, {
+        headers: accept ? { accept } : {},
+      }),
+      env
+    );
 
-	it("returns null for HTML clients on known pages", async () => {
-		expect(await get("/experience")).toBeNull();
-	});
+  it("returns null for HTML clients on known pages", async () => {
+    expect(await get("/experience")).toBeNull();
+  });
 
-	it("serves markdown for negotiated content paths", async () => {
-		const response = await get("/experience", "text/markdown");
-		expect(response?.status).toBe(200);
-		expect(await response?.text()).toBe("# Experience");
-	});
+  it("serves markdown for negotiated content paths", async () => {
+    const response = await get("/experience", "text/markdown");
+    expect(response?.status).toBe(200);
+    expect(await response?.text()).toBe("# Experience");
+  });
 
-	it("serves markdown for any page with a markdown file", async () => {
-		expect(await (await get("/projects", "text/markdown"))?.text()).toBe(
-			"# Projects"
-		);
-		expect(await (await get("/projects.md"))?.text()).toBe("# Projects");
-	});
+  it("serves markdown for any page with a markdown file", async () => {
+    expect(await (await get("/projects", "text/markdown"))?.text()).toBe(
+      "# Projects"
+    );
+    expect(await (await get("/projects.md"))?.text()).toBe("# Projects");
+  });
 
-	it("aliases /work to the projects markdown", async () => {
-		expect(await (await get("/work.md"))?.text()).toBe("# Projects");
-	});
+  it("aliases /work to the projects markdown", async () => {
+    expect(await (await get("/work.md"))?.text()).toBe("# Projects");
+  });
 
-	it("returns null when no markdown asset exists", async () => {
-		expect(await get("/writing/nope", "text/markdown")).toBeNull();
-		expect(await get("/writing/nope.md")).toBeNull();
-	});
+  it("returns null when no markdown asset exists", async () => {
+    expect(await get("/writing/nope", "text/markdown")).toBeNull();
+    expect(await get("/writing/nope.md")).toBeNull();
+  });
 
-	it("leaves unknown paths to HTML when markdown is not wanted", async () => {
-		expect(await get("/nope")).toBeNull();
-	});
+  it("leaves unknown paths to HTML when markdown is not wanted", async () => {
+    expect(await get("/nope")).toBeNull();
+  });
 });

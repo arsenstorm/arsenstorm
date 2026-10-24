@@ -8,15 +8,15 @@ import { getWriteups } from "#/lib/writeups";
 const TITLE = "Technical Writing";
 const DESCRIPTION = "Writing about interesting technical topics.";
 const META_DESCRIPTION =
-	"Technical writing by Arsen Shkrumelyak on browser automation, live streaming over object storage, email-native products, Apple Wallet passes and building with AI agents.";
+  "Technical writing by Arsen Shkrumelyak on browser automation, live streaming over object storage, email-native products, Apple Wallet passes and building with AI agents.";
 ---
 
 <BaseLayout description={META_DESCRIPTION} path="/writing" title={TITLE}>
-	<Main>
-		<PageHeading description={DESCRIPTION} title={TITLE} />
+  <Main>
+    <PageHeading description={DESCRIPTION} title={TITLE} />
 
-		<section>
-			<ItemGroup groupBy="month" items={await getWriteups()} />
-		</section>
-	</Main>
+    <section>
+      <ItemGroup groupBy="month" items={await getWriteups()} />
+    </section>
+  </Main>
 </BaseLayout>

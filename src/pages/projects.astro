@@ -9,15 +9,15 @@ import { PROJECTS } from "#/lib/projects.ts";
 const TITLE = "My Projects";
 const DESCRIPTION = "These are the things I've built.";
 const META_DESCRIPTION =
-	"Projects by Arsen Shkrumelyak: Hookrail (a Rails webhook gateway), Automated Web (self-recording browser automation), OLOS (live streaming on object storage) and more.";
+  "Projects by Arsen Shkrumelyak: Hookrail (a Rails webhook gateway), Automated Web (self-recording browser automation), OLOS (live streaming on object storage) and more.";
 ---
 
 <BaseLayout description={META_DESCRIPTION} path="/projects" title={TITLE}>
-	<Main>
-		<PageHeading description={DESCRIPTION} title={TITLE} />
+  <Main>
+    <PageHeading description={DESCRIPTION} title={TITLE} />
 
-		<Section cta={{ href: "/", label: "Go back" }} title="Projects">
-			<ItemGroup id="projects-list" items={PROJECTS} />
-		</Section>
-	</Main>
+    <Section cta={{ href: "/", label: "Go back" }} title="Projects">
+      <ItemGroup id="projects-list" items={PROJECTS} />
+    </Section>
+  </Main>
 </BaseLayout>

@@ -10,11 +10,11 @@ import { technicalWriteupJsonLd } from "#/lib/seo";
 import { getWriteups } from "#/lib/writeups";
 
 export async function getStaticPaths() {
-	const writeups = await getWriteups();
-	return writeups.map((item) => ({
-		params: { slug: item.slug },
-		props: { writeup: item },
-	}));
+  const writeups = await getWriteups();
+  return writeups.map((item) => ({
+    params: { slug: item.slug },
+    props: { writeup: item },
+  }));
 }
 
 const { writeup } = Astro.props;
@@ -23,30 +23,30 @@ const others = (await getWriteups()).filter((w) => w.slug !== writeup.slug);
 ---
 
 <BaseLayout
-	article={{
-		publishedAt: writeup.publishedAt,
-		readingTime: writeup.readingTime,
-	}}
-	description={writeup.metaDescription ?? writeup.description}
-	jsonLd={technicalWriteupJsonLd(writeup)}
-	path={writeup.href}
-	title={writeup.title}
-	type="article"
+  article={{
+    publishedAt: writeup.publishedAt,
+    readingTime: writeup.readingTime,
+  }}
+  description={writeup.metaDescription ?? writeup.description}
+  jsonLd={technicalWriteupJsonLd(writeup)}
+  path={writeup.href}
+  title={writeup.title}
+  type="article"
 >
-	<Main>
-		<PageHeading description={writeup.description} title={writeup.title} />
+  <Main>
+    <PageHeading description={writeup.description} title={writeup.title} />
 
-		<article>
-			<Content components={writeupComponents} />
-		</article>
+    <article>
+      <Content components={writeupComponents} />
+    </article>
 
-		{others.length > 0 && (
-			<KeepReading>
-				<WriteupList items={others} />
-			</KeepReading>
-		)}
-	</Main>
-	<script>
-		import "#/scripts/code-blocks";
-	</script>
+    {others.length > 0 && (
+      <KeepReading>
+        <WriteupList items={others} />
+      </KeepReading>
+    )}
+  </Main>
+  <script>
+    import "#/scripts/code-blocks";
+  </script>
 </BaseLayout>

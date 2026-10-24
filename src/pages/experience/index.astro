@@ -9,17 +9,17 @@ import { getExperience } from "#/lib/experience";
 const TITLE = "My Experience";
 const DESCRIPTION = "Where I've worked and what I did there.";
 const META_DESCRIPTION =
-	"Work experience of Arsen Shkrumelyak, software engineer at Better Stack: previously founding engineer at Anyverse and sole engineer at Afinity, building AI-assisted admissions products.";
+  "Work experience of Arsen Shkrumelyak, software engineer at Better Stack: previously founding engineer at Anyverse and sole engineer at Afinity, building AI-assisted admissions products.";
 
 const experience = await getExperience();
 ---
 
 <BaseLayout description={META_DESCRIPTION} path="/experience" title={TITLE}>
-	<Main>
-		<PageHeading description={DESCRIPTION} title={TITLE} />
+  <Main>
+    <PageHeading description={DESCRIPTION} title={TITLE} />
 
-		<Section cta={{ href: "/", label: "Go back" }} title="Experience">
-			<ExperienceList items={experience} />
-		</Section>
-	</Main>
+    <Section cta={{ href: "/", label: "Go back" }} title="Experience">
+      <ExperienceList items={experience} />
+    </Section>
+  </Main>
 </BaseLayout>

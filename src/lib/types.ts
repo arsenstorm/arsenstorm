@@ -1,38 +1,38 @@
 export type ContributionIntensity = 0 | 1 | 2 | 3 | 4;
 
 export interface Year {
-	days: ContributionIntensity[];
-	from: string;
-	to: string;
+  days: ContributionIntensity[];
+  from: string;
+  to: string;
 }
 
 export interface Contribution {
-	contributionCount: number;
-	contributionLevel:
-		| "NONE"
-		| "FIRST_QUARTILE"
-		| "SECOND_QUARTILE"
-		| "THIRD_QUARTILE"
-		| "FOURTH_QUARTILE";
-	date: string;
+  contributionCount: number;
+  contributionLevel:
+    | "NONE"
+    | "FIRST_QUARTILE"
+    | "SECOND_QUARTILE"
+    | "THIRD_QUARTILE"
+    | "FOURTH_QUARTILE";
+  date: string;
 }
 
 export interface GitHubResponse {
-	data: {
-		user: {
-			contributionsCollection: {
-				contributionCalendar: {
-					totalContributions: number;
-					weeks: {
-						contributionDays: Contribution[];
-					}[];
-				};
-			};
-		};
-	};
+  data: {
+    user: {
+      contributionsCollection: {
+        contributionCalendar: {
+          totalContributions: number;
+          weeks: {
+            contributionDays: Contribution[];
+          }[];
+        };
+      };
+    };
+  };
 }
 
 export interface Stats {
-	contributions: number;
-	years: Year[];
+  contributions: number;
+  years: Year[];
 }

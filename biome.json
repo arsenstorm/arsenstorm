@@ -8,9 +8,6 @@
   "files": {
     "includes": ["!!**/workers.d.ts"]
   },
-  "formatter": {
-    "indentStyle": "tab"
-  },
   "javascript": {
     "globals": ["Bun"]
   },

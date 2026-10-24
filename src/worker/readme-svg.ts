@@ -6,104 +6,104 @@ import { type Env, SVG_HEADERS } from "./types";
 const MAX_YEARS = 3;
 
 const LINK_LABELS: Record<string, string> = {
-	"link-instagram": "Instagram",
-	"link-twitter": "Twitter",
-	"link-website": "Website",
+  "link-instagram": "Instagram",
+  "link-twitter": "Twitter",
+  "link-website": "Website",
 };
 
 function noData(theme: "light" | "dark"): Response {
-	const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="420" height="60" fill="none">
-		<rect width="420" height="60" rx="6" fill="${theme === "dark" ? "#161b22" : "#ebedf0"}"/>
-		<text x="210" y="34" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,sans-serif"
-			font-size="13" fill="${theme === "dark" ? "#fff" : "#000"}" opacity="0.5">
-			Stats not yet available — cron hasn't run.
-		</text>
-	</svg>`;
-	return new Response(svg, { headers: SVG_HEADERS });
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="420" height="60" fill="none">
+    <rect width="420" height="60" rx="6" fill="${theme === "dark" ? "#161b22" : "#ebedf0"}"/>
+    <text x="210" y="34" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,sans-serif"
+      font-size="13" fill="${theme === "dark" ? "#fff" : "#000"}" opacity="0.5">
+      Stats not yet available — cron hasn't run.
+    </text>
+  </svg>`;
+  return new Response(svg, { headers: SVG_HEADERS });
 }
 
 function getContributionSizes(
-	years: Year[],
-	options: { dots: { gap: number; rows: number; size: number } }
+  years: Year[],
+  options: { dots: { gap: number; rows: number; size: number } }
 ) {
-	return years.map((year) => {
-		const columns = Math.ceil(year.days.length / options.dots.rows);
-		const width =
-			columns * options.dots.size + (columns - 1) * options.dots.gap;
-		const height =
-			options.dots.rows * options.dots.size +
-			(options.dots.rows - 1) * options.dots.gap;
-		return [width, height];
-	});
+  return years.map((year) => {
+    const columns = Math.ceil(year.days.length / options.dots.rows);
+    const width =
+      columns * options.dots.size + (columns - 1) * options.dots.gap;
+    const height =
+      options.dots.rows * options.dots.size +
+      (options.dots.rows - 1) * options.dots.gap;
+    return [width, height];
+  });
 }
 
 function getContributionLength(sizes: number[][], yearGap: number) {
-	return (
-		sizes.reduce((acc, size) => acc + (size[0] ?? 0) + yearGap, 0) - yearGap
-	);
+  return (
+    sizes.reduce((acc, size) => acc + (size[0] ?? 0) + yearGap, 0) - yearGap
+  );
 }
 
 function renderReadmeSection({
-	data,
-	section,
-	theme,
-	url,
+  data,
+  section,
+  theme,
+  url,
 }: {
-	data: Stats;
-	section: string;
-	theme: "light" | "dark";
-	url: URL;
+  data: Stats;
+  section: string;
+  theme: "light" | "dark";
+  url: URL;
 }) {
-	if (section === "top") {
-		return top({ contributions: data.contributions, height: 20, theme });
-	}
+  if (section === "top") {
+    return top({ contributions: data.contributions, height: 20, theme });
+  }
 
-	const linkLabel = LINK_LABELS[section];
-	if (linkLabel) {
-		return link({
-			height: 18,
-			index: Number(url.searchParams.get("i")),
-			theme,
-			width: 100,
-		})(linkLabel);
-	}
+  const linkLabel = LINK_LABELS[section];
+  if (linkLabel) {
+    return link({
+      height: 18,
+      index: Number(url.searchParams.get("i")),
+      theme,
+      width: 100,
+    })(linkLabel);
+  }
 
-	if (section === "fallback") {
-		return fallback({ height: 180, theme, width: 420 });
-	}
+  if (section === "fallback") {
+    return fallback({ height: 180, theme, width: 420 });
+  }
 
-	const years = data.years.slice(0, MAX_YEARS);
-	const options = { dots: { gap: 5, rows: 6, size: 24 }, year: { gap: 5 } };
-	const sizes = getContributionSizes(years, options);
-	const length = getContributionLength(sizes, options.year.gap);
+  const years = data.years.slice(0, MAX_YEARS);
+  const options = { dots: { gap: 5, rows: 6, size: 24 }, year: { gap: 5 } };
+  const sizes = getContributionSizes(years, options);
+  const length = getContributionLength(sizes, options.year.gap);
 
-	return main({
-		...options,
-		height: 230,
-		length,
-		sizes,
-		theme,
-		years,
-	});
+  return main({
+    ...options,
+    height: 230,
+    length,
+    sizes,
+    theme,
+    years,
+  });
 }
 
 export async function handleSvg(request: Request, env: Env): Promise<Response> {
-	const url = new URL(request.url);
-	const theme = (url.searchParams.get("theme") ?? "light") as "light" | "dark";
-	const section = url.searchParams.get("section") ?? "";
+  const url = new URL(request.url);
+  const theme = (url.searchParams.get("theme") ?? "light") as "light" | "dark";
+  const section = url.searchParams.get("section") ?? "";
 
-	let data: Stats | null = null;
-	try {
-		const raw = await env.STATS.get(GITHUB_STATS_CACHE_KEY);
-		data = raw ? (JSON.parse(raw) as Stats) : null;
-	} catch {
-		return noData(theme);
-	}
+  let data: Stats | null = null;
+  try {
+    const raw = await env.STATS.get(GITHUB_STATS_CACHE_KEY);
+    data = raw ? (JSON.parse(raw) as Stats) : null;
+  } catch {
+    return noData(theme);
+  }
 
-	if (!data) {
-		return noData(theme);
-	}
+  if (!data) {
+    return noData(theme);
+  }
 
-	const content = renderReadmeSection({ data, section, theme, url });
-	return new Response(content, { headers: SVG_HEADERS });
+  const content = renderReadmeSection({ data, section, theme, url });
+  return new Response(content, { headers: SVG_HEADERS });
 }

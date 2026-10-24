@@ -1,5 +1,5 @@
 export function handleReadmePreview(): Response {
-	const html = `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -40,7 +40,7 @@ document.getElementById('dark').innerHTML=build(base,'dark');
 </body>
 </html>`;
 
-	return new Response(html, {
-		headers: { "content-type": "text/html;charset=utf-8" },
-	});
+  return new Response(html, {
+    headers: { "content-type": "text/html;charset=utf-8" },
+  });
 }
