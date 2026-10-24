@@ -11,29 +11,9 @@
     "directory": "./dist",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page",
-    "run_worker_first": [
-      "/readme",
-      "/readme/preview",
-      "/og",
-      "/og/*.mp4",
-      "/",
-      "/index.md",
-      "/writing",
-      "/writing.md",
-      "/writing/*",
-      "/projects",
-      "/projects.md",
-      "/experience",
-      "/experience.md",
-      "/experience/*",
-      "/work",
-      "/work.md",
-      "/contact",
-      "/contact.md",
-      "/a-lil-note",
-      "/a-lil-note.md",
-      "/llms.txt"
-    ]
+    // Every page goes through the worker so it can answer with markdown on
+    // request; static assets that never need it skip the worker.
+    "run_worker_first": ["/*", "!/_astro/*", "!/fonts/*", "!/og/*.png"]
   },
   "migrations": [
     {
