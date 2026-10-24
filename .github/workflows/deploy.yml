@@ -25,7 +25,6 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
       - run: bun run build
-      - run: command -v ffmpeg || (sudo apt-get update && sudo apt-get install -y ffmpeg)
       # OG videos are keyed by a hash of what they draw, so only changed pages
       # are re-recorded. Each run saves a new entry; restore picks the latest.
       - uses: actions/cache/restore@v4
@@ -33,7 +32,13 @@ jobs:
           path: .cache/og-videos
           key: og-videos-${{ github.run_id }}
           restore-keys: og-videos-
-      - run: bun run generate:og
+      # ffmpeg only records videos, and most runs reuse every one from the
+      # cache, so it is installed (about 30s) only when a run fails without it.
+      - run: |
+          bun run generate:og || {
+            sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+            bun run generate:og
+          }
       # Saved straight away, so a failed deploy keeps the new recordings.
       - uses: actions/cache/save@v4
         with:
