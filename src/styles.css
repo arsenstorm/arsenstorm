@@ -100,17 +100,26 @@ html {
   }
 }
 
-/* Text-fragment links (#:~:text=…, from "Copy link to highlight" and search
- * results) highlight like a selection instead of the browser's yellow. */
-::selection,
-::target-text {
+::selection {
   background-color: oklch(0.145 0 0 / 12%);
 }
 
+/* Text-fragment links (#:~:text=…, from "Copy link to highlight" and search
+ * results) mark the passage in orange, the README grid's colour. Only colours
+ * apply: the browser paints this highlight, so padding and radius do nothing. */
+::target-text {
+  color: #bd561d;
+  background-color: rgb(250 122 24 / 12%);
+}
+
 @media screen and (prefers-color-scheme: dark) {
-  ::selection,
-  ::target-text {
+  ::selection {
     background-color: oklch(0.985 0 0 / 20%);
+  }
+
+  ::target-text {
+    color: #ffa45c;
+    background-color: rgb(250 122 24 / 20%);
   }
 }
 
