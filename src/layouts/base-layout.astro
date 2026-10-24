@@ -1,4 +1,5 @@
 ---
+import { CONTACT_METHODS, PGP } from "#/lib/contact";
 import { pageLinks, pageMeta } from "#/lib/seo";
 import "#/styles.css";
 
@@ -42,6 +43,8 @@ const links = pageLinks(path);
 			crossorigin
 		/>
 		<link href="/manifest.json" rel="manifest" />
+		{CONTACT_METHODS.map((method) => <link href={method.href} rel="me" />)}
+		<link href={PGP.href} rel="pgpkey" />
 		<link
 			rel="alternate"
 			type="application/rss+xml"
